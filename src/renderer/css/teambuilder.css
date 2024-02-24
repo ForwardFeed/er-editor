@@ -1,0 +1,171 @@
+#builder-data{
+    overflow: scroll;
+}
+
+.builder-bot{
+    background-color:  var(--colorB);
+    overflow: scroll;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.builder-mon{
+    position: relative;
+    border-radius: 10px;
+    border-style: dashed;
+    border-width: 2px;
+    margin: auto;
+    display: flex;
+    width: calc(50% - 4px);
+    min-height: 3.5em;
+    height: 10em;
+}
+.builder-placeholder{
+    border-radius: 10px;
+    border-style: dotted;
+    border-width: 2px;
+    margin: auto;
+}
+.builder-placeholder:hover{
+    cursor: pointer;
+    background-color: var(--selHover);
+}
+.trainers-pokemon-builder{
+    width: unset;
+}
+.builder-mon-delete{
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: red;
+    color: black;
+    display: none;
+}
+
+#builder-editor{
+    display: flex;
+    font-size: 1.7vmax;
+}
+#builder-editor > div{
+    margin: auto;
+    flex-grow: 1;
+}
+.builder-editor-left{
+    height: 100%;
+    display: flex;
+    text-align: center;
+}
+.builder-editor-left *{
+    margin: auto;
+}
+.builder-editor-specie{
+    max-width: 6em;
+    height: 1em;
+}
+.builder-editor-sprite{
+    /*height: calc(100% - 1em); this is if there the name of the specie*/
+    width: 6em;
+}
+.builder-overlay-abis-inns{
+    display: flex;
+}
+.builder-overlay-abis-desc{
+    height: fit-content;
+    background-color: var(--colorC);
+}
+.builder-editor-abilities, .builder-overlay-abilities, .builder-overlay-innates{
+    display: flex;
+    flex-grow: 1;
+    text-align: left;
+    flex-direction: column;
+    margin: auto;
+    background-color: var(--colorA);
+}
+.builder-overlay-abilities, .builder-overlay-innates{
+    height: 6em;
+}
+.builder-editor-ability, .builder-overlay-ability, .builder-overlay-innate{
+    width: 6em;
+    margin: auto;
+}
+.builder-overlay-ability:hover{
+    background-color: var(--selHover);
+}
+.builder-editor-mid{
+    display: flex;
+    flex-direction: column;
+}
+.builder-editor-move{
+    width: 100%;
+    margin: auto;
+}
+.builder-editor-right{
+    width: 10em;
+}
+.builder-overlay-list{
+    font-size: 1em;
+}
+.builder-editor-statsrow{
+    display: flex;
+}
+.builder-editor-statsrow > div{
+    margin: auto;
+}
+.overlay-stats-row{
+    display: flex;
+    text-align: center;
+}
+.overlay-stats-column{
+    display: flex;
+    flex-direction: column;
+}
+.overlay-stats-label{
+    font-size: 1.5em;
+}
+.overlay-stats-edit{ 
+    font-size: 1em;
+    flex-grow: 1;
+    width: 3em;
+    text-align: center;
+}
+@media (orientation: landscape) {
+    .builder-editor-left{
+        flex-direction: row;
+    }
+    .builder-editor-left{
+        width: 12em;
+    }
+    .builder-editor-mid{
+        width: 6em;
+    }
+}
+
+@media (orientation: portrait) {
+    .builder-editor-left{
+        flex-direction: column;
+        font-size: 0.7em;
+    }
+    .builder-editor-left{
+        width: 6.5em;
+    }
+    .builder-editor-mid{
+        width: 8em;
+    }
+}
+
+
+
+/*
+.rotate {
+    animation: rotate 2s infinite;
+}
+@keyframes rotate {
+    0% {
+      transform: rotate(-45deg)
+    }
+    100% {
+      transform: rotate(45deg)
+    }
+  }
+
+*/

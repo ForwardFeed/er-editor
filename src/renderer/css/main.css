@@ -1,0 +1,983 @@
+/* GENERAL */
+
+.normal{background-color: #aa9; color:rgb(44, 44, 39);}
+.fire{background-color: #f42; color:rgb(73, 23, 14);}
+.water{background-color: #39f; color:rgb(14, 32, 49);}
+.electric{background-color: #fc3; color:rgb(49, 40, 11);}
+.grass{background-color: #7c5; color: rgb(22, 51, 10);}
+.ice{  background-color: #6cf; color: rgb(20, 63, 85);}
+.fighting{background-color: #b54; color:rgb(54, 25, 20);}
+.poison{background-color: #a59; color:rgb(43, 21, 38); }
+.ground{background-color: #db5; color:rgb(48, 40, 19); }
+.flying{background-color: #89f; color:rgb(22, 26, 44);}
+.psychic{background-color: #f59; color:rgb(49, 16, 29);}
+.bug{background-color: #ab2; color:rgb(42, 46, 9);}
+.rock{background-color: #ba6; color:rgb(37, 34, 21);}
+.ghost{background-color: #66b; color:rgb(23, 23, 41);}
+.dragon{background-color: #76e; color:rgb(15, 13, 31);}
+.dark{background-color: #754; color:rgb(37, 27, 21);}
+.steel{background-color: #aab; color:rgb(27, 27, 31);}
+.fairy{background-color: #e9e; color:rgb(32, 21, 32);}
+
+
+.normal-t{color: #aa9;}
+.fire-t{color: #f42;}
+.water-t{color: #39f;}
+.electric-t{color: #fc3;}
+.grass-t{color: #7c5;}
+.ice-t{  color: #6cf;}
+.fighting-t{color: #b54;}
+.poison-t{color: #a59;}
+.ground-t{color: #db5;}
+.flying-t{color: #89f}
+.psychic-t{color: #f59;}
+.bug-t{color: #ab2;}
+.rock-t{color: #ba6;}
+.ghost-t{color: #66b;}
+.dragon-t{color: #76e;}
+.dark-t{color: #754;}
+.steel-t{color: #aab;}
+.fairy-t{color: #e9e;}
+
+.buffed{
+    color: rgb(76, 219, 19);
+}
+.nerfed{
+    color: rgb(233, 64, 13);
+}
+
+.normal-t, .fire-t, .water-t, .electric-t, .grass-t, .ice-t, .fighting-t, .poison-t, .ground-t, .flying-t, .bug-t, .rock-t, .ghost-t, .dragon-t, .dark-t, .steel-t, .fairy-t{
+    filter: var(--filter);
+}
+
+.phy{
+    color: rgb(189, 83, 21);
+}
+.spe{
+    color: rgb(15, 41, 158);
+}
+.sta{
+    color: rgb(71, 71, 73);
+}
+
+.colorA{
+    background-color: var(--colorA);
+}
+.colorB{
+    background-color: var(--colorB);
+}
+.colorC{
+    background-color: var(--colorC);
+}
+.colorD{
+    background-color: var(--colorD);
+}
+.panel{
+    display: flex;
+    font-size: 2vmax;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+.sel-n-active, .sel-active{
+    cursor: pointer;
+}
+.sel-active{
+    background-color: var(--selActive);
+}
+.sel-n-active{
+    background-color: var(--selNActive);
+}
+.sel-n-active:hover{
+    background-color: var(--selHover);
+}
+
+.data-list{
+    text-align: center;
+    width: 9em;
+    min-width: 9em;
+    display: flex; 
+}
+.data-list-row{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    user-select: none;
+}
+.data-data{
+    flex-grow: 1;
+    background-color: var(--colorC);
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+
+}
+
+span{
+    height: fit-content;
+    margin: auto 0;
+}
+
+.extend {
+    background-color: red;
+    height: 100%;
+    position: absolute;
+    top: 0;
+}
+
+.down-arrow{
+    height: 10px;
+    width: 7px;
+}
+/* Window */
+.window-frame{
+    position: absolute;
+    z-index: 3;
+    background-color: var(--colorB);
+    top: 25vh;
+    left: 25vw;
+    font-size: 2vmax;
+}
+/* ABILITIES */
+#abis-list{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: auto;
+}
+
+
+.abi-row{
+    display: flex;
+    width: 100%;
+    font-size: 2vmax;
+    box-shadow: inset 0 0 1vmax var(--shadow);
+}
+.abi-row > div{
+    -webkit-user-select: text; /* Safari */
+    user-select: text; /* Standard syntax */
+}
+.abi-desc{
+    padding-left: 1%;
+    flex-grow: 1;
+}
+.abi-name{
+    width: 9em;
+    min-width: 9em;
+    text-align: center;
+}
+
+/* MOVES */
+.moves-top{
+    display: flex;
+    background-color: var(--colorB);
+    text-align: center;
+}
+.moves-top-sub{
+    width: 50%;
+    display: flex;
+}
+.moves-large{
+    height: 100%;
+}
+#moves-pwr{
+    font-size: 3.5em;
+}
+.moves-xlarge{
+    height: 100%;
+    width: 15vw;
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+    margin-right: auto;
+}
+.xlarge-row{
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+}
+.xlarge-row > span{
+    padding-right: 0.5em;
+}
+#moves-split, #species-front, .pixelated, .trainer-poke-sprite {
+    image-rendering:optimizeSpeed;             /* Legal fallback */
+    image-rendering:-moz-crisp-edges;          /* Firefox        */
+    image-rendering:-o-crisp-edges;            /* Opera          */
+    image-rendering:-webkit-optimize-contrast; /* Safari         */
+    image-rendering:optimize-contrast;         /* CSS3 Proposed  */
+    image-rendering:crisp-edges;               /* CSS4 Proposed  */
+    image-rendering:pixelated;                 /* CSS4 Proposed  */
+    -ms-interpolation-mode:nearest-neighbor;   /* IE8+           */
+}
+#moves-target{
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.target-row{
+    padding: 2vmin;
+    display: flex;
+    flex-direction: row;
+    height: 50%;
+}
+.target-row > div{
+    width: calc((100% - 4vmin) / 3);;
+}
+.moves-bot{
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    background-color: var(--colorD);
+    overflow-y: scroll;
+}
+.moves-bot-info{
+    display: flex;
+    flex-direction: row;
+}
+.moves-bot-info > *{
+    margin-left: 2%;
+}
+/*#moves-desc{}*/
+#moves-flags{
+    display: flex;
+    flex-direction: column;
+}
+
+
+@media (orientation: landscape) {
+    .moves-top{
+        width: 100%;
+        height: 10vw;
+    }
+}
+@media (orientation: portrait) {
+    .moves-top{
+        width: 100%;
+        flex-direction: column;
+    }
+    .moves-top-sub{
+        width: 100%;
+    }
+    .moves-xlarge{
+        width: auto;
+        flex-grow: 1;
+    }
+}
+
+/* MOVES OVERLAY*/
+
+.move-overlay{
+    display: flex;
+    margin: 1%;
+    background-color: var(--colorE);
+    text-align: center;
+}
+.move-overlay-power{
+    width: 6em;
+}
+.move-overlay-top:hover{
+    background-color: var(--selHover);
+    cursor: pointer;
+}
+.move-overlay-fill{
+    font-size: 3em;
+}
+.move-overlay-stats{
+    width: 6em;
+    text-align: end;
+    padding-right: 0.5em;
+}
+.move-overlay-types{
+    width: 4em;
+}
+.move-overlay-img{
+    width: 100%;
+}
+.move-overlay-effects{
+    text-align: left;
+    padding-left: 0.5em;
+    font-size: 1.3vmax;
+    overflow: scroll;
+}
+.move-overlay-effects div{
+    padding-top: 0.2em;
+}
+.move-overlay-effects :first-child{
+    padding-top: 0
+}
+/* SPECIES */
+
+.species-list-sprite{
+    height:70%;
+}
+
+.species-name{
+    width: min-content;
+}
+
+.species-mid-stats{
+    display: flex;
+}
+
+.species-top{
+    display: flex;
+    width: 100%;
+    background-color: var(--colorB);
+    gap: 5px;
+}
+#species-front{
+    min-width: 64px;
+    min-height: 64px;
+    margin: auto;
+}
+#species-front:hover, #species-coverage:hover, #species-basestats:hover{
+    box-shadow: inset 2px 0px 10px var(--font-color);
+}
+.species-abi-inn{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    user-select: none;
+    max-width: 5em;
+}
+.abi-inn-info{
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    border: 2px solid var(--selActive);
+    margin: 5px 0;
+    padding: 0 5px ;
+    border-radius: 10px;
+
+}
+#species-innates, #species-abilities{
+    font-size: 1.5vmax;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    cursor: default;
+    align-items: center;
+    width: 100%; 
+}
+.species-innate, .species-ability{
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+
+} 
+
+.tooltip{
+    display: none;
+    position: absolute;
+    background-color: var(--colorA);
+    border-style: solid;
+    border-radius: 5px;
+    padding: 10px;
+    z-index: 1;
+    top: 80%;
+}
+#species-basestats, #species-coverage{
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.stat-row{
+    display: flex;
+    font-size: 1.9vmax;
+    text-align: center;
+    align-items: center;
+}
+.stat-name{
+    width: 1.5em;
+    padding-left: 2%;
+}
+.stat-num{
+    width: 1.5em;
+    height: 100%;
+    margin-left: 2%;
+    border-radius: 2px;
+    color: black;
+}
+.stat-bar{
+    background-color: green;
+    background: linear-gradient(to right, green 100%, white 0%);
+    height: 50%;
+    flex-grow: 1;
+    margin-top: 0.2em;
+}
+
+.species-coverage-row{
+    text-align: center;
+    width: 100%;
+    display: flex;
+    flex-grow: 1;
+    overflow-wrap: break-word;
+}
+.species-coverage-mul{
+    width: 2em;
+    min-width: 2em;
+    background-color: var(--colorA);
+    box-shadow: inset 0 0 1vmax var(--shadow);
+    display: flex;
+}
+.species-coverage-list{
+    display: flex;
+    font-size: 1.3vmax;
+    flex-wrap: wrap;
+    max-width: 22em;
+}
+.species-coverage-list > div{
+    display: flex;
+    width: 3em;
+}
+.span-align{
+    flex-grow: 1;
+}
+.species-bot{
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    background-color: var(--colorD);
+    overflow-y: scroll;
+}
+
+.species-mid{
+    display: flex;
+    position: relative;
+}
+
+#specie-name{
+    padding-left: 2%;
+}
+#species-types{
+    display: flex;
+    gap: 4px;
+    margin-left: 2vw;
+}
+.type{
+    border-radius: 5px;
+    padding: 0 10px;
+}
+/*.species-type:last-child{}*/
+.species-switch{
+    display: flex;
+    flex-direction: row;
+    right: 0;
+    user-select: none;
+}
+.species-switch > * {
+    margin-right: 0.5em;
+}
+.species-sub-pannel{
+    background-color: var(--colorC);
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    font-size: 1.5vmax;
+    flex-flow: wrap;
+    overflow: auto;
+}
+.species-sub-pannel > * {
+    flex-grow: 1;
+    text-align: center;
+}
+.species-sub-half-pannel{
+    display: flex;
+    flex-flow: wrap;
+    height: 50%;
+    width: 100%;
+    overflow: auto;
+}
+.species-bot-row{
+    text-align: center;
+}
+.species-moves-title{
+    text-align: center;
+    background-color: var(--colorC);
+    font-size: 2vmax;
+}
+.species-move-list{
+    flex-grow: 1;
+    overflow-y: scroll;
+}
+.species-move-list > *{
+    border-bottom: var(--shadow);
+    border-bottom-style: dashed;
+    border-bottom-width: 1px;
+}
+.species-move-row{
+    width: 11em;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+}
+
+#species-evos{
+    display: flex;
+    flex-direction: column;
+}
+.evo-into{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.specie-block{
+    display: flex;
+    align-items: center;
+}
+
+.species-levelup-lvl{
+    width: 1.5em;
+    background-color: var(--colorC);
+}
+.species-move-name{
+    width: 100%;
+}
+
+
+.specie-locs, .specie-locs-scripted{
+    cursor: pointer;
+    height: fit-content;
+    max-width: 30%;
+    margin: auto;
+    box-shadow: inset 0 0 2px var(--shadow);
+    padding: 1vh;
+}
+
+.species-move-list>*:hover, .trainers-pokemon:hover, .specie-locs:hover, .specie-block:hover{
+    background-color: var(--selHover);
+    cursor: pointer;
+    user-select: none;
+}
+#learnset{
+    background-color: var(--colorD);
+}
+
+#tmhm{
+    background-color: var(--colorB);
+}
+#eggmoves{
+    background-color: var(--colorD);
+}
+
+.sprite{
+    height: 30px;
+}
+
+.species-move-sprite{
+    height: 15px;
+}
+
+@media (orientation: landscape) {
+    .data-list{ 
+        overflow-y: auto;
+        flex-direction: column;
+        background-color: var(--selNActive);
+        max-height: 100%;
+
+    }
+    .data-list-row{
+        padding: 10px;
+        height: fit-content;
+    }
+    .data-data{
+        height: 100%;
+        flex-grow: 1;
+    }
+    #species-front{
+        height: 15vw;
+        width: 15vw;
+    }
+    .species-mid{
+        flex-direction: row;
+    }
+    .species-mid > :last-child{
+        margin: auto;
+        margin-right: 0;
+    }
+}
+
+@media (orientation: portrait) {
+    .panel{
+        flex-direction: column;
+    }
+    .data-list{
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        flex-direction: row;
+        min-height: 12%;
+        max-height: 12%;
+    }
+    .data-list-row{
+        padding: 0 10px;
+
+    }
+    .data-data{
+        width: 100%;
+    }
+    #species-front{
+        height: 15vh;
+        width: 15vh;
+    }
+    .species-mid{
+        flex-direction: column;
+    }
+    .species-mid > :last-child, .species-mid-stats > *{
+        margin: auto;
+    }
+}
+
+/* LOCATIONS */
+#locations-data{
+    flex-direction: row;
+    flex-flow: row wrap;
+    justify-content: center;
+    overflow-y: scroll;
+}
+.location-table{
+    width: fit-content;
+    text-align: center;
+    width: 12em;
+}
+.location-field{
+    margin: auto;
+    box-shadow: inset 0 0 1px var(--shadow);
+    overflow-y: scroll;
+}
+.location-title{
+    background-color: var(--colorD);
+    text-align: center;
+}
+.location-row{
+    display: flex;
+    background-color: var(--colorA);
+    justify-content: space-between;
+}
+.location-specie{
+    width: 6em;
+    flex-grow: 1;
+}
+.location-rate{
+    width: 2em;
+}
+.location-lvl{
+    width: 3em;
+}
+
+.location-rod{
+    background-color: var(--colorE);
+}
+
+/* Trainers */
+.trainers-infobar{
+    display: flex;
+}
+#trainers-rematch{
+    margin-left: auto;
+    display: flex
+}
+.trainer-match-btn{
+    min-width: 1em;
+    border: 2px ridge var(--colorB);
+    text-align: center;
+    margin-left: 0.2em;
+}
+#trainers-team{
+    overflow-y: scroll;
+    display: flex;
+    flex-wrap: wrap;
+}
+.trainers-pokemon{
+    margin-left: 0.5vw;
+    margin-right: 0.5vw;
+    background-color: var(--colorD);
+    text-align: center;
+    display: flex;
+    border-bottom: rgb(49, 44, 44);
+    border-bottom-width: medium;
+    border-bottom-style: none;
+    border-bottom-style: dashed;
+    border-bottom-width: 1px;
+    cursor: pointer;
+    width: calc(50% - 1vw);
+}
+.trainers-pokemon-left, .trainers-pokemon-right, .trainers-poke-nature, .trainers-poke-moves{
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    border: dotted 1px;
+}
+.trainers-pokemon-left{
+    width: 6em;
+}
+.trainers-pokemon-right{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    border-left: 0;
+}
+.trainers-pokemon-mid{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+.trainers-poke-specie{
+    width: 6em;
+    display: flex;
+    flex-direction: column;
+}
+.trainers-poke-ability{
+    flex-grow: 1;
+}
+.trainers-stats-row{
+    display: flex;
+}
+.trainers-stats-col{
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+}
+.trainers-poke-ivs, .trainers-poke-evs{
+    text-align: left;
+    padding-left: 0.3em;
+}
+.trainers-poke-ivs, .trainers-poke-evs{
+    font-size: 0.8em;
+}
+.trainers-poke-moves{
+    margin: auto;
+    display: flex;
+    flex-wrap: wrap;
+    flex-grow: 1;
+    border-left: 0;
+    border-right: 0;
+}
+.trainers-poke-move{
+    width: 50%;
+    text-align: center;
+    font-size: 0.9em;
+}
+.trainer-map-list-name{
+    background-color: var(--colorA);
+}
+.trainer-go-edition{
+    margin: auto;
+    border: var(--font-color) double 1px;
+    border-radius: 10px;
+    width: fit-content;
+    height: fit-content;
+}
+.trainer-redirect-arrow{
+    font-size: 1.5em;
+}
+.trainer-poke-sprite{
+    width: 100%;
+}
+@media (orientation: landscape) {
+    
+}
+
+@media (orientation: portrait) {
+    
+}
+
+/* SETTINGS */
+#settings-frame{
+    z-index: 100;
+    width: 80vw;
+    height: 80%;
+    margin: 10% 10% 10vw 10vw;
+    background-color: var(--colorA);
+    position: absolute;
+    top: 0;
+    border: 5px ridge var(--colorB);
+    font-size: 2em;
+}
+.versionning > select{
+    margin-top: -1px;
+    vertical-align: middle;
+}
+/*.settings-row{}*/
+.settings-row > input[type='radio'] { 
+    transform: scale(2); 
+    margin-top: -1px;
+    vertical-align: middle;
+}
+.settings-row > * {
+    margin-right: 2%;
+    height: 100%;
+}
+
+
+/* SEARCH */
+#filter-frame{
+    position: absolute;
+    z-index: 11; /* 10 would be reserved to a invisible click to close filer with 100% height and with */
+    background-color: var(--colorB);
+    margin: auto;
+}
+.filter-panel{
+    width: 100%;
+    height: 100%;
+}
+
+.filter-title, .filter-help-title{
+    display: flex;
+    width: 100%;
+    background-color: var(--colorA);
+}
+#filter-help > p, #filter-help > li{
+    padding-left: 1em;
+    padding-top: 0.5em;
+    margin: 0;
+}
+#filter-help{
+    font-size: 0.6em;
+    height: 100%;
+    overflow-y: scroll;
+}
+.filter-title > *{
+    margin: auto;
+}
+.filter-title > div:last-child{
+    margin-right: 2%;
+}
+.filter-title > *:first-child, .filter-help-title > *:first-child {
+    margin-left: 2%;
+}
+.filter-help-title{
+    font-size: 2em;
+}
+.sel:hover {
+    background-color: var(--selHover);
+    cursor: default;
+}
+.filter-panel, .filter-data{
+    display: flex;
+    flex-direction: column;
+}
+.filter-data{
+    width: 100%;
+}
+.filter-data > *{
+    margin: auto;
+}
+.filter-row{
+    width: calc(98% - 2px);
+    padding: 1%;
+    border: dotted var(--font-color) 1px;
+    display: flex;
+}
+.filter-target{
+    width: 4.5em;
+    height: 100%;
+    padding-right: 0.7%;
+    border-right: solid var(--font-color) 2px;
+}
+.filter-list{
+    padding-left: 0.7%;
+    flex-grow: 1;
+}
+.filter-field{
+    display: flex;
+}
+.filter-field *{
+    padding-top: 0.1em;
+    padding-bottom: 0.1em;
+}
+.filter-not{
+    padding-left: 0.1em;
+    border-radius: 10px 0 0 10px;
+}
+.filter-not-not{
+    text-decoration: line-through;
+    text-decoration-style: double;
+    text-decoration-thickness: 2px;
+}
+.filter-key-wrapper{
+    position: relative;
+    display: flex;
+    width: 3em;
+}
+.filter-key{
+    width: 100%;
+    background: rgba(0, 0, 0, 0);
+    border-radius: 10px 0 0 10px;
+    border-color: var(--selActive);
+    border-style: solid;
+    color: var(--font-color);
+    font-size: 1.5vmax;
+}
+.filter-key-selection{
+    position: absolute;
+    z-index: 12;
+}
+.filter-key-selection > div:hover, .filter-suggestions > div:hover{
+    background-color: var(--selHover);
+    cursor: pointer;
+
+}
+.filter-key-selection > div, .filter-suggestions > div{
+    background-color: var(--colorC);
+    padding:0 10px; 
+}
+.filter-option-selected{
+    color: var(--selActive);
+}
+/*.filter-label{}*/
+.filter-suggestions{
+    position: absolute;
+    z-index: 12;
+
+}
+.filter-search{
+    font-size: 1.6vmax;
+    text-align: center;
+    padding-left: 7px;
+    border-radius: 0 10px 10px 0;
+    outline: none;
+}
+
+.filter-remove{
+    color: red;
+    width: 2em;
+    text-align: center;
+}
+.filter-add{
+    border-radius: 10px;
+    border-style: dotted;
+    border-width: 2px;
+}
+.filter-add > *{
+    margin: auto;
+}
+.filter-key:hover, .filter-not:hover, .filter-remove:hover, .filter-add:hover{
+    background-color: var(--selHover);
+    cursor: pointer;
+}
+@media (orientation: landscape) {
+    #filter-frame{
+        font-size: 2vmax;
+        top: 10%;
+        left: 15vw;
+        width: 70vw;
+        height: 90%;
+    }
+}
+
+@media (orientation: portrait) {
+    #filter-frame{
+        top: 8%;
+        height: 92%;
+        width: 100vw;
+    }
+}
+

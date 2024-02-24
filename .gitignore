@@ -1,0 +1,11 @@
+node_modules
+package-lock.json
+user_settings.json
+dist
+out
+.DS_Store
+*.log*
+build
+squashfs-root
+#editor
+.vscode

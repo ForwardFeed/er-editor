@@ -1,0 +1,145 @@
+import * as FS from 'fs'
+import * as Path from 'path'
+
+import {getFileData} from './utils';
+import * as Moves from './moves'
+import * as Species from './species/species'
+import * as Abilities from './abilities'
+import * as Sprites from './sprites'
+import * as Locations from './locations'
+import * as Trainers from './trainers/trainers'
+import * as ScriptedData from './scripted_data'
+import * as BattleItems from './battle_items/battle_items'
+//import * as Additionnal from './additional_data/additional'
+import * as InternalID from './internal_id'
+import { compactify } from './compactify';
+import * as Configuration from './configuration';
+//import { comparify } from './comparify';
+
+
+export interface GameData {
+    species: Species.Specie[]
+    abilities: Map<string, Abilities.Ability>
+    moves:Map<string, Moves.Move>,
+    locations: Locations.Locations
+    trainers: Map<string, Trainers.Trainer>
+    speciesScripted: Map<string, ScriptedData.SpeciesScripted[]>
+    trainersScripted: Map<string, ScriptedData.TrainersScriped>
+    mapTable: string[], 
+    battleItems: Map<string, BattleItems.BattleItem>
+    speciesInternalID: Map<string, number>,
+    movesInternalID: Map<string, number>,
+}
+
+const gameData: GameData = {
+    species: [] as Species.Specie[],
+    abilities: new Map(),
+    moves: new Map(),
+    locations: {} as Locations.Locations,
+    trainers: new Map(),
+    speciesScripted: new Map(),
+    trainersScripted: new Map(),
+    mapTable: [],
+    battleItems: new Map(),
+    speciesInternalID: new Map(),
+    movesInternalID: new Map(),
+}
+
+export function getGameData(window: Electron.BrowserWindow){
+    Configuration.verifyConfiguration()
+        .then(()=>{
+            getGameDataData(window.webContents)
+        })
+        .catch((err)=>{
+            // 
+            console.error("error while verifying the data", err)
+            window.webContents.send('no-game-data')
+        })
+}
+
+function getGlobalH(ROOT_PRJ: string){
+    return getFileData(Path.join(ROOT_PRJ, 'include/global.h'), {filterComments: true, filterMacros: true, macros: new Map()})
+
+}
+
+function getGameDataData(webContents: Electron.WebContents){
+    const ROOT_PRJ = Configuration.configuration.project_root
+    getGlobalH(ROOT_PRJ)
+    .then((global_h) => {
+        const optionsGlobal_h = {
+            filterComments: true,
+            filterMacros: true,
+            macros: global_h.macros
+        }
+        const promiseArray: Array<Promise<unknown>> = []
+        promiseArray.push(Species.getSpecies(ROOT_PRJ, optionsGlobal_h, gameData))
+        promiseArray.push(Moves.getMoves(ROOT_PRJ, optionsGlobal_h, gameData))
+        promiseArray.push(Abilities.getAbilities(ROOT_PRJ, optionsGlobal_h, gameData))
+        promiseArray.push(Locations.getLocations(ROOT_PRJ, gameData))
+        promiseArray.push(Trainers.getTrainers(ROOT_PRJ, gameData))
+        promiseArray.push(ScriptedData.parse(ROOT_PRJ, gameData))
+        promiseArray.push(BattleItems.getItems(ROOT_PRJ, gameData))
+        promiseArray.push(InternalID.getSpeciesInternalID(ROOT_PRJ, gameData))
+        promiseArray.push(InternalID.getMovesInternalID(ROOT_PRJ, gameData))
+        //promiseArray.push()
+        Promise.allSettled(promiseArray)
+            .then((values)=>{
+                values.map((x)=>{
+                    if (x.status !== "fulfilled") {
+                        console.error(`Something went wrong parsing the data: ${x.reason}`)
+                        return
+                    }
+                    const result = x.value
+                    if (typeof result !== "object") return
+
+                })
+                //Additionnal.getAdditionnalData(ROOT_PRJ, OUTPUT_ADDITIONNAL, gameData)
+                const compactGameData = compactify(gameData)
+                webContents.send('game-data', compactGameData)
+            })
+            .catch((err)=>{
+                console.error(`Something went wrong parsing the data: ${err}`)
+            })
+        
+    })
+    .catch((reason) => {
+        const err = 'Failed at gettings global.h reason: ' + reason
+        console.error(err)
+    })
+}
+
+export function getSprites(window: Electron.BrowserWindow){
+    Configuration.verifyConfiguration()
+        .then(()=>{
+            getGetSprites(window.webContents)
+        })
+        .catch(()=>{
+            console.error("error while verifying the data")
+        })
+}
+
+function getGetSprites(_webContents: Electron.WebContents){
+    const ROOT_PRJ = Configuration.configuration.project_root
+    getGlobalH(ROOT_PRJ)
+        .then((global_h)=>{
+            const optionsGlobal_h = {
+                filterComments: true,
+                filterMacros: true,
+                macros: global_h.macros
+            }
+            const OUTPUT_SPRITES = Path.join("./out", "sprites/")
+            const OUTPUT_PALETTES  = "./out/palettes/"
+            if (!FS.existsSync(OUTPUT_SPRITES))FS.mkdirSync(OUTPUT_SPRITES)
+            if (!FS.existsSync(OUTPUT_PALETTES))FS.mkdirSync(OUTPUT_PALETTES)
+            
+            Sprites.getSprites(
+                Configuration.configuration.project_root, optionsGlobal_h, OUTPUT_SPRITES, OUTPUT_PALETTES)
+                .then(()=>{
+                    console.log('Successfully copied the sprites')
+                })
+                .catch((err)=>{
+                    console.error('error while trying to catch sprites ' + err)
+                })
+        })
+   
+}

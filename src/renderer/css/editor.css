@@ -1,0 +1,12 @@
+.edt-location-lvl{
+    width: 1.5em;
+    margin: auto;
+    margin-top: 0.3em;
+    height: fit-content;
+}
+.edt-level-row{
+    display: flex;
+}
+.specie-block > input{
+    flex-grow: 1;
+}

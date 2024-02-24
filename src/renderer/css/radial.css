@@ -1,0 +1,30 @@
+.yline{
+    border-top: 1px solid black;
+}
+.xline{
+    border-left: 1px solid black;
+}
+.radial-btn{
+    background-color: var(--selNActive);
+    text-align: center;
+    height: fit-content;
+    position: absolute;
+    border-color: var(--font-color);
+    border-width: 1px;
+    border-style: solid;
+    box-sizing: border-box;
+}
+
+.radial-btn:hover{
+    background-color: var(--selHover);
+}
+
+.cubic-radial{
+    background-color: rgba(0, 0, 0, 0);
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 10px;
+    position: relative;
+    font-size: 2em;
+}
+
