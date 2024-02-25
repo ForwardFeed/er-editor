@@ -46,6 +46,15 @@ const gameData: GameData = {
 }
 
 export function getGameData(window: Electron.BrowserWindow){
+    if (!FS.existsSync(Path.join(".", "sprites"))){
+        FS.mkdir(Path.join(".", "sprites"), (err_exist)=>{
+            if (err_exist){
+                console.error('could not create sprite folder')
+            } else {
+                console.log('got the file path')
+            }
+        })
+    }
     Configuration.verifyConfiguration()
         .then(()=>{
             getGameDataData(window.webContents)

@@ -1,5 +1,7 @@
 import { defineConfig, externalizeDepsPlugin} from 'electron-vite'
 import inject from '@rollup/plugin-inject';
+import { viteStaticCopy } from 'vite-plugin-static-copy'
+import path from 'path'
 
 export default defineConfig({
   main: {
@@ -9,12 +11,20 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {
-    assetsInclude: ['*/**/*.ttf', 'vendor/*'],
+    assetsInclude: ['**/renderer/icons/*.png'],
     plugins: [
       inject({
         jQuery: "jquery",
         "window.jQuery": "jquery",
         $: "jquery"
+      }),
+      viteStaticCopy({
+        targets: [
+          {
+            src: path.resolve(__dirname, './src/renderer/icons') + '/[!.]*', // 1️⃣
+            dest: './icons/', // 2️⃣
+          }
+        ]
       })
     ]
   },
