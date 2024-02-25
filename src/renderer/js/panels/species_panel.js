@@ -17,14 +17,14 @@ export function feedPanelSpecies(id) {
     $('#species-name').text(`${specie.name}#${specie.dex.id || "??"}`)
     $('#species-id').text(`ingame ID: ${specie.id}`)
     updateBaseStats(specie.stats.base)
-    $('#species-front').attr('src', getSpritesURL(specie.NAME))
+    $('#species-front').attr('src', getSpritesURL(specie.sprite))
     $('#species-front')[0].onclick = () => {
         if ($('#species-front')[0].dataset.shiny === "off") {
             $('#species-front')[0].dataset.shiny = "on"
-            $('#species-front').attr('src', getSpritesShinyURL(specie.NAME))
+            $('#species-front').attr('src', getSpritesShinyURL(specie.sprite))
         } else {
             $('#species-front')[0].dataset.shiny = "off"
-            $('#species-front').attr('src', getSpritesURL(specie.NAME))
+            $('#species-front').attr('src', getSpritesURL(specie.sprite))
         }
     }
     $('#species-front')[0].dataset.shiny = "off"
@@ -202,13 +202,11 @@ function updateBaseStats(stats) {
     }
 }
 
-export function getSpritesURL(NAME) {
-    NAME = NAME.replace(/^SPECIES_/, '')
-    return `./sprites/${NAME}.png`
+export function getSpritesURL(spritePath) {
+    return gameData.projet_root + "/" + spritePath
 }
-export function getSpritesShinyURL(NAME) {
-    NAME = NAME.replace(/^SPECIES_/, '')
-    return `./sprites/SHINY_${NAME}.png`
+export function getSpritesShinyURL(spritePath) {
+    return gameData.projet_root + "/" + spritePath.replace('front.png', 'back.png')
 }
 
 function changeBaseStat(node, value, statID, cmp) {

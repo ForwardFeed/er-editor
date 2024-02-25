@@ -176,7 +176,6 @@ export function setLocation(mapName: string, field: string, monID: number, key: 
         "hidden": "hidden_mons",
     }
     field = xrateMap[field]
-    console.log(field)
     const IDMap = reverseMapID.indexOf(mapName)
     if (IDMap == -1) return
     
@@ -192,7 +191,6 @@ export function setLocation(mapName: string, field: string, monID: number, key: 
         return
     }
     for (const mapJSON of rawLocations.wild_encounter_groups[3].encounters){
-        console.log(mapJSON.map)
         if (!(Xtox('MAP_', mapJSON.map) == mapName)) continue
         if (!mapJSON[field]) {
             console.error(`field ${field} does not exist on ${mapJSON.map}`)

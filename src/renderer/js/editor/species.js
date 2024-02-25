@@ -32,7 +32,7 @@ function callbackModifyEvo(row, ev_cb){
         if ( monID == -1 || monID == prevMonID) return
         prevMonID = monID //prevents repetition
         console.log('CHANGE POKEMON ! ' + monID) 
-        img.attr('src', getSpritesURL(gameData.species[monID].NAME))
+        img.attr('src', getSpritesURL(gameData.species[monID].sprite))
         gameData.species[currentSpecieID].evolutions[rowIndex].in = monID
     })
     // EDIT KIND OF EVOLUTIONS

@@ -52,7 +52,7 @@ export function locationEdit(ev){
             if ( monID == -1 || monID == prevMonID) return
             prevMonID = monID //prevents repetition
             window.api.send('set-location', gameData.locations.maps[currentLocID].name, rateName, i, "species", gameData.species[monID].NAME)
-            img.attr('src', getSpritesURL(gameData.species[monID].NAME))
+            img.attr('src', getSpritesURL(gameData.species[monID].sprite))
             gameData.locations.maps[currentLocID][rateName][i][2] = monID
         })
         const levelRow = row.find('.location-lvl')

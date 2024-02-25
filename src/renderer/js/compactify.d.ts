@@ -87,6 +87,7 @@ export interface CompactSpecie {
     tutor: number[];
     forms: number[];
     SEnc: CompactedScripted[];
+    sprite: string;
 }
 export interface CompactTrainers {
     name: string;
@@ -128,6 +129,7 @@ export interface CompactGameData {
     natureT: string[];
     scriptedEncoutersHowT: string[];
     mapsT: string[];
+    projet_root: string;
 }
 
 

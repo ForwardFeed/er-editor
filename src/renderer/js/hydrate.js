@@ -217,7 +217,7 @@ function hydrateSpecies() {
         nodeLists.species.push(row)
 
         const image = e('img', 'species-list-sprite')
-        image.src = getSpritesURL(spec.NAME)
+        image.src = getSpritesURL(spec.sprite)
         image.alt = spec.name
         image.loading = "lazy"
         row.appendChild(image)

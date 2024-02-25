@@ -7,6 +7,7 @@ import * as TMHMLearnsets from './tmhm_learnsets'
 import * as TutorMoves from './tutor_learnsets'
 import * as FormsSpecies from './form_species'
 import * as PokePokedex from './pokedex'
+import * as Sprites from './sprites'
 
 import { FileDataOptions, getMulFilesData, autojoinFilePath } from '../utils'
 import { GameData } from '../main'
@@ -22,6 +23,7 @@ export interface Specie {
     TMHMMoves: string[],
     forms: string[],
     dex: PokePokedex.PokePokedex
+    sprite: string, //sprite relative path
 }
 
 function parse(pokeData: string): Specie[]{
@@ -35,6 +37,7 @@ function parse(pokeData: string): Specie[]{
     const TMHMLearnsetsResult = TMHMLearnsets.parse(lines, levelUpLearnsetsResult.fileIterator)
     const TutorMovesResult = TutorMoves.parse(lines, TMHMLearnsetsResult.fileIterator)
     const formsResult = FormsSpecies.parse(lines, TutorMovesResult.fileIterator)
+    const spritesResult = Sprites.parse(lines, formsResult.fileIterator)
 
     const species: Specie[] = []
     baseStatsResult.baseStats.forEach((BaseStats, key)=>{
@@ -48,7 +51,8 @@ function parse(pokeData: string): Specie[]{
             TMHMMoves: TMHMLearnsetsResult.tmhmLearnsets.get(key) || [],
             tutorMoves: TutorMovesResult.tutorMoves.get(key) || [],
             forms: formsResult.forms.get(key) || [],
-            dex: pokePokedexResult.data.get(key) || {} as PokePokedex.PokePokedex
+            dex: pokePokedexResult.data.get(key) || {} as PokePokedex.PokePokedex,
+            sprite: spritesResult.spritesPath.get(key) || ""
         })
     })
     return species
@@ -69,6 +73,8 @@ export function getSpecies(ROOT_PRJ: string, optionsGlobal_h: FileDataOptions, g
                 'src/data/pokemon/tutor_learnsets.h',
                 'src/data/pokemon/form_species_tables.h',
                 'src/data/pokemon/form_species_table_pointers.h',
+                'src/data/graphics/pokemon.h',
+                'src/data/pokemon_graphics/front_pic_table.h',
                 'src/data/graphics/pokemon.h',
                 'src/data/pokemon_graphics/front_pic_table.h',
             ]), optionsGlobal_h)

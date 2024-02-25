@@ -104,6 +104,7 @@ export interface CompactSpecie{
     SEnc:CompactedScripted[], // scripted encounters
     dex: PokePokedex,
     id: number,
+    sprite: string,
 }
 
 export interface CompactTrainers{
@@ -155,6 +156,7 @@ export interface CompactGameData{
     natureT: string[],
     scriptedEncoutersHowT: string[],
     mapsT: string[],
+    projet_root: string,
 }
 function initCompactGameData(): CompactGameData{
     return {
@@ -175,7 +177,8 @@ function initCompactGameData(): CompactGameData{
         items: [],
         natureT: [],
         scriptedEncoutersHowT: [],
-        mapsT: []
+        mapsT: [],
+        projet_root: "",
     }
 }
 
@@ -334,7 +337,8 @@ export function compactify(gameData: GameData): CompactGameData{
             }),
             SEnc: sEnc,
             dex: val.dex,
-            id: gameData.speciesInternalID.get(val.NAME) || -1
+            id: gameData.speciesInternalID.get(val.NAME) || -1,
+            sprite: val.sprite
         })
     })
     compacted.locations = {
