@@ -5,7 +5,7 @@ import { electronAPI } from '@electron-toolkit/preload'
 const api = {
     send: (channel, ...args) => {
       // whitelist channels
-      let validChannels = ["get-game-data", "ask-for-folder", "set-location"];
+      let validChannels = ["get-game-data", "ask-for-folder", "set-location", "add-evolution", "mod-evolution", "rem-evolution"];
       if (validChannels.includes(channel)) {
           ipcRenderer.send(channel, ...args);
       }

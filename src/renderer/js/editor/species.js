@@ -8,10 +8,26 @@ import { JSHAC, e } from "../utils.js"
 
 
 function callbackModifyEvo(row, ev_cb){
-    console.log(row)
     removeInformationWindow(ev_cb)
     const pokeList = getPokeList()
     const rowIndex = row.closest('#species-evos').find('.evo-parent').index(row)
+    // CALL TO SAVE
+    const saveBtn = row.find('.edt-save-evo')
+    if (!saveBtn[0].onclick) {
+        saveBtn[0].onclick = ()=>{
+            saveBtn.hide()
+            const poke = gameData.species[currentSpecieID]
+            const evo = poke.evolutions[rowIndex]
+            window.api.send(
+                'mod-evolution',
+                poke.NAME,
+                rowIndex,
+                gameData.evoKindT[evo.kd],
+                evo.rs,
+                gameData.species[evo.in].NAME
+            )
+        }
+    }
     // EDIT INTO POKEMON
     const block = row.find('.specie-block')
     const img = block.find('img')
@@ -31,7 +47,7 @@ function callbackModifyEvo(row, ev_cb){
         const monID = pokeList.indexOf(pokeInput.val())
         if ( monID == -1 || monID == prevMonID) return
         prevMonID = monID //prevents repetition
-        console.log('CHANGE POKEMON ! ' + monID) 
+        saveBtn.show()
         img.attr('src', getSpritesURL(gameData.species[monID].sprite))
         gameData.species[currentSpecieID].evolutions[rowIndex].in = monID
     })
@@ -45,17 +61,19 @@ function callbackModifyEvo(row, ev_cb){
     kindSelect.value = gameData.evoKindT[gameData.species[currentSpecieID].evolutions[rowIndex].kd]
     kindSelect.onchange = ()=>{
         gameData.species[currentSpecieID].evolutions[rowIndex].kd = gameData.evoKindT.indexOf(kindSelect.value)
+        saveBtn.show()
     }
     // EDIT REASON OF EVOLUTION
     const reasonInput = e('input', )
     reasonInput.value = gameData.species[currentSpecieID].evolutions[rowIndex].rs
     reasonInput.onkeyup = reasonInput.onchange = ()=>{
         gameData.species[currentSpecieID].evolutions[rowIndex].rs = reasonInput.value
+        saveBtn.show()
     }
     row.find('.evo-reason').replaceWith(JSHAC([
         kindSelect,
         reasonInput
-    ]))
+    ]))    
 }
 
 
@@ -67,7 +85,7 @@ export function evosEdit(ev){
         [
             ['+ Add Evo', (ev_cb)=>{
                 removeInformationWindow(ev_cb)
-                console.log(gameData.species[currentSpecieID].evolutions)
+                window.api.send('add-evolution', gameData.species[currentSpecieID].NAME, gameData.evoKindT[0], "0", gameData.species[0].NAME)
                 gameData.species[currentSpecieID].evolutions.push({
                     kd: 0,
                     rs: "0",
@@ -82,8 +100,9 @@ export function evosEdit(ev){
             [isRow? '! Remove Evo': null, (ev_cb)=>{
                 removeInformationWindow(ev_cb)
                 const rowIndex = row.closest('#species-evos').find('.evo-parent').index(row)
-                row.remove()
                 gameData.species[currentSpecieID].evolutions.splice(rowIndex, 1)
+                setEvos(gameData.species[currentSpecieID].evolutions)
+                window.api.send('rem-evolution', gameData.species[currentSpecieID].NAME, rowIndex)
                 
             }]
         ].filter(x => x[0]), "6em", "1em"

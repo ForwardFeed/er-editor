@@ -341,6 +341,9 @@ export function setEvos(evos) {
         reason.className = "evo-reason"
         reason.innerText = setEvoReason(evo.kd, evo.rs)
         node.append(reason)
+        const saveBtn = e('div', 'edt-save-evo', 'click to save')
+        saveBtn.style.display = "none"
+        node.append(saveBtn)
         frag.append(node)
     }
     $('#species-evos').empty().append(frag)
@@ -352,7 +355,7 @@ export function createSpeciesBlock(specieId) {
         redirectSpecie(specieId)
     })
     const specie = gameData.species[specieId]
-    const img = $("<img/>").attr('src', getSpritesURL(specie.NAME))
+    const img = $("<img/>").attr('src', getSpritesURL(specie.sprite))
         .addClass("sprite")
     const name = $("<span/>").html(specie.name)
     return node.append(img).append(name)[0]

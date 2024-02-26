@@ -135,6 +135,7 @@ export function removeEvolution(root_project: string, specie: string, evoIndex: 
             let status = 0
             let currentEvoIndex = 0
             let previousSpecieEvoLine = 0
+            let index2Splice = 0
             const regexSpecie = new RegExp(`\\[${specie}\\]`)
             for (let i = 0; i < lineLen; i++){
                 const line = lines[i]
@@ -147,10 +148,17 @@ export function removeEvolution(root_project: string, specie: string, evoIndex: 
                 }
                 if (status == 1 && line.match('\},')){
                     if (evoIndex == currentEvoIndex) {
-                        lines.splice(i, 1)
-                        console.log('deleted one evolution')
-                        if (line.match('\}\},')){
+                        index2Splice = i
+                        if (line.match('\\[')){
+                            if (line.match('\}\},')) break
+                            status = 2
+                            continue
+                        } if (line.match('\}\},') && previousSpecieEvoLine){
                             lines.splice(previousSpecieEvoLine, 1, lines[previousSpecieEvoLine].replace('},', '}},'))
+                        } else if (line.match('\}\},')){
+                            previousSpecieEvoLine = i
+                            status = 2
+                            continue
                         }
                         break
                     } else {
@@ -159,7 +167,17 @@ export function removeEvolution(root_project: string, specie: string, evoIndex: 
                         continue
                     }
                 }
+                if (status == 2 && line.match('\},')){
+                    const currData = line.match(/\{[^}{]+\}}?,?/)
+                    if (!currData) {
+                        return console.error('something went wrong when trying to substitute previous removed evolution line')
+                    }
+                    const add = `    [${specie}]	= ${evoIndex ?"": "{"}${currData[0]}`
+                    lines.splice(i, 1, add)
+                    break
+                }
             }
+            lines.splice(index2Splice, 1)
             if (status == 0){
                 return console.error('could not find the specie ' + specie)
             }

@@ -8,7 +8,6 @@ export let gameData, compareData;
 
 
 export function setupGameDataRetrieving(){
-
     window.api.receive('game-data', function(data){
         gameData = data
         console.log(gameData)
@@ -21,5 +20,19 @@ export function setupGameDataRetrieving(){
         window.api.send('get-game-data')
     })
     window.api.send('get-game-data')
+    /*fetch(`js/data/gameDataV1.6.1.json`)
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("took gamedata from server")
+            gameData = data
+            hydrate()
+            try{
+                saveToLocalstorage("data"+version, gameData)
+                saveToLocalstorage("dataversion"+version, LATEST_DATA_VERSION)
+            }catch(_e){
+                // bruh
+                console.log('bruh')
+            }
+    })*/
 }
 
