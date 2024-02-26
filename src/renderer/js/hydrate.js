@@ -6,6 +6,7 @@ import { gameData } from "./data_version.js"
 import { restoreSave } from "./panels/team_builder.js"
 import { e, JSHAC } from "./utils.js"
 import { load, endLoad} from "./loading.js"
+import { hydrateEditor } from "./editor/editor.js"
 
 export const nodeLists = {
     species: [],
@@ -49,6 +50,7 @@ export function hydrate(firstLoad=false) {
         [hydrateLocation, "locations  data"],
         [hydrateTrainers, "trainers data"],
         [hydrateItems, "items data"],
+        [hydrateEditor, "editor data"],
         [restoreSave, "save"], // also restore the save of the team builder
     ]
     for (const step of steps){

@@ -3,7 +3,7 @@ import { evosEdit } from "./species.js"
 import { gameData } from "../data_version.js"
 import { e } from "../utils.js"
 
-export let dataList = undefined, pokeList = undefined
+export let dataList = undefined, pokeList = undefined, itemList=undefined, moveList=undefined, SPECIESList=undefined
 
 
 export function getPokeList(){
@@ -21,6 +21,53 @@ export function getPokeList(){
     return pokeList
 }
 
+export function getItemList(){
+    if (!itemList){
+        itemList = []
+        dataList = e("datalist")
+        dataList.id = "item-datalist"
+        gameData.items.map((x)=>{
+            const option =  e("option",null, x.name)
+            itemList.push(x.name)
+            option.value = x.NAME
+            dataList.append(option)
+        })
+        $('body').append(dataList)
+    }
+    return itemList
+}
+    
+export function getMoveList(){
+    if (!moveList){
+        moveList = []
+        dataList = e("datalist")
+        dataList.id = "move-datalist"
+        gameData.moves.map((x)=>{
+            const option =  e("option",null, x.name)
+            moveList.push(x.name)
+            option.value = x.NAME
+            dataList.append(option)
+        })
+        $('body').append(dataList)
+    }
+    return moveList
+}
+
+export function getSPECIESList(){
+    if (!SPECIESList){
+        SPECIESList = []
+        dataList = e("datalist")
+        dataList.id = "SPECIES-datalist"
+        gameData.species.map((x)=>{
+            const option =  e("option",null, x.name)
+            SPECIESList.push(x.name)
+            option.value = x.NAME
+            dataList.append(option)
+        })
+        $('body').append(dataList)
+    }
+    return SPECIESList
+}
 /**
  * @type {Array.<Array<string, ()=>void>>}
  */
@@ -83,4 +130,11 @@ export function setupEditor(){
         if (ev.button != 2) return
         onRightClick(ev)
     }, true)
+}
+
+export function hydrateEditor(){
+    getPokeList()
+    getItemList()
+    getMoveList()
+    getSPECIESList()
 }

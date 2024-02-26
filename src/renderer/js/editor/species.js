@@ -2,14 +2,13 @@ import { cubicRadial } from "../radial.js"
 import { createInformationWindow, removeInformationWindow } from "../window.js"
 import { setEvos, currentSpecieID , getSpritesURL} from "../panels/species_panel.js"
 import { gameData } from "../data_version.js"
-import { getPokeList } from "./editor.js"
+import { pokeList, itemList, moveList } from "./editor.js"
 import { JSHAC, e } from "../utils.js"
 
 
 
 function callbackModifyEvo(row, ev_cb){
     removeInformationWindow(ev_cb)
-    const pokeList = getPokeList()
     const rowIndex = row.closest('#species-evos').find('.evo-parent').index(row)
     // CALL TO SAVE
     const saveBtn = row.find('.edt-save-evo')
@@ -67,6 +66,17 @@ function callbackModifyEvo(row, ev_cb){
     const reasonInput = e('input', )
     reasonInput.value = gameData.species[currentSpecieID].evolutions[rowIndex].rs
     reasonInput.onkeyup = reasonInput.onchange = ()=>{
+        console.log(kindSelect.value)
+        if (kindSelect.value === "EVO_ITEM" || kindSelect.value === "EVO_MEGA_EVOLUTION"){
+            $(reasonInput).attr('list', 'item-datalist')
+        } else if (kindSelect.value === "EVO_MOVE"){
+            $(reasonInput).attr('list', 'move-datalist')
+        } else if (kindSelect.value === "EVO_SPECIFIC_MON_IN_PARTY"){
+            $(reasonInput).attr('list', 'SPECIES-datalist')
+        } 
+        else {
+            $(reasonInput).attr('list', '')
+        }
         gameData.species[currentSpecieID].evolutions[rowIndex].rs = reasonInput.value
         saveBtn.show()
     }
