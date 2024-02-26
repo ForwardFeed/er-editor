@@ -10,7 +10,6 @@ export let gameData, compareData;
 export function setupGameDataRetrieving(){
     window.api.receive('game-data', function(data){
         gameData = data
-        console.log(gameData)
         hydrate()
     })
     window.api.receive('no-game-data', function(){
@@ -19,8 +18,8 @@ export function setupGameDataRetrieving(){
     window.api.receive('ok-folder', function(){
         window.api.send('get-game-data')
     })
-    //window.api.send('get-game-data')
-    fetch(`js/data/gameDataV1.6.1.json`)
+    window.api.send('get-game-data')
+    /*fetch(`js/data/gameDataV1.6.1.json`)
         .then((response) => response.json())
         .then((data) => {
             console.log("took gamedata from server")
@@ -33,6 +32,6 @@ export function setupGameDataRetrieving(){
                 // bruh
                 console.log(gameData)
             }
-    })
+    })*/
 }
 

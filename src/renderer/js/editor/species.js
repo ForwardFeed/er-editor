@@ -66,7 +66,6 @@ function callbackModifyEvo(row, ev_cb){
     const reasonInput = e('input', )
     reasonInput.value = gameData.species[currentSpecieID].evolutions[rowIndex].rs
     reasonInput.onkeyup = reasonInput.onchange = ()=>{
-        console.log(kindSelect.value)
         if (kindSelect.value === "EVO_ITEM" || kindSelect.value === "EVO_MEGA_EVOLUTION"){
             $(reasonInput).attr('list', 'item-datalist')
         } else if (kindSelect.value === "EVO_MOVE"){

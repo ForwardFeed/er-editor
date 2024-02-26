@@ -11,7 +11,6 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {
-    assetsInclude: ['**/renderer/icons/*.png'],
     plugins: [
       inject({
         jQuery: "jquery",
