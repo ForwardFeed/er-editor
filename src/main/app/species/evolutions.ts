@@ -84,6 +84,7 @@ export function addEvolution(root_project: string, specie: string, kind: string,
             const evoCData = `{${kind}, ${reason}, ${into}}},`
             let status = 0
             let linesEndArray = 0
+            let space_pretify = 0
             const regexSpecie = new RegExp(`\\[${specie}\\]`)
             const lineLen = lines.length
             for (let i = 0; i < lineLen; i++){
@@ -91,11 +92,13 @@ export function addEvolution(root_project: string, specie: string, kind: string,
                 if (status == 0 && line.match(regexSpecie)){
                     console.log('found previous evolution line')
                     status = 1
-                } else if (status == 1 && line.match(/\}\},/)){
+                    space_pretify = line.indexOf("=")
+                }
+                if (status == 1 && line.match(/\}\},/)){
                     // remove previous end of array
                     lines.splice(i, 1, line.replace('}},', '},'))
                     // add the next line
-                    const add = `                            ${evoCData}`
+                    const add = `${" ".repeat(space_pretify)}  ${evoCData}`
                     lines.splice(i + 1, 0, add)
                     console.log('added evolution to previous evolution line')
                     break
@@ -104,9 +107,61 @@ export function addEvolution(root_project: string, specie: string, kind: string,
                 }
             }
             if (status == 0){
+                if (linesEndArray == 0) return console.error('the file was empty? something went wrong could not add evolution')
                 console.log('did not found previous evolution line, adding a new evolution line')
                 const add = `    [${specie}]	= {${evoCData}`
                 lines.splice(linesEndArray, 0, add)
+            }
+            writeRawFile(filepath, lines.join('\n'))
+                .then(()=>{
+                    console.log('success adding evolution')
+                })
+                .catch((err)=>{
+                    console.error(`couldn't write evolutions, reason: ${err}`)
+                })
+        })
+        .catch((err)=>{
+            console.log(err)
+        })
+}
+
+
+export function removeEvolution(root_project: string, specie: string, evoIndex: number){
+    const filepath = path.join(root_project, "/src/data/pokemon/evolution.h")
+    getRawFile(filepath)
+        .then((rawData)=>{
+            const lines = rawData.split('\n')
+            const lineLen = lines.length
+            let status = 0
+            let currentEvoIndex = 0
+            let previousSpecieEvoLine = 0
+            const regexSpecie = new RegExp(`\\[${specie}\\]`)
+            for (let i = 0; i < lineLen; i++){
+                const line = lines[i]
+                if (status == 1 && line.match('\\[')){
+                    console.log(line, currentEvoIndex)
+                    return console.error(`could not find the evolution of ${specie} with the index ${evoIndex}`)
+                }
+                if (status == 0 && line.match(regexSpecie)){
+                    status = 1
+                }
+                if (status == 1 && line.match('\},')){
+                    if (evoIndex == currentEvoIndex) {
+                        lines.splice(i, 1)
+                        console.log('deleted one evolution')
+                        if (line.match('\}\},')){
+                            lines.splice(previousSpecieEvoLine, 1, lines[previousSpecieEvoLine].replace('},', '}},'))
+                        }
+                        break
+                    } else {
+                        previousSpecieEvoLine = i
+                        currentEvoIndex += 1
+                        continue
+                    }
+                }
+            }
+            if (status == 0){
+                return console.error('could not find the specie ' + specie)
             }
             writeRawFile(filepath, lines.join('\n'))
                 .then(()=>{
