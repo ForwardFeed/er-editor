@@ -175,3 +175,51 @@ export function removeEvolution(root_project: string, specie: string, evoIndex: 
             console.log(err)
         })
 }
+
+
+export function modEvolution(root_project: string, specie: string, evoIndex: number, kind: string, reason: string, into: string){
+    const filepath = path.join(root_project, "/src/data/pokemon/evolution.h")
+    getRawFile(filepath)
+        .then((rawData)=>{
+            const lines = rawData.split('\n')
+            let status = 0
+            let currentEvoIndex = 0
+            const regexSpecie = new RegExp(`\\[${specie}\\]`)
+            const lineLen = lines.length
+            for (let i = 0; i < lineLen; i++){
+                const line = lines[i]
+                if (status == 1 && line.match('\\[')){
+                    return console.error(`could not find the evolution of ${specie} with the index ${evoIndex}`)
+                }
+                if (status == 0 && line.match(regexSpecie)){
+                    console.log('found evolution line')
+                    status = 1
+                }
+                if (status == 1 && line.match('\},')){
+                    if (evoIndex == currentEvoIndex) {
+                        const evoCData = `{${kind}, ${reason}, ${into}}`
+                        const mod =  line.replace(/\{[^}{]+\}/, evoCData)
+                        lines.splice(i, 1, mod)
+                        console.log('modified one evolution')
+                        break
+                    } else {
+                        currentEvoIndex += 1
+                        continue
+                    }
+                }
+            }
+            if (status == 0){
+                return console.error('could not find the specie ' + specie)
+            }
+            writeRawFile(filepath, lines.join('\n'))
+                .then(()=>{
+                    console.log('success modifying evolution')
+                })
+                .catch((err)=>{
+                    console.error(`couldn't write evolutions, reason: ${err}`)
+                })
+        })
+        .catch((err)=>{
+            console.log(err)
+        })
+}
