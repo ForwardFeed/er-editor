@@ -1,6 +1,6 @@
 import { gameData } from '../data_version.js'
 import { teamData } from '../panels/team_builder.js'
-import { editedTrainerPtr, editedTrainerId} from '../panels/trainers_panel.js'
+import { editedTrainerTeam, editedTrainerId} from '../panels/trainers_panel.js'
 /**
  * @returns @type import('../../../main/app/trainers/teams').TrainerPokemon 
  */
@@ -15,15 +15,37 @@ export function convertToTextableTrainerTeam(/** @type import('../../../main/app
         moves: trainerPkm.moves.map(x => gameData.moves[x].NAME)
     } 
 }
+function getTrainerPartyPtr(trainer){
+    if (trainer === "Normal"){
+        return gameData.trainers[editedTrainerId].ptr
+    } else if (trainer === "Elite"){
+        return gameData.trainers[editedTrainerId].ptrInsane
+    } else {
+        return gameData.trainers[editedTrainerId].ptrRem[trainer]
+    }
+}
+
+function setTrainerTeam(trainer, party){
+    if (trainer === "Normal"){
+        return gameData.trainers[editedTrainerId].party = party
+    } else if (trainer === "Elite"){
+        return gameData.trainers[editedTrainerId].insane = party
+    } else {
+        return gameData.trainers[editedTrainerId].rem[trainer] = party
+    }
+}
 
 export function setupEditorBuilder(){
     $('#builder-edt-save').on('click', function(){
-        if (editedTrainerPtr == undefined) return
+        if (editedTrainerTeam == undefined) return
         const toSend = []
+        const toSave = []
         for (const poke of teamData){
             if (!poke.spcName) continue
             toSend.push(convertToTextableTrainerTeam(poke))
+            toSave.push(poke.toData())
         }
-        window.api.send('mod-trainer', editedTrainerPtr, toSend)
+        setTrainerTeam(editedTrainerTeam, toSave)
+        window.api.send('mod-trainer', getTrainerPartyPtr(editedTrainerTeam), toSend)
     })
 }

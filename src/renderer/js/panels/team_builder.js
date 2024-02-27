@@ -79,6 +79,22 @@ class Pokemon {
         })
         return saveObj
     }
+    toData(){
+        const dataKeysPokemon = [
+            "spc",
+            "abi",
+            "ivs",
+            "evs",
+            "item",
+            "nature",
+            "moves",
+        ]
+        const obj = {}
+        dataKeysPokemon.forEach((val) => {
+            obj[val] = this[val]
+        })
+        return obj
+    }
 }
 
 class PokeNodeView {
