@@ -168,15 +168,28 @@ main{
     height: 92%;
     display: flex;
     background-color: var(--background);
+    display: flex;
+    flex-direction: column;
 }
 
 #loading{
     overflow-y: scroll;
     margin: auto;
     width: 60%;
-    height: 60%;
+    height: fit-content;
     background-color: var(--colorA);
 }
+
+#debug{
+    margin: auto;
+    background-color: var(--colorD);
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    width: 60%;
+    overflow: scroll;
+}
+
 .loading-row{
     display: flex;
 }
@@ -321,4 +334,3 @@ input[type="text"] {
         bottom: 0;
     }
 }
-

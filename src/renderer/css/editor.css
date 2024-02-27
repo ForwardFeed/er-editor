@@ -10,3 +10,11 @@
 .specie-block > input{
     flex-grow: 1;
 }
+#builder-edt-save{
+    display: flex;
+    min-height: 3em;
+}
+
+#builder-edt-save > span{
+    margin: auto;
+}

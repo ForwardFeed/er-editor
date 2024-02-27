@@ -4,7 +4,8 @@ import { getGameData } from './app/main'
 import { askForFolder } from './app/configuration'
 import { setLocation } from './app/locations'
 import { addEvolution, removeEvolution, modEvolution } from './app/species/evolutions'
-
+import { modTrainerParty } from './app/trainers/edit'
+import { TrainerPokemon } from './app/trainers/teams'
 
 export function setupApi(window: Electron.BrowserWindow){
     ipcMain.on('get-game-data', () => {
@@ -24,5 +25,8 @@ export function setupApi(window: Electron.BrowserWindow){
     })
     ipcMain.on('mod-evolution', (_event, specie: string, evoIndex: number, kind: string, reason: string, into: string) => {
         modEvolution(configuration.project_root, specie, evoIndex, kind, reason, into)
+    })
+    ipcMain.on('mod-trainer', (_event, ptr: string, party: TrainerPokemon[]) => {
+        modTrainerParty(configuration.project_root, ptr, party)
     })
 }

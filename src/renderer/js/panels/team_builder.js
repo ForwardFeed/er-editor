@@ -5,6 +5,7 @@ import { getSpritesURL, getSpritesShinyURL } from "./species_panel.js";
 import { createInformationWindow } from "../window.js";
 import { cubicRadial } from "../radial.js";
 import { saveToLocalstorage, fetchFromLocalstorage } from "../settings.js";
+import { getDefensiveCoverage, abilitiesToAddedType } from "../weakness.js"
 
 const saveKeysPokemon = [
     "spc",
@@ -40,9 +41,9 @@ class Pokemon {
     }
     getSpritesURL() {
         if (this.isShiny) {
-            return getSpritesShinyURL(this.baseSpc.sprite)
+            return getSpritesShinyURL(this.baseSpc.NAME)
         } else {
-            return getSpritesURL(this.baseSpc.sprite)
+            return getSpritesURL(this.baseSpc.NAME)
         }
 
     }
@@ -60,20 +61,20 @@ class Pokemon {
         this.allMovesName = gameData.species[pokeID].allMoves.map(x => gameData.moves[x].name)
         const first4Moves = [...Array(4).keys()].map(x => this.allMoves[x] || 0)
         this.moves = first4Moves,
-        this.item = -1
+            this.item = -1
         this.nature = 0
         this.ivs = [31, 31, 31, 31, 31, 31]
         this.evs = [0, 0, 0, 0, 0, 0]
     }
-    fromSave(saveObj){
+    fromSave(saveObj) {
         this.init(saveObj.spc)
-        saveKeysPokemon.forEach((val)=>{
+        saveKeysPokemon.forEach((val) => {
             this[val] = saveObj[val]
         })
     }
-    save(){
+    save() {
         const saveObj = {}
-        saveKeysPokemon.forEach((val)=>{
+        saveKeysPokemon.forEach((val) => {
             saveObj[val] = this[val]
         })
         return saveObj
@@ -97,32 +98,37 @@ class PokeNodeView {
     }
 }
 
-const teamView = []
-
+const teamView = [] 
 export const teamData = [...Array(6).keys()].map((_) => {
     return new Pokemon()
 })
 // this can be called only when gamedata is loaded
-export function restoreSave(){
+export function restoreSave() {
     const savedString = fetchFromLocalstorage("team-builder")
     if (!savedString) return
     const saveObj = JSON.parse(savedString)
     setFullTeam(saveObj)
 }
 
-export function setFullTeam(party){
-    for (let i = 0; i < 6; i++){
+
+export function setFullTeam(party) {
+    updateTeamWeaknessesLock = true
+    for (let i = 0; i < 6; i++) {
         const val = party[i]
         if (!val || !val.spc) {
+            updateTeamWeaknessesLock = false
+            updateTeamWeaknesses()
             return deletePokemon($('#builder-data').find('.builder-mon').eq(i), i)
         }
         teamData[i].fromSave(val)
         createPokeView($('#builder-data').find('.builder-mon').eq(i), i)
     }
+    updateTeamWeaknessesLock = false
+    updateTeamWeaknesses()
 }
 
-function save(){
-    const saveObj = teamData.map(x=>x.save())
+function save() {
+    const saveObj = teamData.map(x => x.save())
     saveToLocalstorage("team-builder", saveObj)
 }
 
@@ -144,7 +150,7 @@ export function setupTeamBuilder() {
         })
     })
     $('#builder-data').find('.builder-mon').each(function (index, value) {
-        if (teamData[index].spc){
+        if (teamData[index].spc) {
             createPokeView($(this), index)
         } else {
             addPlaceholder($(this), index)
@@ -157,10 +163,95 @@ export function setupTeamBuilder() {
             const pokeID = ev.dataTransfer.getData("id");
             teamData[index].init(pokeID)
             createPokeView($(this), index)
+            updateTeamWeaknesses()
         }
         teamView.push(new PokeNodeView($(this)))
     })
+    $('#builder-screenshot').on('click', function (ev) {
+        const window = e('div', 'builder-screen-window')
+        window.onclick = function () {
+            window.remove()
+        }
+        $('#builder-data').find('.builder-mon').each(function (index, value) {
+            window.innerHTML += value.innerHTML
+        })
+        window.querySelectorAll('.builder-placeholder').forEach(x => x.remove())
+        ev.stopPropagation()
+        document.body.append(window)
+    })
 }
+
+let updateTeamWeaknessesLock = false
+function updateTeamWeaknesses(){
+    if (updateTeamWeaknessesLock) return
+    const defCoverage = {}
+        gameData.typeT.forEach((val) => {
+            defCoverage[val] = {
+                "0": 0,
+                "0.25": 0,
+                "0.5": 0,
+                "1": 0,
+                "2": 0,
+                "4": 0,
+            }
+        })
+        teamData.forEach((val) => {
+            const specie = gameData.species[val.spc]
+            if (!specie) return
+            const abis = [specie.stats.abis[val.abi], ...specie.stats.inns]
+            const types = [...new Set(specie.stats.types), abilitiesToAddedType(abis)].filter(x => x)
+            const monDef = getDefensiveCoverage(
+                types.map(x => gameData.typeT[x]), abis
+            )
+            Object.keys(monDef).forEach((val) => {
+                const types = monDef[val]
+                for (const type of types) {
+                    defCoverage[type][val] += 1
+                }
+            })
+        })
+        const effectivenessToShow = ["0", "0.25", "0.5", "2", "4"]
+        function weaknessCol(data, hideRow=false) {
+            const type = data[0]
+            const colRow = e('div', 'builder-type-col')
+            const colData = data.map((data, indexData)=>{
+                if (!indexData){
+                    return e('div', `builder-type ${type.toLowerCase()}`, type.substring(0, 6), {
+                        onclick: (ev) => {
+                            ev.stopPropagation()
+                            $(colRow).find('.builder-nb-weakness').toggle()
+                        }
+                    })
+                }
+                if (hideRow){
+                    let toggle = true
+                    return e('div', 'builder-nb-weakness', data, {
+                        onclick: ()=>{
+                            toggle = !toggle
+                            $('#builder-weaknesses').find('.bnw-' + indexData).css('filter', `opacity(${toggle?100:0})`)
+                        }
+                    })
+                } else {
+                    return e('div', 'builder-nb-weakness bnw-' + indexData, data)
+                }
+            })
+            return JSHAC([colRow, colData])
+        }
+        //setup the row of the defensive coverage
+        const typesRow = e('div', 'builder-type-row')
+        gameData.typeT.forEach((type, index) => {
+            if (!(index % 9)) {
+                typesRow.append(
+                    weaknessCol(["Type", ...effectivenessToShow.map(x => x)], true)
+                )
+            }
+            typesRow.append(
+                weaknessCol([type, ...effectivenessToShow.map(x => defCoverage[type][x])])
+            )
+        })
+        $('#builder-weaknesses').empty().append(typesRow)
+}
+
 
 function createPokeView(jNode, viewID) {
     const deleteBtn = e("div", "builder-mon-delete", "Delete")
@@ -202,6 +293,7 @@ function deletePokemon(jNode, viewID) {
     addPlaceholder(jNode, viewID)
     teamData[viewID] = new Pokemon()
     save()
+    updateTeamWeaknesses()
 }
 
 function addPlaceholder(jNode, viewID) {
@@ -216,6 +308,7 @@ function addPlaceholder(jNode, viewID) {
         const pokeID = $('#species-list .sel-active')[0].dataset.id
         teamData[viewID].init(pokeID)
         createPokeView(jNode, viewID)
+        updateTeamWeaknesses()
     }
     jNode.append(placeholder)
 }
@@ -245,6 +338,7 @@ function feedPokemonEdition(jNode, viewID) {
             poke.abiName = gameData.abilities[poke.baseSpc.stats.abis[abiID]].name
             view.abi.text(poke.abiName)
             abilityDiv.innerText = poke.abiName
+            updateTeamWeaknesses()
             save()
         })
         createInformationWindow(overlayNode, ev, "", true)
@@ -252,10 +346,10 @@ function feedPokemonEdition(jNode, viewID) {
     moveDiv.onclick = (ev) => {
         ev.stopPropagation()
         const overlayNode = cubicRadial(
-            poke.moves.map((x, index)=>{
+            poke.moves.map((x, index) => {
                 return [
                     gameData.moves[x].name,
-                    ()=>{
+                    () => {
                         const moveCallback = (moveID) => {
                             poke.moves[index] = poke.allMoves[moveID]
                             const moveName = poke.allMovesName[moveID]
@@ -263,9 +357,9 @@ function feedPokemonEdition(jNode, viewID) {
                             save()
                         }
                         createInformationWindow(
-                                overlayList(moveCallback, poke.allMovesName),
-                                ev, "focus"
-                            )
+                            overlayList(moveCallback, poke.allMovesName),
+                            ev, "focus"
+                        )
                     }
                 ]
             }), "6em", "1em"
@@ -273,18 +367,19 @@ function feedPokemonEdition(jNode, viewID) {
         createInformationWindow(overlayNode, ev, "mid")
     }
     const itemCallback = (itemID) => {
+        console.log(itemID)
         poke.item = itemID
         view.item.text(itemDiv.innerText = gameData.items[itemID].name)
         save()
     }
     const natureCallback = (natureID) => {
         poke.nature = natureID
-        createPokeView(view.node, viewID)
+        createPokeView(view.node, viewID) //because nature has the coloring to reproduce, it's simpler to simply redo
         save()
     }
     const statsCallback = (field, index, value) => {
         poke[field][index] = value
-        createPokeView(view.node, viewID)
+        createPokeView(view.node, viewID) //same reason as nature
         save()
     }
     statsDiv.onclick = itemDiv.onclick = natureDiv.onclick = (ev) => {
@@ -295,15 +390,15 @@ function feedPokemonEdition(jNode, viewID) {
             }],
             ["Nature", (ev) => {
                 createInformationWindow(overlayList(natureCallback,
-                                                    gameData.natureT.map(x => getTextNature(x))),
-                 ev, "focus")
+                    gameData.natureT.map(x => getTextNature(x))),
+                    ev, "focus")
             }],
-            ["IVs", (ev) => { 
+            ["IVs", (ev) => {
                 createInformationWindow(editionStats("ivs", viewID, statsCallback), ev)
             }],
-            ["EVs", (ev) => { 
+            ["EVs", (ev) => {
                 createInformationWindow(editionStats("evs", viewID, statsCallback), ev)
-             }],
+            }],
         ], "6em", "1em")
         createInformationWindow(overlayNode, ev, "mid")
     }
@@ -316,32 +411,32 @@ function overlayEditorAbilities(viewID, callbackOnclick) {
     const abilities = [...new Set(teamData[viewID].baseSpc.stats.abis)] //remove duplicates
         .map((x, index) => {
             const abi = gameData.abilities[x]
-            return e('div', 'builder-overlay-ability', abi.name,{
+            return e('div', 'builder-overlay-ability', abi.name, {
                 onclick: (ev) => {
                     ev.stopPropagation() // not to trigger the window to close
                     callbackOnclick(index)
                     abiDesc.innerText = abi.desc
                 },
-                onmouseover: () =>{
+                onmouseover: () => {
                     abiDesc.innerText = abi.desc
                 },
-                onmouseleave: () =>{
+                onmouseleave: () => {
                     abiDesc.innerText = ""
                 }
             })
         })
     const innatesRow = e('div', 'builder-overlay-innates')
-    const innates = teamData[viewID].baseSpc.stats.inns.map((x, index) =>{
+    const innates = teamData[viewID].baseSpc.stats.inns.map((x, index) => {
         const abi = gameData.abilities[x]
         return e('div', 'builder-overlay-innate', abi.name, {
             onclick: (ev) => {
                 ev.stopPropagation() // not to trigger the window to close
                 abiDesc.innerText = abi.desc
             },
-            onmouseover: () =>{
+            onmouseover: () => {
                 abiDesc.innerText = abi.desc
             },
-            onmouseleave: () =>{
+            onmouseleave: () => {
                 abiDesc.innerText = ""
             }
         })
@@ -349,45 +444,45 @@ function overlayEditorAbilities(viewID, callbackOnclick) {
     return JSHAC([
         core, [
             abilitiesRow,
-                abilities,
+            abilities,
             innatesRow,
-                innates,
+            innates,
             abiDesc
         ]
-        
+
     ])
 }
 
-function overlayList(callback, list) {
+function overlayList(callback, list, datalist) {
     let artificialClickToClose = false // if set to true you can click to close
     const input = e("input", "builder-overlay-list")
-    input.setAttribute('list', "item-datalist")
+    input.setAttribute('list', "list-datalist")
     const dataList = e("datalist")
-    dataList.id = "item-datalist"
-    const options = list.map((x)=>{
-        const option =  e("option",)
+    dataList.id = "list-datalist"
+    const options = list.map((x) => {
+        const option = e("option",)
         option.value = x
         return option
     })
-    input.onclick = function(ev){
+    input.onclick = function (ev) {
         if (!artificialClickToClose) ev.stopPropagation()
     }
-    input.onkeyup = input.onchange = (ev)=>{
+    input.onkeyup = input.onchange = (ev) => {
         const itemID = list.indexOf(input.value)
-        if (itemID != -1){
+        if (itemID != -1) {
             callback(itemID)
-            if (ev.key === "Enter"){
+            if (ev.key === "Enter") {
                 artificialClickToClose = true
                 input.click()
             }
         }
-        
+
     }
-    
+
     return JSHAC([
         input,
         dataList,
-            options
+        options
     ])
 }
 const statsOrder = [
@@ -402,19 +497,19 @@ const statFieldInputControl = {
     "ivs": (value) => {
         value = +value.replace(/[^0-9-]/g, "")
         if (isNaN(value)) return 0
-        return Math.min(Math.max(0,value),31)  
+        return Math.min(Math.max(0, value), 31)
     },
     "evs": (value) => {
         value = +value.replace(/[^0-9-]/g, "");
         if (isNaN(value)) return 0
-        return Math.min(Math.max(0,Math.round(value / 4) * 4),252)        
+        return Math.min(Math.max(0, Math.round(value / 4) * 4), 252)
     }
 }
-function editionStats(statField, viewID, callback){
+function editionStats(statField, viewID, callback) {
     const poke = teamData[viewID]
     const core = e("div", "overlay-stats-edition")
     const rowDiv = e("div", "overlay-stats-row")
-    statsOrder.forEach((value, index)=>{
+    statsOrder.forEach((value, index) => {
         const statColumn = e("div", "overlay-stats-column")
         const statLabel = e("label", "overlay-stats-label", value)
         statLabel.setAttribute('for', `overlay-stats-edit${index}`)
@@ -422,23 +517,23 @@ function editionStats(statField, viewID, callback){
         statStat.id = `overlay-stats-edit${index}`
         statStat.value = poke[statField][index]
         statStat.type = "number"
-        statStat.onclick = statStat.onchange = () =>{
+        statStat.onclick = statStat.onchange = () => {
             statStat.value = statFieldInputControl[statField](statStat.value)
-            callback(statField, index, statStat.value, )
+            callback(statField, index, statStat.value,)
         }
         rowDiv.append(JSHAC([
-            statColumn,[
+            statColumn, [
                 statLabel,
                 statStat
             ]
         ]))
     })
-    rowDiv.onclick = function(ev){
+    rowDiv.onclick = function (ev) {
         ev.stopPropagation()
     }
 
     return JSHAC([
-        core,[
+        core, [
             rowDiv,
         ]
     ])

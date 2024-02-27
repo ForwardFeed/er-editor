@@ -12,7 +12,10 @@ export interface Trainer{
     double: boolean,
     party: TrainersTeam.TrainerPokemon[],
     insane: TrainersTeam.TrainerPokemon[],
-    rematches: RematchTrainer[]
+    rematches: RematchTrainer[],
+    ptr: string,
+    ptrInsane: string,
+    ptrRem: string[],
 }
 
 export interface RematchTrainer{
@@ -26,6 +29,7 @@ function parse(fileData: string): Map<string, Trainer>{
     //const RematchesResult = Rematches.parse(lines, TrainerNamesResult.fileIterator)
     const TrainersTeamResult = TrainersTeam.parse(lines, TrainerNamesResult.fileIterator)
     const trainers: Map<string, Trainer> = new Map()
+    const ptrRems: string[] = []
     TrainerNamesResult.trainers.forEach((value, key)=>{
         trainers.set(value.NAME, {
             name: key,
@@ -36,6 +40,7 @@ function parse(fileData: string): Map<string, Trainer>{
             rematches: value.rematches
                 .filter((x)=> { 
                     if (TrainersTeamResult.trainers.get(x.partyPtr)){
+                        ptrRems.push(x.partyPtr)
                         return TrainersTeamResult.trainers.get(x.partyPtr)?.length || 0 > 0
                     } else {
                         return false
@@ -46,7 +51,10 @@ function parse(fileData: string): Map<string, Trainer>{
                         double: x.double,
                         party: TrainersTeamResult.trainers.get(x.partyPtr) || []
                     }
-                })
+                }),
+            ptr: value.partyPtr,
+            ptrInsane: value.insanePtr,
+            ptrRem: ptrRems,
         })
     })
     return trainers

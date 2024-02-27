@@ -2,13 +2,15 @@ import { getSpritesURL, redirectSpecie, getSpritesShinyURL } from "./species_pan
 import { queryFilter2} from "../filters.js"
 import { gameData } from "../data_version.js"
 import { AisInB, e, JSHAC } from "../utils.js"
-import { setFullTeam } from "./team_builder.js"
+import { setFullTeam} from "./team_builder.js"
 
+export let editedTrainerPtr = undefined, editedTrainerId = undefined
 const trainerParam = {
     elite: false
 }
 
-let currentTrainerID = 0
+export let currentTrainerID = 0
+
 export function feedPanelTrainers(trainerID){
     currentTrainerID = trainerID
     $('#trainers-list').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
@@ -219,10 +221,21 @@ const natureMap = {
 export function getTextNature(nature){
     return `${nature} (${natureMap[nature]})`
 }
-
+function getCurrentTrainerPtr(){
+    const trainer = $('#trainers-infobar').find(".sel-active").text()
+    if (trainer === "Normal"){
+        return gameData.trainers[currentTrainerID].ptr
+    } else if (trainer === "Elite"){
+        return gameData.trainers[currentTrainerID].ptrInsane
+    } else {
+        return gameData.trainers[currentTrainerID].ptrRem[trainer]
+    }
+}
 function getNodeRedirectToEditorPokemon(party){
     const redirectTeamBuilder = ()=>{
         setFullTeam(party)
+        editedTrainerPtr = getCurrentTrainerPtr()
+        editedTrainerId = currentTrainerID
         $('#btn-species').click()
         if ($('#btn-species').find('.big-select').text() === "Species") $('#btn-species').click()
     }

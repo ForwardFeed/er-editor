@@ -3,7 +3,7 @@ import { saveToLocalstorage, fetchFromLocalstorage } from './settings.js';
 /**
  * To select which version of the game data to have
  */
-/**@type {import('./compactify.js').CompactGameData} */
+/**@type {import('../../main/app/compactify').CompactGameData} */
 export let gameData, compareData;
 
 

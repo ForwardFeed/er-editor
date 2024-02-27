@@ -1,6 +1,7 @@
 import { locationEdit } from "./locations.js"
 import { evosEdit } from "./species.js"
 import { gameData } from "../data_version.js"
+import { setupEditorBuilder } from "./trainers.js"
 import { e } from "../utils.js"
 
 export let dataList = undefined, pokeList = undefined, itemList=undefined, moveList=undefined, SPECIESList=undefined
@@ -130,6 +131,7 @@ export function setupEditor(){
         if (ev.button != 2) return
         onRightClick(ev)
     }, true)
+    setupEditorBuilder()
 }
 
 export function hydrateEditor(){

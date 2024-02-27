@@ -1,7 +1,6 @@
 #builder-data{
     overflow: scroll;
 }
-
 .builder-bot{
     background-color:  var(--colorB);
     overflow: scroll;
@@ -11,19 +10,15 @@
 
 .builder-mon{
     position: relative;
-    border-radius: 10px;
-    border-style: dashed;
-    border-width: 2px;
     margin: auto;
     display: flex;
     width: calc(50% - 4px);
-    min-height: 3.5em;
-    height: 10em;
 }
 .builder-placeholder{
     border-radius: 10px;
     border-style: dotted;
     border-width: 2px;
+    width: calc(50% - 4px - 1em);
     margin: auto;
 }
 .builder-placeholder:hover{
@@ -110,6 +105,54 @@
 }
 .builder-editor-statsrow > div{
     margin: auto;
+}
+.builder-tools{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+#builder-screenshot{
+    display: flex;
+    min-height: 3em;
+}
+#builder-screenshot > span{
+    margin: auto;
+}
+.builder-screen-window{
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: var(--background);
+    font-size: 1.8vmax;
+}
+#builder-weaknesses{
+    min-height: 3em;
+}
+.builder-type-row{
+    display: flex;
+    flex-wrap: wrap;
+}
+.builder-type-col{
+    display: flex;
+    flex-direction: column;
+    width: calc(100% / 10);
+}
+.builder-type-col>*{
+    text-align: center;
+}
+.builder-type{
+    padding: 0.2em;
+}
+.builder-type:hover{
+    filter: invert(40%);
+}
+.builder-nb-weakness{
+    border: solid 1px;
+    border-left: 0;
+    border-right: 0;
 }
 .overlay-stats-row{
     display: flex;

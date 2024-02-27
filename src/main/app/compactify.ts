@@ -114,6 +114,9 @@ export interface CompactTrainers{
     insane: CompactTrainerPokemon[],
     rem: CompactTrainerRematch[],
     map: number,
+    ptr: string,
+    ptrInsane: string,
+    ptrRem: string[],
 }
 
 export interface CompactTrainerPokemon{
@@ -416,7 +419,10 @@ export function compactify(gameData: GameData): CompactGameData{
                     party: rem.party.map(compactPoke)
                 }
             }),
-            map: tablize(mapName, compacted.mapsT)
+            map: tablize(mapName, compacted.mapsT),
+            ptr: trainer.ptr,
+            ptrInsane: trainer.ptrInsane,
+            ptrRem: trainer.ptrRem,
         })
     })
     compacted.trainers = compacted.trainers.sort((a, b)=>{
