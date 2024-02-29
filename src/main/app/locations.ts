@@ -3,6 +3,9 @@ import * as Path from 'path'
 import { Xtox } from './parse_utils'
 import { GameData } from './main'
 import { configuration } from './configuration'
+import { CallQueue } from "../call_queue";
+
+export const locationCQ = new CallQueue()
 
 export interface Locations{
     maps: Location[],
@@ -209,7 +212,9 @@ function saveLocation(){
     FS.writeFile(filepath, JSON.stringify(rawLocations, null as unknown as any[] , 2), (err_exist)=>{
         if (err_exist){
             console.error('could not write file', err_exist)
+        } else {
+            console.log('success, saving location')
         }
-        console.log('success, saving location')
+        locationCQ.unlock().poll()
     })
 }

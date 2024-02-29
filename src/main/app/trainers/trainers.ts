@@ -8,13 +8,16 @@ import * as TrainersTeam from './teams'
 
 export interface Trainer{
     name: string,
-    category: string,
+    NAME: string,
+    tclass: string,
     double: boolean,
     party: TrainersTeam.TrainerPokemon[],
     insane: TrainersTeam.TrainerPokemon[],
     rematches: RematchTrainer[],
     ptr: string,
     ptrInsane: string,
+    gender: boolean, // true w*man
+    music: string,
 }
 
 export interface RematchTrainer{
@@ -32,7 +35,8 @@ function parse(fileData: string): Map<string, Trainer>{
     TrainerNamesResult.trainers.forEach((value, key)=>{
         trainers.set(value.NAME, {
             name: key,
-            category: value.category,
+            NAME: value.NAME,
+            tclass: value.tclass,
             double: value.double,
             party: TrainersTeamResult.trainers.get(value.partyPtr) || [],
             insane: TrainersTeamResult.trainers.get(value.insanePtr) || [],
@@ -53,6 +57,8 @@ function parse(fileData: string): Map<string, Trainer>{
                 }),
             ptr: value.partyPtr,
             ptrInsane: value.insanePtr,
+            gender: value.gender, // true w*man
+            music: value.music,
         })
     })
     return trainers

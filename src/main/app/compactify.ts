@@ -109,6 +109,7 @@ export interface CompactSpecie{
 
 export interface CompactTrainers{
     name: string,
+    NAME: string,
     db: boolean,
     party: CompactTrainerPokemon[],
     insane: CompactTrainerPokemon[],
@@ -116,6 +117,9 @@ export interface CompactTrainers{
     map: number,
     ptr: string,
     ptrInsane: string,
+    tclass: number,
+    gender: boolean, // true w*man
+    music: number,
 }
 
 export interface CompactTrainerPokemon{
@@ -160,6 +164,8 @@ export interface CompactGameData{
     scriptedEncoutersHowT: string[],
     mapsT: string[],
     projet_root: string,
+    tclassT: string[],
+    tMusicT: string[],
 }
 function initCompactGameData(): CompactGameData{
     return {
@@ -182,6 +188,8 @@ function initCompactGameData(): CompactGameData{
         scriptedEncoutersHowT: [],
         mapsT: [],
         projet_root: "",
+        tclassT: [],
+        tMusicT: [],
     }
 }
 
@@ -400,7 +408,6 @@ export function compactify(gameData: GameData): CompactGameData{
         }
     }
     gameData.trainers.forEach((trainer, key)=>{
-        let category = Xtox('TRAINER_CLASS_', trainer.category)
         let mapName: string = ""
         if (gameData.trainersScripted.has(key)){
             mapName = gameData.trainersScripted.get(key)?.map || ""
@@ -409,7 +416,8 @@ export function compactify(gameData: GameData): CompactGameData{
             return
         }
         compacted.trainers.push({
-            name: `${category} ${trainer.name}`,
+            name: trainer.name,
+            NAME: key,
             db: trainer.double,
             party: trainer.party.map(compactPoke),
             insane: trainer.insane.map(compactPoke),
@@ -423,6 +431,9 @@ export function compactify(gameData: GameData): CompactGameData{
             map: tablize(mapName, compacted.mapsT),
             ptr: trainer.ptr,
             ptrInsane: trainer.ptrInsane,
+            tclass: tablize(trainer.tclass, compacted.tclassT),
+            music: tablize(trainer.music, compacted.tMusicT),
+            gender: trainer.gender,
         })
     })
     compacted.trainers = compacted.trainers.sort((a, b)=>{

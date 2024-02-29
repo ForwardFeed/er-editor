@@ -538,7 +538,7 @@ const statFieldInputControl = {
     "ivs": (value) => {
         value = +value.replace(/[^0-9-]/g, "")
         if (isNaN(value)) return 0
-        return Math.min(Math.max(0, value), 31)
+        return Math.min(Math.max(0, Math.round(value / 31) * 31), 31)
     },
     "evs": (value) => {
         value = +value.replace(/[^0-9-]/g, "");
@@ -546,11 +546,16 @@ const statFieldInputControl = {
         return Math.min(Math.max(0, Math.round(value / 4) * 4), 252)
     }
 }
+const statFieldInputControlStep = {
+    "ivs": "31",
+    "evs": "4",
+}
 function editionStats(statField, viewID, callback) {
     const poke = teamData[viewID]
     const core = e("div", "overlay-stats-edition")
     const rowDiv = e("div", "overlay-stats-row")
     statsOrder.forEach((value, index) => {
+        if (statField === "ivs" && index != 5) return
         const statColumn = e("div", "overlay-stats-column")
         const statLabel = e("label", "overlay-stats-label", value)
         statLabel.setAttribute('for', `overlay-stats-edit${index}`)
@@ -558,6 +563,7 @@ function editionStats(statField, viewID, callback) {
         statStat.id = `overlay-stats-edit${index}`
         statStat.value = poke[statField][index]
         statStat.type = "number"
+        statStat.setAttribute("step", statFieldInputControlStep[statField])
         statStat.onclick = statStat.onchange = () => {
             statStat.value = statFieldInputControl[statField](statStat.value)
             callback(statField, index, statStat.value,)

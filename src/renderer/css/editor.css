@@ -24,12 +24,30 @@
 }
 
 #trainers-infobar2{
-    height: 2em;
+    height: 1.5em;
 }
-#trainers-infobar2 > div{
+#trainers-infobar0{
+    height: 1em;
+}
+#trainers-infobar2 > div, #trainers-infobar0 > *{
     margin: auto;
 }
-
+#trainers-infobar0 > input, #trainers-infobar0 > select{
+    font-size: 0.65em;
+    text-align: center;
+}
 #trainers-infobar-err{
     color: red;
+}
+
+.trainers-infobar > * {
+    margin-left: 0.5em;
+}
+
+input#trainers-name{
+    width: 16em;
+}
+
+input#trainers-tclass{
+    width: 16em;
 }

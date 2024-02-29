@@ -10,6 +10,7 @@ export let gameData, compareData;
 export function setupGameDataRetrieving(){
     window.api.receive('game-data', function(data){
         gameData = data
+        console.log(gameData)
         hydrate()
     })
     window.api.receive('no-game-data', function(){

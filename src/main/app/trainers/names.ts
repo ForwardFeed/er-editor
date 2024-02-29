@@ -8,24 +8,27 @@ export interface Result{
     trainers: Map<string, BaseTrainer>,
 }
 
-
 export interface BaseTrainer {
     NAME: string,
-    category: string,
+    tclass: string,
     double: boolean,
     partyPtr: string,
     insanePtr: string,
     rematches: BaseTrainer[], // to be filled much later
+    gender: boolean, // true w*man
+    music: string,
 }
 
 function initBaseTrainer(): BaseTrainer{
     return {
         NAME: "",
-        category: "",
+        tclass: "",
         double: false,
         partyPtr: "",
         insanePtr: "",
         rematches: new Array(5), //MAX_REMATCH NUMBER
+        gender: false, // false m*le
+        music: "",
     }
 }
  
@@ -79,20 +82,23 @@ const executionMap: {[key: string]: (line: string, context: Context) => void} = 
                         
                     }
                 } else {
-                    context.trainers.set(context.key, context.current)
+                    context.trainers.set(context.key + " " + trainerNumber, context.current)
                 }
                 context.current = initBaseTrainer()
             }
             context.key = regexGrabStr(line, /TRAINER_\w+/)
         } else if (line.match('trainerClass')){
-            context.current.category = regexGrabStr(line, /TRAINER_CLASS_\w+/)
+            context.current.tclass = regexGrabStr(line, /TRAINER_CLASS_\w+/)
         }else if (line.match('doubleBattle')){
             context.current.double = regexGrabStr(line.replace(/\s/g, ''), /(?<==)\w+/) === "TRUE" ? true : false
         } else if (line.match('partySizeInsane')){ //order is important with partysize
             context.current.insanePtr = regexGrabStr(line, /sParty_\w+/)
         } else if (line.match('partySize')){
             context.current.partyPtr = regexGrabStr(line, /sParty_\w+/)
-        }  else if (line.match('};')){
+        } else if (line.match('encounterMusic_gender')){
+            if (regexGrabStr(line, 'F_TRAINER_FEMALE', "")) context.current.gender = true
+            context.current.music = regexGrabStr(line, /TRAINER_\w+(_MUSIC_)\w+/)
+        } else if (line.match('};')){
             if (context.key){
                 context.trainers.set(context.key, context.current)
             }

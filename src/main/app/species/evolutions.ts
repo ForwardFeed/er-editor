@@ -1,6 +1,9 @@
 import path from "path"
 import { regexGrabStr } from "../parse_utils"
 import { getRawFile, writeRawFile } from "../utils_edit"
+import { CallQueue } from "../../call_queue";
+
+export const evoCQ = new CallQueue()
 
 export interface Result{
     fileIterator: number,
@@ -123,6 +126,9 @@ export function addEvolution(root_project: string, specie: string, kind: string,
         .catch((err)=>{
             console.log(err)
         })
+        .finally(()=>{
+            evoCQ.unlock().poll()
+        })
 }
 
 
@@ -192,6 +198,9 @@ export function removeEvolution(root_project: string, specie: string, evoIndex: 
         .catch((err)=>{
             console.log(err)
         })
+        .finally(()=>{
+            evoCQ.unlock().poll()
+        })
 }
 
 
@@ -239,5 +248,8 @@ export function modEvolution(root_project: string, specie: string, evoIndex: num
         })
         .catch((err)=>{
             console.log(err)
+        })
+        .finally(()=>{
+            evoCQ.unlock().poll()
         })
 }

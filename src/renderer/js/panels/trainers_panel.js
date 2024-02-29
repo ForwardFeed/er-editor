@@ -1,7 +1,7 @@
 import { getSpritesURL, redirectSpecie, getSpritesShinyURL } from "./species_panel.js"
 import { queryFilter2} from "../filters.js"
 import { gameData } from "../data_version.js"
-import { AisInB, e, JSHAC } from "../utils.js"
+import { AisInB, e, JSHAC, capitalizeFirstLetter} from "../utils.js"
 import { setFullTeam} from "./team_builder.js"
 import { setTrainerToReadMode } from "../editor/trainers.js"
 
@@ -16,16 +16,24 @@ export function feedPanelTrainers(trainerID){
     setTrainerToReadMode()
     currentTrainerID = trainerID
     $('#trainers-list').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
-    $('#trainers-list > .btn').eq(trainerID - 1).addClass("sel-active").removeClass("sel-n-active")
+    $('#trainers-list > .btn').eq(trainerID).addClass("sel-active").removeClass("sel-n-active")
 
     const trainer = gameData.trainers[trainerID]
+    console.log(trainer.NAME, trainer.ptr, trainer.name, trainer.tclass)
+    $('#trainers-tclass').text(setTrainerClassName(trainer.tclass))
     $('#trainers-name').text(trainer.name)
-
+    $('#trainers-gender').text(trainer.gender?"Grill":"Boi")
+    $('#trainers-music').text(
+        gameData.tMusicT[trainer.music].replace('TRAINER_ENCOUNTER_', '').toLowerCase().split('_').map(x => capitalizeFirstLetter(x)).join(' '))
     setBaseTrainer(trainer)
     setRematchesBar(trainer.rem)
     setInsane(trainer)
     setPartyPanel(trainer.party)
     
+}
+
+export function setTrainerClassName(tclassID){
+    return gameData.tclassT[tclassID].replace('TRAINER_CLASS_', '').toLowerCase().split('_').map(x => capitalizeFirstLetter(x)).join(' ')
 }
 
 function setDouble(double){
@@ -161,13 +169,24 @@ export function createPokemon(poke){
         const evBuffd = evVal >= 200 ? "buffed" : ""
         const ivVal = poke.ivs[statIndex]
         const ivValNerfed = ivVal == 0 ? "nerfed" : ""
-        pokeStats.append(JSHAC([
-            e('div', 'trainers-stats-col'), [
-                e('div', `trainers-stats-name ${nerfedOrbuffed}`, stat),
-                e('div', `trainers-poke-ivs ${ivValNerfed}`, ivVal),
-                e('div', `trainers-poke-evs ${evBuffd}`, evVal),
-            ]
-        ]))
+        if (statIndex != 5){
+            pokeStats.append(JSHAC([
+                e('div', 'trainers-stats-col'), [
+                    e('div', `trainers-stats-name ${nerfedOrbuffed}`, stat),
+                    e('div', `trainers-poke-ivs`, '--'),
+                    e('div', `trainers-poke-evs ${evBuffd}`, evVal),
+                ]
+            ]))
+        } else {
+            pokeStats.append(JSHAC([
+                e('div', 'trainers-stats-col'), [
+                    e('div', `trainers-stats-name ${nerfedOrbuffed}`, stat),
+                    e('div', `trainers-poke-ivs ${ivValNerfed}`, ivVal),
+                    e('div', `trainers-poke-evs ${evBuffd}`, evVal),
+                ]
+            ]))
+        }
+        
     }
 
     return JSHAC([
@@ -237,7 +256,7 @@ function getNodeRedirectToEditorPokemon(party){
 
 export const queryMapTrainers = {
     "name": (queryData, trainer) => {
-        if (AisInB(queryData, trainer.name.toLowerCase())) return trainer.name
+        if (AisInB(queryData, trainer.searchName.toLowerCase())) return trainer.searchName
         return false
     },
     "map": (queryData, trainer) => {
@@ -268,8 +287,7 @@ export function updateTrainers(searchQuery){
     const matched = queryFilter2(searchQuery, trainers, queryMapTrainers)
     const trainersLen = trainers.length
     for (let i  = 0; i < trainersLen; i++) {
-        if (i == 0 ) continue
-        const node = nodeList.eq(i - 1)
+        const node = nodeList.eq(i)
         if (!matched || matched.indexOf(i) != -1)
         {
                 if (!validID) validID = i

@@ -1,6 +1,9 @@
 import path from "path";
 import { getRawFile, writeRawFile } from "../utils_edit";
 import { TrainerPokemon } from "./teams";
+import { CallQueue } from "../../call_queue";
+
+export const trainerEditCQ = new CallQueue()
 
 function trainerToCData(poke: TrainerPokemon, comma: boolean = false){
     return `    {
@@ -52,4 +55,15 @@ export function modTrainerParty(root_project: string, ptr: string, party: Traine
         .catch((err)=>{
             console.log(err)
         })
+        .finally(()=>{
+            trainerEditCQ.unlock().poll()
+        })
+}
+
+
+export function modTrainer(){
+    setTimeout(function(){
+        console.log('MOD TRAINER AAAH')
+        trainerEditCQ.unlock().poll()
+    }, 1000)
 }

@@ -1,7 +1,7 @@
 import { feedPanelSpecies, getSpritesURL, setupReorderBtn } from "./panels/species_panel.js"
 import { feedPanelMoves } from "./panels/moves_panel.js"
 import { feedPanelLocations } from "./panels/locations_panel.js"
-import { feedPanelTrainers } from "./panels/trainers_panel.js"
+import { feedPanelTrainers, setTrainerClassName} from "./panels/trainers_panel.js"
 import { gameData } from "./data_version.js"
 import { restoreSave } from "./panels/team_builder.js"
 import { e, JSHAC } from "./utils.js"
@@ -361,8 +361,8 @@ function hydrateTrainers() {
     const trainers = gameData.trainers
     //let lastMap = -1
     for (const i in trainers) {
-        if (i == 0) continue
         const trainer = trainers[i]
+        trainer.searchName = `${setTrainerClassName(trainer.tclass)} ${trainer.name}`
         //check if it's a new map to add it as a header
         /*if (lastMap != trainer.map){
             lastMap = trainer.map

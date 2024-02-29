@@ -6,13 +6,36 @@ import { e } from "../utils.js"
 import { setTrainerToEditMode } from "./trainers.js"
 
 export let dataList = undefined, pokeList = undefined, itemList=undefined, moveList=undefined, SPECIESList=undefined, 
-trainerNameList = []
+trainerNameList = [], trainerClassList = [], trainerMusicList = []
 
 
 function setTrainerNameList(){
     gameData.trainers.forEach(function(val){
         trainerNameList.push(val.name)
     })
+}
+function setTrainerMusicList(){
+    dataList = e("datalist")
+    dataList.id = "music-datalist"
+    gameData.tMusicT.forEach(function(val){
+        trainerMusicList.push(val)
+        const option =  e("option")
+        option.value = val
+        dataList.append(option)
+    })
+    $('body').append(dataList)
+}
+
+function setTrainerClassList(){
+    dataList = e("datalist")
+    dataList.id = "tclass-datalist"
+    gameData.tclassT.forEach(function(val){
+        trainerClassList.push(val)
+        const option =  e("option")
+        option.value = val
+        dataList.append(option)
+    })
+    $('body').append(dataList)
 }
 
 export function getPokeList(){
@@ -21,7 +44,7 @@ export function getPokeList(){
         dataList = e("datalist")
         dataList.id = "poke-datalist"
         pokeList.map((x)=>{
-            const option =  e("option",)
+            const option =  e("option")
             option.value = x
             dataList.append(option)
         })
@@ -129,6 +152,7 @@ export function setupEditor(){
     document.body.oncontextmenu = function() {return false;}
     document.addEventListener("mousedown", function(ev){
         if (ev.button != 2) return
+        window.api.send('mod-trainer')
         onRightClick(ev)
     }, true)
     setupEditorBuilder()
@@ -140,4 +164,6 @@ export function hydrateEditor(){
     getMoveList()
     getSPECIESList()
     setTrainerNameList()
+    setTrainerClassList()
+    setTrainerMusicList()
 }
