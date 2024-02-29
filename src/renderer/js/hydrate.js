@@ -7,6 +7,8 @@ import { restoreSave } from "./panels/team_builder.js"
 import { e, JSHAC } from "./utils.js"
 import { load, endLoad} from "./loading.js"
 import { hydrateEditor } from "./editor/editor.js"
+import { addTrainer } from "./editor/trainers.js"
+
 
 export const nodeLists = {
     species: [],
@@ -351,6 +353,11 @@ function hydrateTrainers() {
     // still missing in the data the alternative like for the rivals
     // and it's not ordered (it requires to have an order set manually)
     const frag = document.createDocumentFragment();
+    frag.append(e('div', 'edt-new-btn data-list-row', 'Add Trainer', {
+        onclick: function(){
+            addTrainer()
+        }
+    }))
     const trainers = gameData.trainers
     //let lastMap = -1
     for (const i in trainers) {

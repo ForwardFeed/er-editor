@@ -113,7 +113,7 @@ class PokeNodeView {
         this.evs = this.node.find('.trainers-poke-evs')
     }
 }
-
+/** @type PokeNodeView[] */
 const teamView = [] 
 export const teamData = [...Array(6).keys()].map((_) => {
     return new Pokemon()
@@ -134,7 +134,8 @@ export function setFullTeam(party) {
         if (!val || !val.spc) {
             updateTeamWeaknessesLock = false
             updateTeamWeaknesses()
-            return deletePokemon($('#builder-data').find('.builder-mon').eq(i), i)
+            deletePokemon($('#builder-data').find('.builder-mon').eq(i), i)
+            continue
         }
         teamData[i].fromSave(val)
         createPokeView($('#builder-data').find('.builder-mon').eq(i), i)
@@ -143,9 +144,23 @@ export function setFullTeam(party) {
     updateTeamWeaknesses()
 }
 
+function swapAndRefresh(a, b){
+    const data = []
+    for (let i = 0; i < 6; i++){
+        const poke = teamData[i]
+        if (!poke.spcName) continue
+        data.push(poke.toData())
+    }
+    const swap = structuredClone(data[a])
+    data[a] = structuredClone(data[b])
+    data[b] = swap
+    setFullTeam(data)
+}
+
 function save() {
-    const saveObj = teamData.map(x => x.save())
-    saveToLocalstorage("team-builder", saveObj)
+    /*const saveObj = teamData.map(x => x?x.save():"")
+    saveToLocalstorage("team-builder", saveObj)*/
+    return
 }
 
 export function setupTeamBuilder() {
@@ -176,10 +191,19 @@ export function setupTeamBuilder() {
         }
         $(this)[0].ondrop = (ev) => {
             ev.preventDefault()
-            const pokeID = ev.dataTransfer.getData("id");
-            teamData[index].init(pokeID)
-            createPokeView($(this), index)
-            updateTeamWeaknesses()
+            const pokeID = ev.dataTransfer.getData("id")
+            if (!pokeID === "") {
+                teamData[index].init(pokeID)
+                createPokeView($(this), index)
+                updateTeamWeaknesses()
+                return
+            }
+            const viewID = +ev.dataTransfer.getData("v-id")
+            swapAndRefresh(index, viewID)
+        }
+        $(this)[0].setAttribute('draggable', true);
+        $(this)[0].ondragstart = (ev) => {
+            ev.dataTransfer.setData("v-id", index)
         }
         teamView.push(new PokeNodeView($(this)))
     })
@@ -360,11 +384,13 @@ function feedPokemonEdition(jNode, viewID) {
         createInformationWindow(overlayNode, ev, "", true)
     }
     moveDiv.onclick = (ev) => {
+        console.log(ev)
         ev.stopPropagation()
         const overlayNode = cubicRadial(
-            poke.moves.map((x, index) => {
+            [0,1,2,3].map((_val, index) => {
+                const x = poke.moves[index] || 0
                 return [
-                    gameData.moves[x].name,
+                    gameData.moves[x]?.name || "undefined",
                     () => {
                         const moveCallback = (moveID) => {
                             poke.moves[index] = poke.allMoves[moveID]
@@ -383,7 +409,6 @@ function feedPokemonEdition(jNode, viewID) {
         createInformationWindow(overlayNode, ev, "mid")
     }
     const itemCallback = (itemID) => {
-        console.log(itemID)
         poke.item = itemID
         view.item.text(itemDiv.innerText = gameData.items[itemID].name)
         save()

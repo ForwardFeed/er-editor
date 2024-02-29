@@ -3,9 +3,17 @@ import { evosEdit } from "./species.js"
 import { gameData } from "../data_version.js"
 import { setupEditorBuilder } from "./trainers.js"
 import { e } from "../utils.js"
+import { setTrainerToEditMode } from "./trainers.js"
 
-export let dataList = undefined, pokeList = undefined, itemList=undefined, moveList=undefined, SPECIESList=undefined
+export let dataList = undefined, pokeList = undefined, itemList=undefined, moveList=undefined, SPECIESList=undefined, 
+trainerNameList = []
 
+
+function setTrainerNameList(){
+    gameData.trainers.forEach(function(val){
+        trainerNameList.push(val.name)
+    })
+}
 
 export function getPokeList(){
     if (!pokeList) {
@@ -82,18 +90,10 @@ const targetibleMap = [
     ["#species-evos", (ev)=>{
         evosEdit(ev)
     }],
+    ["#trainers-data", (ev)=>{
+        setTrainerToEditMode(ev)
+    }]
 ]
-/**
- * 
- * @returns {string}
- * @param {HTMLElement} node 
- */
-function nodeToTargetible(node){
-    let targetible = node.tagName.toLowerCase()
-    targetible += "#" + node.id.toLowerCase()
-    targetible += "." + node.className
-    return targetible
-}
 /**
  * 
  * @param {Event} ev 
@@ -139,4 +139,5 @@ export function hydrateEditor(){
     getItemList()
     getMoveList()
     getSPECIESList()
+    setTrainerNameList()
 }

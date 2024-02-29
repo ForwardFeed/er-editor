@@ -18,20 +18,24 @@ export function setupGameDataRetrieving(){
     window.api.receive('ok-folder', function(){
         window.api.send('get-game-data')
     })
-    window.api.send('get-game-data')
-    /*fetch(`js/data/gameDataV1.6.1.json`)
-        .then((response) => response.json())
-        .then((data) => {
-            console.log("took gamedata from server")
-            gameData = data
-            hydrate()
-            try{
-                saveToLocalstorage("data"+version, gameData)
-                saveToLocalstorage("dataversion"+version, LATEST_DATA_VERSION)
-            }catch(_e){
-                // bruh
-                console.log(gameData)
-            }
-    })*/
+    //window.api.send('get-game-data')
+    fetchFromJSONFile()
 }
 
+function fetchFromJSONFile(){
+    fetch(`js/data/gameDataV1.6.1.json`)
+    .then((response) => response.json())
+    .then((data) => {
+        console.log("took gamedata from server")
+        console.warn('THIS MEANT NOT READY FOR PROD')
+        gameData = data
+        hydrate()
+        try{
+            saveToLocalstorage("data"+version, gameData)
+            saveToLocalstorage("dataversion"+version, LATEST_DATA_VERSION)
+        }catch(_e){
+            // bruh
+            console.log(gameData)
+        }
+})
+}

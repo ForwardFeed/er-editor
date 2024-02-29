@@ -3,6 +3,7 @@ import { queryFilter2} from "../filters.js"
 import { gameData } from "../data_version.js"
 import { AisInB, e, JSHAC } from "../utils.js"
 import { setFullTeam} from "./team_builder.js"
+import { setTrainerToReadMode } from "../editor/trainers.js"
 
 export let editedTrainerTeam = undefined, editedTrainerId = undefined
 const trainerParam = {
@@ -12,6 +13,7 @@ const trainerParam = {
 export let currentTrainerID = 0
 
 export function feedPanelTrainers(trainerID){
+    setTrainerToReadMode()
     currentTrainerID = trainerID
     $('#trainers-list').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
     $('#trainers-list > .btn').eq(trainerID - 1).addClass("sel-active").removeClass("sel-n-active")
@@ -27,11 +29,7 @@ export function feedPanelTrainers(trainerID){
 }
 
 function setDouble(double){
-    if (double){
-        $('#trainers-double').show()
-    } else {
-        $('#trainers-double').hide()
-    }
+    $('#trainers-double').text(double?"Double":"Single")
 }
 
 function setBaseTrainer(trainer){
@@ -117,8 +115,8 @@ function setPartyPanel(party){
 export function createPokemon(poke){
     const specie = gameData.species[poke.spc]
     const ability = gameData.abilities[specie.stats.abis[poke.abi]]
-    const moves = poke.moves.map((x)=>{
-        return gameData.moves[x]
+    const moves = [0,1,2,3].map((x)=>{
+        return gameData.moves[poke.moves[x]||0]
     })
     const item = gameData.items[poke.item]?.name
     const nature = gameData.natureT[poke.nature]

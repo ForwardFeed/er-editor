@@ -78,8 +78,10 @@ export function clickOutsideToRemove(node, absorb = false){
  * @param {Object | undefined} events 
  * @returns {HTMLDivElement}
  */
-export function e(tag = "div", classname = "", innerText ="", events = {}){
-    const htmlTag = document.createElement(tag)
+export function e(tag = "div", classname = "", innerText = "", events = {}){
+    tag = tag.split("#")
+    const htmlTag = document.createElement(tag[0])
+    if (tag[1]) htmlTag.id = tag[1]
     if (classname) htmlTag.className = classname
     htmlTag.innerText = innerText
     for (const event in events){
@@ -90,9 +92,10 @@ export function e(tag = "div", classname = "", innerText ="", events = {}){
 /**
  * Javascript HTML Array Concatenation
  * @param {HTMLDivElement | HTMLDivElement[]} htmlArray
+ * @param {HTMLDivElement | null } appendToElement
  * @returns  {DocumentFragment}
  */
-export function JSHAC(htmlArray){
+export function JSHAC(htmlArray, appendToElement=null){
     const frag = document.createDocumentFragment()
     for (let i = 0; i < htmlArray.length; i++){
         const element = htmlArray[i]
@@ -106,7 +109,8 @@ export function JSHAC(htmlArray){
             parent.append(JSHAC(element))
         }
     }
-    return frag
+    if (appendToElement) appendToElement.append(frag)
+    return appendToElement ? appendToElement : frag
 }
 
 

@@ -7,8 +7,8 @@ function trainerToCData(poke: TrainerPokemon, comma: boolean = false){
     .lvl = 0,
     .species = ${poke.specie},
     .heldItem = ${poke.item || "ITEM_NONE"},
-    .ability = ${poke.ability},
-    .ivs = {${poke.ivs.join(', ')}},${poke.ivs[5]?"":"\n    .zeroSpeedIvs = TRUE,"}
+    .ability = ${poke.ability},\
+${poke.ivs[5]?"":"\n    .zeroSpeedIvs = TRUE,"}
     .evs = {${poke.evs.join(', ')}},
     .nature = ${poke.nature},
     .moves = ${poke.moves.join(', ')}

@@ -15,12 +15,12 @@ export interface Trainer{
     rematches: RematchTrainer[],
     ptr: string,
     ptrInsane: string,
-    ptrRem: string[],
 }
 
 export interface RematchTrainer{
     double: boolean,
-    party: TrainersTeam.TrainerPokemon[]
+    party: TrainersTeam.TrainerPokemon[],
+    ptr: string,
 }
 
 function parse(fileData: string): Map<string, Trainer>{
@@ -29,7 +29,6 @@ function parse(fileData: string): Map<string, Trainer>{
     //const RematchesResult = Rematches.parse(lines, TrainerNamesResult.fileIterator)
     const TrainersTeamResult = TrainersTeam.parse(lines, TrainerNamesResult.fileIterator)
     const trainers: Map<string, Trainer> = new Map()
-    const ptrRems: string[] = []
     TrainerNamesResult.trainers.forEach((value, key)=>{
         trainers.set(value.NAME, {
             name: key,
@@ -39,8 +38,7 @@ function parse(fileData: string): Map<string, Trainer>{
             insane: TrainersTeamResult.trainers.get(value.insanePtr) || [],
             rematches: value.rematches
                 .filter((x)=> { 
-                    if (TrainersTeamResult.trainers.get(x.partyPtr)){
-                        ptrRems.push(x.partyPtr)
+                    if (TrainersTeamResult.trainers.has(x.partyPtr)){
                         return TrainersTeamResult.trainers.get(x.partyPtr)?.length || 0 > 0
                     } else {
                         return false
@@ -49,12 +47,12 @@ function parse(fileData: string): Map<string, Trainer>{
                 .map((x)=>{
                     return {
                         double: x.double,
-                        party: TrainersTeamResult.trainers.get(x.partyPtr) || []
+                        party: TrainersTeamResult.trainers.get(x.partyPtr) || [],
+                        ptr: x.partyPtr
                     }
                 }),
             ptr: value.partyPtr,
             ptrInsane: value.insanePtr,
-            ptrRem: ptrRems,
         })
     })
     return trainers

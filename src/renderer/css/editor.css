@@ -1,3 +1,7 @@
+.edt-new-btn{
+    background-color: var(--colorE);
+    box-shadow: inset 0 0 1vmax var(--font-color);
+}
 .edt-location-lvl{
     width: 1.5em;
     margin: auto;
@@ -17,4 +21,15 @@
 
 #builder-edt-save > span{
     margin: auto;
+}
+
+#trainers-infobar2{
+    height: 2em;
+}
+#trainers-infobar2 > div{
+    margin: auto;
+}
+
+#trainers-infobar-err{
+    color: red;
 }

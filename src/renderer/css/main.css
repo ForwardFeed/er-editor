@@ -764,6 +764,8 @@ span{
     display: flex;
     flex-wrap: wrap;
     flex-grow: 1;
+    height: 100%;
+    width: 100%;
     border-left: 0;
     border-right: 0;
 }
