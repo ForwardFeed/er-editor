@@ -24,7 +24,9 @@ export function feedPanelTrainers(trainerID){
     $('#trainers-name').text(trainer.name)
     $('#trainers-gender').text(trainer.gender?"Grill":"Boi")
     $('#trainers-music').text(
-        gameData.tMusicT[trainer.music].replace('TRAINER_ENCOUNTER_', '').toLowerCase().split('_').map(x => capitalizeFirstLetter(x)).join(' '))
+        gameData.tmusicT[trainer.music].replace('TRAINER_ENCOUNTER_', '').toLowerCase().split('_').map(x => capitalizeFirstLetter(x)).join(' '))
+    $('#trainers-pic').text(
+        gameData.tpicT[trainer.pic].replace('TRAINER_PIC_', '').toLowerCase().split('_').map(x => capitalizeFirstLetter(x)).join(' '))
     setBaseTrainer(trainer)
     setRematchesBar(trainer.rem)
     setInsane(trainer)

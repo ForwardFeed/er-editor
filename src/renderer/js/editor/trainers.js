@@ -3,7 +3,10 @@ import { teamData } from '../panels/team_builder.js'
 import { editedTrainerTeam, editedTrainerId} from '../panels/trainers_panel.js'
 import { JSHAC, e} from '../utils.js'
 import { currentTrainerID, feedPanelTrainers } from '../panels/trainers_panel.js'
-import { trainerNameList, trainerClassList, trainerMusicList} from './editor.js'
+import { trainerNameList, trainerClassList, trainerMusicList, teamPtrList, trainerPicList} from './editor.js'
+import { bridge } from '../context_bridge.js'
+import { s } from './utils.js'
+import { hydrateTrainers } from '../hydrate.js'
 /**
  * @returns @type import('../../../main/app/trainers/teams').TrainerPokemon 
  */
@@ -18,6 +21,7 @@ export function convertToTextableTrainerTeam(/** @type import('../../../main/app
         moves: trainerPkm.moves.map(x => gameData.moves[x].NAME)
     } 
 }
+
 function getTrainerPartyPtr(trainer){
     if (trainer === "Normal"){
         return gameData.trainers[editedTrainerId].ptr
@@ -37,6 +41,20 @@ function setTrainerTeam(trainer, party){
         return gameData.trainers[editedTrainerId].rem[trainer] = party
     }
 }
+/**
+ * 
+ * @param {string} name 
+ * @returns {string}
+ */
+function createPtr(name){
+    let ptr = `sParty_${name.replace(/ /g,'')}`
+    return (teamPtrList.indexOf(ptr) != -1) ? createPtr(name + "_") : ptr
+}
+
+function createTrainerName(name){
+    return (trainerNameList.indexOf(name) != -1) ? createTrainerName(name + "1") : name
+}
+
 function refreshEditTrainer(){
     feedPanelTrainers(currentTrainerID)
     gameData.trainers[currentTrainerID].hasChanged = true
@@ -54,7 +72,7 @@ export function setupEditorBuilder(){
             toSave.push(poke.toData())
         }
         setTrainerTeam(editedTrainerTeam, toSave)
-        window.api.send('mod-trainer-party', getTrainerPartyPtr(editedTrainerTeam), toSend)
+        bridge.send('mod-trainer-party', getTrainerPartyPtr(editedTrainerTeam), toSend)
     })
     
     $('#trainers-rm-insane').on('click', function(){
@@ -62,53 +80,70 @@ export function setupEditorBuilder(){
         refreshEditTrainer()
     })
     $('#trainers-add-insane').on('click', function(){
-        gameData.trainers[currentTrainerID].insane = [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31]}]
+        const baseParty = [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31]}]
+        console.log()
+        bridge.send('mod-trainer', 'add-insane', baseParty)
+        gameData.trainers[currentTrainerID].insane = baseParty
         refreshEditTrainer()
     })
     $('#trainers-save').on('click', saveTrainerData).hide()
     $('#trainers-rm-rem').on('click', function(){
-        const activeRem = $('#trainers-infobar').find(".sel-active").text()
+        const activeRem = +($('#trainers-infobar').find(".sel-active").text())
         if (isNaN(+activeRem)) return
+        bridge.send('mod-trainer', 'rm-rem', activeRem - 1)
         gameData.trainers[currentTrainerID].rem.splice(+activeRem - 1, 1)
         refreshEditTrainer()
     })
     $('#trainers-add-rem').on('click', function(){
-        console.log(gameData.trainers[currentTrainerID])
-        gameData.trainers[currentTrainerID].rem.push({
-            party: [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31]}],
+        const trainer = gameData.trainers[currentTrainerID]
+        const remPtr = createPtr(trainer.name + (trainer.rem.length + 2))
+        console.log(remPtr, trainer.rem[trainer.rem.length - 1]?.ptr || trainer.ptr)
+        const baseParty = [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31]}]
+        bridge.send('mod-trainer', 'add-rem', trainer.rem.length, baseParty)
+        trainer.rem.push({
+            party: baseParty,
             double: false,
+            ptr:remPtr,
         })
         refreshEditTrainer()
+    })
+    $('#trainers-remove').on('click', function(){
+        if (confirm('This will delete the trainer right away without turning back, proceed?')){
+            //need to remove all sub teams linked to
+            //but this will be done in the back
+            bridge.send('mod-trainer', 'remove-trainer', gameData.trainers[currentTrainerID])
+        } else {
+            console.log('aborted')
+        }
     })
 }
 
 
 
 export function addTrainer(){
-    console.log('adding trainer aa')
-    gameData.trainers.push({
-        NAME: "TRAINER_JAMES",
-        name: "James"
-    })
-}
-/**
- * @typedef
- * @param {JQuery} target 
- * @param {JQuery} newTarget 
- * @param {('text2val'|'val2text')} method 
- * @returns 
- */
-function s(target, newTarget, method){
-    target.replaceWith(newTarget)
-    if (method === "text2val"){
-        newTarget.val(target.text())
+    const name = createTrainerName("New Trainer")
+    const defaultBaseTrainer = {
+        NAME: "TRAINER_" + name.toUpperCase().replace(/ /g,' '),
+        name: name,
+        ptr: createPtr(name),
+        db: false,
+        party: [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31]}],
+        rem: [],
+        map: 0,
+        tclass: 3,
+        gender: false,
+        music: 3,
+        pic: 3,
     }
-    if (method === "val2text"){
-        newTarget.text(target.val())
-    }
-    return newTarget
+    trainerNameList.push(name)
+    bridge.send('add-trainer', defaultBaseTrainer)
+    gameData.trainers.push(defaultBaseTrainer)
+    hydrateTrainers()
+    $('#trainers-list div:last').click()[0].scrollIntoView({ behavior: "smooth" })
 }
+
 export function setTrainerToEditMode(){
+    // just a check if we're already in edit mode  
     if ($('input#trainers-tclass').length)  return
     const trainer = gameData.trainers[currentTrainerID]
     if (trainer.insane.length) {
@@ -192,7 +227,16 @@ export function setTrainerToEditMode(){
     music[0].onkeyup = function(){
         const musicVal = music.val()
         if (trainerMusicList.indexOf(musicVal) != -1 ) {
-            trainer.music = gameData.tMusicT.indexOf(musicVal)
+            trainer.music = gameData.tmusicT.indexOf(musicVal)
+            refreshEditTrainer()
+        }
+    }
+    const pic = s($('#trainers-pic'), $(e('input#trainers-pic')), "text2val")
+    pic.attr('list', "tpic-datalist")
+    pic[0].onkeyup = function(){
+        const picVal = pic.val()
+        if (trainerPicList.indexOf(picVal) != -1 ) {
+            trainer.pic = gameData.tpicT.indexOf(picVal)
             refreshEditTrainer()
         }
     }
@@ -205,6 +249,7 @@ export function setTrainerToReadMode(){
     s($('#trainers-name'), $(e('div#trainers-name')), "val2text")
     s($('#trainers-tclass'), $(e('div#trainers-tclass')), "val2text")
     s($('#trainers-music'), $(e('div#trainers-music')), "val2text")
+    s($('#trainers-pic'), $(e('div#trainers-pic')), "val2text")
     $('#trainers-infobar2').hide()
 
 }

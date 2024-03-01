@@ -4,7 +4,7 @@ import { setEvos, currentSpecieID , getSpritesURL} from "../panels/species_panel
 import { gameData } from "../data_version.js"
 import { pokeList, itemList, moveList } from "./editor.js"
 import { JSHAC, e } from "../utils.js"
-
+import { bridge } from '../context_bridge.js'
 
 
 function callbackModifyEvo(row, ev_cb){
@@ -17,7 +17,7 @@ function callbackModifyEvo(row, ev_cb){
             saveBtn.hide()
             const poke = gameData.species[currentSpecieID]
             const evo = poke.evolutions[rowIndex]
-            window.api.send(
+            bridge.send(
                 'mod-evolution',
                 poke.NAME,
                 rowIndex,
@@ -94,7 +94,7 @@ export function evosEdit(ev){
         [
             ['+ Add Evo', (ev_cb)=>{
                 removeInformationWindow(ev_cb)
-                window.api.send('add-evolution', gameData.species[currentSpecieID].NAME, gameData.evoKindT[0], "0", gameData.species[0].NAME)
+                bridge.send('add-evolution', gameData.species[currentSpecieID].NAME, gameData.evoKindT[0], "0", gameData.species[0].NAME)
                 gameData.species[currentSpecieID].evolutions.push({
                     kd: 0,
                     rs: "0",
@@ -111,7 +111,7 @@ export function evosEdit(ev){
                 const rowIndex = row.closest('#species-evos').find('.evo-parent').index(row)
                 gameData.species[currentSpecieID].evolutions.splice(rowIndex, 1)
                 setEvos(gameData.species[currentSpecieID].evolutions)
-                window.api.send('rem-evolution', gameData.species[currentSpecieID].NAME, rowIndex)
+                bridge.send('rem-evolution', gameData.species[currentSpecieID].NAME, rowIndex)
                 
             }]
         ].filter(x => x[0]), "6em", "1em"

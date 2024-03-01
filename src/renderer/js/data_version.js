@@ -1,5 +1,6 @@
 import { hydrate } from './hydrate.js'
 import { saveToLocalstorage, fetchFromLocalstorage } from './settings.js';
+import { bridge } from './context_bridge.js'
 /**
  * To select which version of the game data to have
  */
@@ -8,18 +9,18 @@ export let gameData, compareData;
 
 
 export function setupGameDataRetrieving(){
-    window.api.receive('game-data', function(data){
+    bridge.receive('game-data', function(data){
         gameData = data
         console.log(gameData)
         hydrate()
     })
-    window.api.receive('no-game-data', function(){
-        window.api.send('ask-for-folder')
+    bridge.receive('no-game-data', function(){
+        bridge.send('ask-for-folder')
     })
-    window.api.receive('ok-folder', function(){
-        window.api.send('get-game-data')
+    bridge.receive('ok-folder', function(){
+        bridge.send('get-game-data')
     })
-    //window.api.send('get-game-data')
+    //bridge.send('get-game-data')
     fetchFromJSONFile()
 }
 

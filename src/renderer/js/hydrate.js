@@ -349,7 +349,7 @@ function addLocationRow(rate) {
     return nodeCore
 }
 
-function hydrateTrainers() {
+export function hydrateTrainers() {
     // still missing in the data the alternative like for the rivals
     // and it's not ordered (it requires to have an order set manually)
     const frag = document.createDocumentFragment();
@@ -377,7 +377,7 @@ function hydrateTrainers() {
         const core = document.createElement('div')
         core.className = "btn data-list-row sel-n-active"
         const name = document.createElement('span')
-        name.innerText = trainer.name || "unknown"
+        name.innerText = trainer.searchName || "unknown"
         core.append(name)
         core.dataset.id = i
         $(core).on('click', function () {

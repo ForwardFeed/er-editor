@@ -17,6 +17,7 @@ export interface BaseTrainer {
     rematches: BaseTrainer[], // to be filled much later
     gender: boolean, // true w*man
     music: string,
+    pic: string,
 }
 
 function initBaseTrainer(): BaseTrainer{
@@ -29,6 +30,7 @@ function initBaseTrainer(): BaseTrainer{
         rematches: new Array(5), //MAX_REMATCH NUMBER
         gender: false, // false m*le
         music: "",
+        pic: "",
     }
 }
  
@@ -95,6 +97,8 @@ const executionMap: {[key: string]: (line: string, context: Context) => void} = 
             context.current.insanePtr = regexGrabStr(line, /sParty_\w+/)
         } else if (line.match('partySize')){
             context.current.partyPtr = regexGrabStr(line, /sParty_\w+/)
+        } else if (line.match('trainerPic')){
+            context.current.pic = regexGrabStr(line, /TRAINER_PIC_\w+/)
         } else if (line.match('encounterMusic_gender')){
             if (regexGrabStr(line, 'F_TRAINER_FEMALE', "")) context.current.gender = true
             context.current.music = regexGrabStr(line, /TRAINER_\w+(_MUSIC_)\w+/)

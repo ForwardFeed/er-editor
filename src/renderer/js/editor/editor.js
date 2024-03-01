@@ -4,10 +4,30 @@ import { gameData } from "../data_version.js"
 import { setupEditorBuilder } from "./trainers.js"
 import { e } from "../utils.js"
 import { setTrainerToEditMode } from "./trainers.js"
+import { bridge } from '../context_bridge.js'
 
-export let dataList = undefined, pokeList = undefined, itemList=undefined, moveList=undefined, SPECIESList=undefined, 
-trainerNameList = [], trainerClassList = [], trainerMusicList = []
+export let dataList = [], pokeList = [], itemList = [], moveList = [], SPECIESList = [], 
+trainerNameList = [], trainerClassList = [], trainerMusicList = [], teamPtrList = [], trainerPicList = []
 
+
+function setTrainerPicList(){
+    dataList = e("datalist")
+    dataList.id = "tpic-datalist"
+    gameData.tpicT.forEach(function(val){
+        trainerPicList.push(val)
+        const option =  e("option")
+        option.value = val
+        dataList.append(option)
+    })
+    $('body').append(dataList)
+}
+
+function setTeamPtrList(){
+    gameData.trainers.forEach(function(val){
+        teamPtrList.push(val.ptr, val.ptrInsane, ...val.rem.map(x => x.ptr))
+    })
+    teamPtrList = teamPtrList.filter(x => x)
+}
 
 function setTrainerNameList(){
     gameData.trainers.forEach(function(val){
@@ -17,7 +37,7 @@ function setTrainerNameList(){
 function setTrainerMusicList(){
     dataList = e("datalist")
     dataList.id = "music-datalist"
-    gameData.tMusicT.forEach(function(val){
+    gameData.tmusicT.forEach(function(val){
         trainerMusicList.push(val)
         const option =  e("option")
         option.value = val
@@ -38,7 +58,7 @@ function setTrainerClassList(){
     $('body').append(dataList)
 }
 
-export function getPokeList(){
+ function getPokeList(){
     if (!pokeList) {
         pokeList = gameData.species.map(x => x.name)
         dataList = e("datalist")
@@ -53,7 +73,7 @@ export function getPokeList(){
     return pokeList
 }
 
-export function getItemList(){
+function getItemList(){
     if (!itemList){
         itemList = []
         dataList = e("datalist")
@@ -152,7 +172,7 @@ export function setupEditor(){
     document.body.oncontextmenu = function() {return false;}
     document.addEventListener("mousedown", function(ev){
         if (ev.button != 2) return
-        window.api.send('mod-trainer')
+        bridge.send('mod-trainer')
         onRightClick(ev)
     }, true)
     setupEditorBuilder()
@@ -166,4 +186,6 @@ export function hydrateEditor(){
     setTrainerNameList()
     setTrainerClassList()
     setTrainerMusicList()
+    setTeamPtrList()
+    setTrainerPicList()
 }

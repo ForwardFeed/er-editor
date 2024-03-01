@@ -18,6 +18,7 @@ export interface Trainer{
     ptrInsane: string,
     gender: boolean, // true w*man
     music: string,
+    pic: string,
 }
 
 export interface RematchTrainer{
@@ -59,6 +60,7 @@ function parse(fileData: string): Map<string, Trainer>{
             ptrInsane: value.insanePtr,
             gender: value.gender, // true w*man
             music: value.music,
+            pic: value.pic
         })
     })
     return trainers

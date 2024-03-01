@@ -1,8 +1,13 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
+export interface CustomAPI{
+  send: (channel: string, ...args: any[]) => void
+  receive: (channel: string, ...args: any[]) => void
+}
+
 // Custom APIs for renderer
-const api = {
+const api: CustomAPI = {
     send: (channel, ...args) => {
       // whitelist channels
       let validChannels = ["get-game-data", "ask-for-folder", "set-location", "add-evolution", "mod-evolution", "rem-evolution",

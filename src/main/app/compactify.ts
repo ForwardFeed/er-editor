@@ -120,6 +120,7 @@ export interface CompactTrainers{
     tclass: number,
     gender: boolean, // true w*man
     music: number,
+    pic: number,
 }
 
 export interface CompactTrainerPokemon{
@@ -165,7 +166,8 @@ export interface CompactGameData{
     mapsT: string[],
     projet_root: string,
     tclassT: string[],
-    tMusicT: string[],
+    tmusicT: string[],
+    tpicT: string[],
 }
 function initCompactGameData(): CompactGameData{
     return {
@@ -189,7 +191,8 @@ function initCompactGameData(): CompactGameData{
         mapsT: [],
         projet_root: "",
         tclassT: [],
-        tMusicT: [],
+        tmusicT: [],
+        tpicT: [],
     }
 }
 
@@ -432,8 +435,9 @@ export function compactify(gameData: GameData): CompactGameData{
             ptr: trainer.ptr,
             ptrInsane: trainer.ptrInsane,
             tclass: tablize(trainer.tclass, compacted.tclassT),
-            music: tablize(trainer.music, compacted.tMusicT),
+            music: tablize(trainer.music, compacted.tmusicT),
             gender: trainer.gender,
+            pic: tablize(trainer.pic, compacted.tpicT)
         })
     })
     compacted.trainers = compacted.trainers.sort((a, b)=>{

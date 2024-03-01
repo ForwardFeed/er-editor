@@ -2,7 +2,8 @@ import { gameData } from "../data_version.js"
 import { JSHAC, e } from "../utils.js"
 import { currentLocID } from "../panels/locations_panel.js"
 import { getSpritesURL } from "../panels/species_panel.js"
-import { getPokeList } from "./editor.js"
+import { pokeList } from "./editor.js"
+import { bridge } from '../context_bridge.js'
 
 /**
  * 
@@ -17,9 +18,6 @@ export function locationEdit(ev){
         return false
     }
     if (panel.find('input').length) return // already in edit mode
-    
-    const pokeList = getPokeList()
-
 
     const xrateMap = {
         "Land": "land",
@@ -51,7 +49,7 @@ export function locationEdit(ev){
             const monID = pokeList.indexOf(input.val())
             if ( monID == -1 || monID == prevMonID) return
             prevMonID = monID //prevents repetition
-            window.api.send('set-location', gameData.locations.maps[currentLocID].name, rateName, i, "species", gameData.species[monID].NAME)
+            bridge.send('set-location', gameData.locations.maps[currentLocID].name, rateName, i, "species", gameData.species[monID].NAME)
             img.attr('src', getSpritesURL(gameData.species[monID].sprite))
             gameData.locations.maps[currentLocID][rateName][i][2] = monID
         })
@@ -60,12 +58,12 @@ export function locationEdit(ev){
         levelMin.value = gameData.locations.maps[currentLocID][rateName][i][0]
         $(levelMin).on('keyup change', ()=>{
             gameData.locations.maps[currentLocID][rateName][i][0] = levelMin.value
-            window.api.send('set-location', gameData.locations.maps[currentLocID].name, rateName, i, "min_level", levelMin.value)
+            bridge.send('set-location', gameData.locations.maps[currentLocID].name, rateName, i, "min_level", levelMin.value)
         })
         const levelMax = e('input', 'edt-location-lvl')
         levelMax.value = gameData.locations.maps[currentLocID][rateName][i][1]
         $(levelMax).on('keyup change', ()=>{
-            window.api.send('set-location', gameData.locations.maps[currentLocID].name, rateName, i, "max_level", levelMax.value)
+            bridge.send('set-location', gameData.locations.maps[currentLocID].name, rateName, i, "max_level", levelMax.value)
         })
         levelRow.empty().append(levelMin, levelMax).attr('class', 'location-lvl edt-level-row')
     }

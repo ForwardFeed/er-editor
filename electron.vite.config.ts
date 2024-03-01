@@ -20,8 +20,8 @@ export default defineConfig({
       viteStaticCopy({
         targets: [
           {
-            src: path.resolve(__dirname, './src/renderer/icons') + '/[!.]*', // 1️⃣
-            dest: './icons/', // 2️⃣
+            src: path.resolve(__dirname, './src/renderer/icons') + '/[!.]*', //
+            dest: './icons/', //
           }
         ]
       })
