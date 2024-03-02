@@ -29,6 +29,7 @@ export interface GameData {
     battleItems: Map<string, BattleItems.BattleItem>
     speciesInternalID: Map<string, number>,
     movesInternalID: Map<string, number>,
+    trainerInternalID: Map<string, number>,
 }
 
 const gameData: GameData = {
@@ -43,6 +44,7 @@ const gameData: GameData = {
     battleItems: new Map(),
     speciesInternalID: new Map(),
     movesInternalID: new Map(),
+    trainerInternalID: new Map(),
 }
 
 export function getGameData(window: Electron.BrowserWindow){
@@ -81,6 +83,7 @@ function getGameDataData(webContents: Electron.WebContents){
         promiseArray.push(BattleItems.getItems(ROOT_PRJ, gameData))
         promiseArray.push(InternalID.getSpeciesInternalID(ROOT_PRJ, gameData))
         promiseArray.push(InternalID.getMovesInternalID(ROOT_PRJ, gameData))
+        promiseArray.push(InternalID.getTrainersInternalID(ROOT_PRJ, gameData))
         //promiseArray.push()
         Promise.allSettled(promiseArray)
             .then((values)=>{

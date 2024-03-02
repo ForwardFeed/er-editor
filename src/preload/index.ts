@@ -11,8 +11,9 @@ const api: CustomAPI = {
     send: (channel, ...args) => {
       // whitelist channels
       let validChannels = ["get-game-data", "ask-for-folder", "set-location", "add-evolution", "mod-evolution", "rem-evolution",
-    "mod-trainer-party", "mod-trainer"];
+    "mod-trainer-party", 'remove-trainer', 'add-trainer', "mod-trainer", 'rm-insane', 'add-insane', 'rm-rem', 'add-rem'];
       if (validChannels.includes(channel)) {
+        console.log(...args)
           ipcRenderer.send(channel, ...args);
       }
     },

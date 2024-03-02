@@ -55,9 +55,9 @@ function createTrainerName(name){
     return (trainerNameList.indexOf(name) != -1) ? createTrainerName(name + "1") : name
 }
 
-function refreshEditTrainer(){
+function refreshEditTrainer(hasChanged=true){
     feedPanelTrainers(currentTrainerID)
-    gameData.trainers[currentTrainerID].hasChanged = true
+    if (hasChanged) gameData.trainers[currentTrainerID].hasChanged = true
     setTrainerToEditMode()
 }
 
@@ -74,60 +74,89 @@ export function setupEditorBuilder(){
         setTrainerTeam(editedTrainerTeam, toSave)
         bridge.send('mod-trainer-party', getTrainerPartyPtr(editedTrainerTeam), toSend)
     })
-    
+    $('#trainers-save').on('click', saveTrainerData).hide()
     $('#trainers-rm-insane').on('click', function(){
-        gameData.trainers[currentTrainerID].insane = []
-        refreshEditTrainer()
+        const trainer = gameData.trainers[currentTrainerID]
+        bridge.send('rm-insane', trainer.ptrInsane)
+        trainer.insane = []
+        trainer.ptrInsane = ""
+        refreshEditTrainer(false)
     })
     $('#trainers-add-insane').on('click', function(){
         const baseParty = [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31]}]
-        console.log()
-        bridge.send('mod-trainer', 'add-insane', baseParty)
-        gameData.trainers[currentTrainerID].insane = baseParty
-        refreshEditTrainer()
+        const trainer = gameData.trainers[currentTrainerID]
+        trainer.insane = baseParty
+        trainer.ptrInsane = createPtr(trainer.ptr + "Insane")
+        teamPtrList.push(trainer.ptrInsane)
+        bridge.send('add-insane',trainer.NAME, trainer.ptrInsane, [convertToTextableTrainerTeam(baseParty[0])])
+        refreshEditTrainer(false)
     })
-    $('#trainers-save').on('click', saveTrainerData).hide()
     $('#trainers-rm-rem').on('click', function(){
         const activeRem = +($('#trainers-infobar').find(".sel-active").text())
         if (isNaN(+activeRem)) return
-        bridge.send('mod-trainer', 'rm-rem', activeRem - 1)
-        gameData.trainers[currentTrainerID].rem.splice(+activeRem - 1, 1)
-        refreshEditTrainer()
+        bridge.send('rm-rem', gameData.trainers[currentTrainerID].rem.splice(+activeRem - 1, 1)[0].NAME)
+        refreshEditTrainer(false)
     })
     $('#trainers-add-rem').on('click', function(){
         const trainer = gameData.trainers[currentTrainerID]
-        const remPtr = createPtr(trainer.name + (trainer.rem.length + 2))
-        console.log(remPtr, trainer.rem[trainer.rem.length - 1]?.ptr || trainer.ptr)
-        const baseParty = [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31]}]
-        bridge.send('mod-trainer', 'add-rem', trainer.rem.length, baseParty)
-        trainer.rem.push({
-            party: baseParty,
-            double: false,
+        const remID = trainer.rem.length + 2
+        const trainerName = "TRAINER_" + createTrainerName(trainer.name + " " + remID)
+        trainerNameList.push(trainerName)
+        const trainerNAME = "TRAINER_" + trainerName.toUpperCase().replace(/ /g,' ')
+        const remPtr = createPtr(trainer.name + remID)
+        teamPtrList.push(remPtr)
+        const newRem = {
+            db: false,
+            party: [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31]}],
             ptr:remPtr,
-        })
-        refreshEditTrainer()
+        }
+        trainer.rem.push(newRem)
+        bridge.send('add-rem',trainerNAME, trainerName, remPtr, [convertToTextableTrainerTeam(newRem.party[0])])
+        refreshEditTrainer(false)
     })
     $('#trainers-remove').on('click', function(){
         if (confirm('This will delete the trainer right away without turning back, proceed?')){
             //need to remove all sub teams linked to
             //but this will be done in the back
-            bridge.send('mod-trainer', 'remove-trainer', gameData.trainers[currentTrainerID])
-        } else {
-            console.log('aborted')
+            bridge.send('remove-trainer', gameData.trainers[currentTrainerID].NAME)
+            gameData.trainers.splice(currentTrainerID, 1)
+            hydrateTrainers()
         }
     })
 }
 
 
+/**
+ * !!ignore rematches so far
+ * @returns {@type import('../../../main/app/trainers/names').Trainer }
+ */
+function transformCompactToBaseTrainer(/** @type import('../../../main/app/compactify').CompactTrainers */ trainer){
+    return {
+        NAME: trainer.NAME,
+        name: trainer.name,
+        tclass: gameData.tclassT[trainer.tclass],
+        double: trainer.db,
+        ptr: trainer.ptr,
+        insanePtr: trainer.ptrInsane,
+        party: trainer.party.map(x => convertToTextableTrainerTeam(x)),
+        insane: trainer.insane.map(x => convertToTextableTrainerTeam(x)),
+        rematches: [],
+        gender: trainer.gender, 
+        music: gameData.tmusicT[trainer.music],
+        pic: gameData.tpicT[trainer.pic],
+    }
+}
 
 export function addTrainer(){
     const name = createTrainerName("New Trainer")
+    trainerNameList.push(name)
     const defaultBaseTrainer = {
         NAME: "TRAINER_" + name.toUpperCase().replace(/ /g,' '),
         name: name,
         ptr: createPtr(name),
         db: false,
         party: [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31]}],
+        insane: [],
         rem: [],
         map: 0,
         tclass: 3,
@@ -135,9 +164,9 @@ export function addTrainer(){
         music: 3,
         pic: 3,
     }
-    trainerNameList.push(name)
-    bridge.send('add-trainer', defaultBaseTrainer)
+    bridge.send('add-trainer', transformCompactToBaseTrainer(defaultBaseTrainer))
     gameData.trainers.push(defaultBaseTrainer)
+    teamPtrList.push(defaultBaseTrainer.ptr)
     hydrateTrainers()
     $('#trainers-list div:last').click()[0].scrollIntoView({ behavior: "smooth" })
 }
@@ -256,5 +285,5 @@ export function setTrainerToReadMode(){
 function saveTrainerData(){
     $('#trainers-save').hide()
     gameData.trainers[currentTrainerID].hasChanged = false
-    console.log(gameData.trainers[currentTrainerID])
+    bridge.send('mod-trainer', transformCompactToBaseTrainer(gameData.trainers[currentTrainerID]))
 }

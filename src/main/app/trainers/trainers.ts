@@ -25,6 +25,7 @@ export interface RematchTrainer{
     double: boolean,
     party: TrainersTeam.TrainerPokemon[],
     ptr: string,
+    NAME: string,
 }
 
 function parse(fileData: string): Map<string, Trainer>{
@@ -53,7 +54,8 @@ function parse(fileData: string): Map<string, Trainer>{
                     return {
                         double: x.double,
                         party: TrainersTeamResult.trainers.get(x.partyPtr) || [],
-                        ptr: x.partyPtr
+                        ptr: x.partyPtr,
+                        NAME: x.NAME
                     }
                 }),
             ptr: value.partyPtr,

@@ -32,7 +32,7 @@
 #trainers-infobar2 > div, #trainers-infobar0 > *{
     margin: auto;
 }
-#trainers-infobar0 > input, #trainers-infobar0 > select{
+#trainers-infobar0 > input, #trainers-infobar0 > select, #trainers-infobar > input{
     font-size: 0.65em;
     text-align: center;
 }

@@ -43,3 +43,25 @@ export function getMovesInternalID(ROOT_PRJ: string, gamedata: GameData): Promis
     })
     
 }
+
+export function getTrainersInternalID(ROOT_PRJ: string, gamedata: GameData): Promise<void>{
+    return new Promise((resolved, rejected) => {
+        getFileData(join(ROOT_PRJ, 'include/constants/opponents.h'),
+     {filterComments: true, filterMacros:true, macros: new Map()})
+        .then((filedata)=>{
+            const internalIDTrainers: Map<string, number> = new Map()
+            const nonTrainer = ['GUARD_CONSTANTS_OPPONENTS_H', 'TRAINERS_COUNT', 'MAX_OLD_TRAINERS_COUNT']
+            filedata.macros.forEach((val, key)=>{
+                if (nonTrainer.indexOf(key) == -1){
+                    internalIDTrainers.set(key, +val)
+                }
+            })
+            gamedata.trainerInternalID = internalIDTrainers
+            resolved()
+        })
+        .catch((e)=>{
+            rejected(e)
+        })
+    })
+    
+}

@@ -121,6 +121,7 @@ export interface CompactTrainers{
     gender: boolean, // true w*man
     music: number,
     pic: number,
+    id: number,
 }
 
 export interface CompactTrainerPokemon{
@@ -137,6 +138,8 @@ export interface CompactTrainerRematch{
     db: boolean,
     party: CompactTrainerPokemon[],
     ptr: string,
+    NAME: string,
+    id: number
 }
 
 export interface CompactBattleItems{
@@ -428,7 +431,9 @@ export function compactify(gameData: GameData): CompactGameData{
                 return {
                     db: rem.double,
                     party: rem.party.map(compactPoke),
-                    ptr: rem.ptr
+                    ptr: rem.ptr,
+                    NAME: rem.NAME,
+                    id: gameData.trainerInternalID.get(rem.NAME) || -1,
                 }
             }),
             map: tablize(mapName, compacted.mapsT),
@@ -437,7 +442,8 @@ export function compactify(gameData: GameData): CompactGameData{
             tclass: tablize(trainer.tclass, compacted.tclassT),
             music: tablize(trainer.music, compacted.tmusicT),
             gender: trainer.gender,
-            pic: tablize(trainer.pic, compacted.tpicT)
+            pic: tablize(trainer.pic, compacted.tpicT),
+            id: gameData.trainerInternalID.get(key) || -1
         })
     })
     compacted.trainers = compacted.trainers.sort((a, b)=>{

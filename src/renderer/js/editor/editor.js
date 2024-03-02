@@ -172,7 +172,6 @@ export function setupEditor(){
     document.body.oncontextmenu = function() {return false;}
     document.addEventListener("mousedown", function(ev){
         if (ev.button != 2) return
-        bridge.send('mod-trainer')
         onRightClick(ev)
     }, true)
     setupEditorBuilder()

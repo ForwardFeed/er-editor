@@ -64,7 +64,7 @@ const executionMap: {[key: string]: (line: string, context: Context) => void} = 
                         if (context.trainers.has(context.key)){ 
                             //if a trainer is already in place it means that we're in a rematch context
                             const preExistingTrainer = context.trainers.get(context.key)
-                            if (!preExistingTrainer) return //retarded check for a retarded language
+                            if (!preExistingTrainer) return
                             preExistingTrainer.rematches[trainerNumber] = context.current
                             context.trainers.set(context.key,preExistingTrainer)
                         } else {
@@ -76,7 +76,6 @@ const executionMap: {[key: string]: (line: string, context: Context) => void} = 
                         }
                     } else {
                         if (context.trainers.has(context.key)){
-                            // to see why look ^
                             const preExistingTrainer = context.trainers.get(context.key)
                             context.current.rematches = preExistingTrainer?.rematches || []
                         }
@@ -93,7 +92,7 @@ const executionMap: {[key: string]: (line: string, context: Context) => void} = 
             context.current.tclass = regexGrabStr(line, /TRAINER_CLASS_\w+/)
         }else if (line.match('doubleBattle')){
             context.current.double = regexGrabStr(line.replace(/\s/g, ''), /(?<==)\w+/) === "TRUE" ? true : false
-        } else if (line.match('partySizeInsane')){ //order is important with partysize
+        } else if (line.match('partySizeInsane')){ //order is important with regex conflict with partysize
             context.current.insanePtr = regexGrabStr(line, /sParty_\w+/)
         } else if (line.match('partySize')){
             context.current.partyPtr = regexGrabStr(line, /sParty_\w+/)
