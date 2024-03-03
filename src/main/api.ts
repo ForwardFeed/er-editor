@@ -4,7 +4,7 @@ import { getGameData } from './app/main'
 import { askForFolder } from './app/configuration'
 import { setLocation, locationCQ } from './app/locations'
 import { addEvolution, removeEvolution, modEvolution, evoCQ } from './app/species/evolutions'
-import { modTrainerParty , trainerEditCQ, modTrainer, rmInsane, addInsane, rmRem, addRem, removeTrainer, addTrainer} from './app/trainers/edit'
+import { modTrainerParty , trainerEditCQ, modTrainer, rmInsane, addInsane, removeTrainer, addTrainer, renameTrainer} from './app/trainers/edit'
 import { TrainerPokemon } from './app/trainers/teams'
 import { Trainer } from './app/trainers/trainers'
 
@@ -57,24 +57,19 @@ export function setupApi(window: Electron.BrowserWindow){
             addInsane(tNAME, ptrInsane, insaneParty)
         }).poll()
     })
-    ipcMain.on('rm-rem', (_event, tNAME: string) => {
+    ipcMain.on('remove-trainer', (_event, tNAME: string, ptrs: string[])  => {
         trainerEditCQ.feed(()=>{
-            rmRem(tNAME)
-        }).poll()
-    })
-    ipcMain.on('add-rem', (_event, tNAME: string, tName: string, ptr: string, party: TrainerPokemon[])  => {
-        trainerEditCQ.feed(()=>{
-            addRem(tNAME, tName, ptr, party)
-        }).poll()
-    })
-    ipcMain.on('remove-trainer', (_event, tNAME: string)  => {
-        trainerEditCQ.feed(()=>{
-            removeTrainer(tNAME)
+            removeTrainer(tNAME, ptrs)
         }).poll()
     })
     ipcMain.on('add-trainer', (_event, trainer: Trainer)  => {
         trainerEditCQ.feed(()=>{
             addTrainer(trainer)
+        }).poll()
+    })
+    ipcMain.on('rename-trainer', (_event, previous: string, next: string)  => {
+        trainerEditCQ.feed(()=>{
+            renameTrainer(previous, next)
         }).poll()
     })
 }

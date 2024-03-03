@@ -5,7 +5,7 @@ import { GameData } from './main'
 import { configuration } from './configuration'
 import { CallQueue } from "../call_queue";
 
-export const locationCQ = new CallQueue()
+export const locationCQ = new CallQueue("Locations")
 
 export interface Locations{
     maps: Location[],

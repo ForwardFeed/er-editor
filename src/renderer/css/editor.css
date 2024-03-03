@@ -29,7 +29,7 @@
 #trainers-infobar0{
     height: 1em;
 }
-#trainers-infobar2 > div, #trainers-infobar0 > *{
+#trainers-infobar2 > div, #trainers-infobar0 > *, #trainers-infobar > *{
     margin: auto;
 }
 #trainers-infobar0 > input, #trainers-infobar0 > select, #trainers-infobar > input{
@@ -44,10 +44,6 @@
     margin-left: 0.5em;
 }
 
-input#trainers-name{
-    width: 16em;
-}
-
-input#trainers-tclass{
-    width: 16em;
+input#trainers-name, input#trainers-NAME, input#trainers-tclass{
+    width: 14em;
 }

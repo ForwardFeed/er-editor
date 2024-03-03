@@ -7,6 +7,7 @@ import * as TrainersTeam from './teams'
 
 
 export interface Trainer{
+    realName: string,
     name: string,
     NAME: string,
     tclass: string,
@@ -37,6 +38,7 @@ function parse(fileData: string): Map<string, Trainer>{
     TrainerNamesResult.trainers.forEach((value, key)=>{
         trainers.set(value.NAME, {
             name: key,
+            realName: value.name,
             NAME: value.NAME,
             tclass: value.tclass,
             double: value.double,

@@ -7,7 +7,7 @@ import { setTrainerToEditMode } from "./trainers.js"
 import { bridge } from '../context_bridge.js'
 
 export let dataList = [], pokeList = [], itemList = [], moveList = [], SPECIESList = [], 
-trainerNameList = [], trainerClassList = [], trainerMusicList = [], teamPtrList = [], trainerPicList = []
+trainerNAMEList = [], trainerClassList = [], trainerMusicList = [], teamPtrList = [], trainerPicList = []
 
 
 function setTrainerPicList(){
@@ -31,7 +31,7 @@ function setTeamPtrList(){
 
 function setTrainerNameList(){
     gameData.trainers.forEach(function(val){
-        trainerNameList.push(val.name)
+        trainerNAMEList.push(val.NAME)
     })
 }
 function setTrainerMusicList(){
@@ -175,6 +175,9 @@ export function setupEditor(){
         onRightClick(ev)
     }, true)
     setupEditorBuilder()
+    $('#change-folder').on('click', function(){
+        bridge.send('ask-for-folder')
+    })
 }
 
 export function hydrateEditor(){

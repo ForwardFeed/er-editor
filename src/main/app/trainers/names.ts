@@ -10,6 +10,7 @@ export interface Result{
 
 export interface BaseTrainer {
     NAME: string,
+    name: string,
     tclass: string,
     double: boolean,
     partyPtr: string,
@@ -23,6 +24,7 @@ export interface BaseTrainer {
 function initBaseTrainer(): BaseTrainer{
     return {
         NAME: "",
+        name: "",
         tclass: "",
         double: false,
         partyPtr: "",
@@ -96,6 +98,8 @@ const executionMap: {[key: string]: (line: string, context: Context) => void} = 
             context.current.insanePtr = regexGrabStr(line, /sParty_\w+/)
         } else if (line.match('partySize')){
             context.current.partyPtr = regexGrabStr(line, /sParty_\w+/)
+        } else if (line.match('trainerName')){
+            context.current.name = regexGrabStr(line, /(?<=")[^"]+/)
         } else if (line.match('trainerPic')){
             context.current.pic = regexGrabStr(line, /TRAINER_PIC_\w+/)
         } else if (line.match('encounterMusic_gender')){

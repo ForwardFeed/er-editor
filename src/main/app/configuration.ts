@@ -93,7 +93,8 @@ export function askForFolder(window: Electron.BrowserWindow){
     .then((dir)=>{
         if (dir.filePaths.length) {
             configuration.project_root = dir.filePaths[0]
-            window.webContents.send('ok-folder')
+            saveConfigFile()
+            window.webContents.send('ok-folder', configuration.project_root)
         } else {
             console.error('no folder chosen')
         }

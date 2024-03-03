@@ -21,6 +21,7 @@ export function feedPanelTrainers(trainerID){
     const trainer = gameData.trainers[trainerID]
     $('#trainers-tclass').text(setTrainerClassName(trainer.tclass))
     $('#trainers-name').text(trainer.name)
+    $('#trainers-NAME').text(trainer.NAME)
     $('#trainers-gender').text(trainer.gender?"Grill":"Boi")
     $('#trainers-music').text(
         gameData.tmusicT[trainer.music].replace('TRAINER_ENCOUNTER_', '').toLowerCase().split('_').map(x => capitalizeFirstLetter(x)).join(' '))

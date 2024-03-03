@@ -422,7 +422,7 @@ export function compactify(gameData: GameData): CompactGameData{
             return
         }
         compacted.trainers.push({
-            name: trainer.name,
+            name: trainer.realName,
             NAME: key,
             db: trainer.double,
             party: trainer.party.map(compactPoke),

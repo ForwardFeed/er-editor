@@ -3,7 +3,7 @@ import { teamData } from '../panels/team_builder.js'
 import { editedTrainerTeam, editedTrainerId} from '../panels/trainers_panel.js'
 import { JSHAC, e} from '../utils.js'
 import { currentTrainerID, feedPanelTrainers } from '../panels/trainers_panel.js'
-import { trainerNameList, trainerClassList, trainerMusicList, teamPtrList, trainerPicList} from './editor.js'
+import { trainerNAMEList, trainerClassList, trainerMusicList, teamPtrList, trainerPicList} from './editor.js'
 import { bridge } from '../context_bridge.js'
 import { s } from './utils.js'
 import { hydrateTrainers } from '../hydrate.js'
@@ -34,11 +34,11 @@ function getTrainerPartyPtr(trainer){
 
 function setTrainerTeam(trainer, party){
     if (trainer === "Normal"){
-        return gameData.trainers[editedTrainerId].party = party
+        gameData.trainers[editedTrainerId].party = party
     } else if (trainer === "Elite"){
-        return gameData.trainers[editedTrainerId].insane = party
+        gameData.trainers[editedTrainerId].insane = party
     } else {
-        return gameData.trainers[editedTrainerId].rem[trainer] = party
+        gameData.trainers[editedTrainerId].rem[trainer] = party
     }
 }
 /**
@@ -52,7 +52,7 @@ function createPtr(name){
 }
 
 function createTrainerName(name){
-    return (trainerNameList.indexOf(name) != -1) ? createTrainerName(name + "1") : name
+    return (trainerNAMEList.indexOf(name) != -1) ? createTrainerName(name + "1") : name
 }
 
 function refreshEditTrainer(hasChanged=true){
@@ -83,7 +83,7 @@ export function setupEditorBuilder(){
         refreshEditTrainer(false)
     })
     $('#trainers-add-insane').on('click', function(){
-        const baseParty = [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31]}]
+        const baseParty = [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31,31]}]
         const trainer = gameData.trainers[currentTrainerID]
         trainer.insane = baseParty
         trainer.ptrInsane = createPtr(trainer.ptr + "Insane")
@@ -94,31 +94,50 @@ export function setupEditorBuilder(){
     $('#trainers-rm-rem').on('click', function(){
         const activeRem = +($('#trainers-infobar').find(".sel-active").text())
         if (isNaN(+activeRem)) return
-        bridge.send('rm-rem', gameData.trainers[currentTrainerID].rem.splice(+activeRem - 1, 1)[0].NAME)
+        const trainer = gameData.trainers[currentTrainerID]
+        const ptrs = [trainer.rem[+activeRem - 1].ptr]
+        bridge.send('remove-trainer', trainer.rem.splice(+activeRem - 1, 1)[0].NAME, ptrs)
         refreshEditTrainer(false)
     })
     $('#trainers-add-rem').on('click', function(){
         const trainer = gameData.trainers[currentTrainerID]
         const remID = trainer.rem.length + 2
-        const trainerName = "TRAINER_" + createTrainerName(trainer.name + " " + remID)
-        trainerNameList.push(trainerName)
-        const trainerNAME = "TRAINER_" + trainerName.toUpperCase().replace(/ /g,' ')
+        const trainerName = trainer.name
+        trainerNAMEList.push(trainerName)
+        const trainerNAME = `TRAINER_${trainerName.toUpperCase().replace(/ /g,' ')}_${remID}`
         const remPtr = createPtr(trainer.name + remID)
         teamPtrList.push(remPtr)
         const newRem = {
             db: false,
-            party: [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31]}],
+            party: [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31,31]}],
             ptr:remPtr,
+            NAME: trainerNAME
         }
         trainer.rem.push(newRem)
-        bridge.send('add-rem',trainerNAME, trainerName, remPtr, [convertToTextableTrainerTeam(newRem.party[0])])
+        bridge.send('add-trainer',{
+            name: trainerName,
+            NAME: trainerNAME,
+            tclass: gameData.tclassT[trainer.tclass],
+            double: false,
+            party:[convertToTextableTrainerTeam(newRem.party[0])],
+            insane: [],
+            rematches: [],
+            ptr: remPtr,
+            ptrInsane: "",
+            gender: trainer.gender,
+            music: gameData.tmusicT[trainer.music],
+            pic: gameData.tpicT[trainer.pic],
+        })
         refreshEditTrainer(false)
     })
     $('#trainers-remove').on('click', function(){
         if (confirm('This will delete the trainer right away without turning back, proceed?')){
-            //need to remove all sub teams linked to
-            //but this will be done in the back
-            bridge.send('remove-trainer', gameData.trainers[currentTrainerID].NAME)
+            const trainer = gameData.trainers[currentTrainerID]
+            const ptrs = [trainer.ptr, trainer.ptrInsane]
+            bridge.send('remove-trainer', trainer.NAME, ptrs)
+            for (const rem of trainer.rem){
+                bridge.send('remove-trainer', rem.NAME, [rem.ptr])
+            }
             gameData.trainers.splice(currentTrainerID, 1)
             hydrateTrainers()
         }
@@ -149,13 +168,13 @@ function transformCompactToBaseTrainer(/** @type import('../../../main/app/compa
 
 export function addTrainer(){
     const name = createTrainerName("New Trainer")
-    trainerNameList.push(name)
+    trainerNAMEList.push(name)
     const defaultBaseTrainer = {
         NAME: "TRAINER_" + name.toUpperCase().replace(/ /g,' '),
         name: name,
         ptr: createPtr(name),
         db: false,
-        party: [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31]}],
+        party: [{spc: 1, moves: [], abi:0, item: -1, nature: 0, evs:[], ivs: [31,31,31,31,31,31]}],
         insane: [],
         rem: [],
         map: 0,
@@ -203,7 +222,15 @@ export function setTrainerToEditMode(){
         })
     , e('select#trainers-double'))), "text2val")
     double[0].onchange = function(){
-        trainer.db = double.val() === "Double"
+        const tPartyName = $('#trainers-infobar').find(".sel-active").text()
+        console.log(tPartyName)
+        if (tPartyName == undefined) return
+        const dbB = double.val() === "Double"
+        if (tPartyName === "Normal" ||tPartyName === "Elite" ){
+            gameData.trainers[currentTrainerID].db = dbB
+        } else {
+            gameData.trainers[currentTrainerID].rem[tPartyName].db = dbB
+        }
         refreshEditTrainer()
     }
     const gender = s($('#trainers-gender'), $(JSHAC(
@@ -217,24 +244,39 @@ export function setTrainerToEditMode(){
         trainer.gender = gender.val() === "Grill"
         refreshEditTrainer()
     }
-    const name = s($('#trainers-name'), $(e('input#trainers-name')), "text2val")
-    let previousName = name.val()
-    name[0].onkeyup = function(){
-        // filter bad chars 
-        name.val(name.val().replace(/[^\w_ ]+/g, ''))
-        const nameVal = name.val()
-        // name didn't changed, it cause bugs if i continue
-        if (nameVal == previousName) return
+    const NAME = s($('#trainers-NAME'), $(e('input#trainers-NAME')), "text2val")
+    let baseNAME = NAME.val()
+    let previousName = NAME.val()
+    NAME[0].onkeyup = function(){
+        // filter bad chars, forces to start with TRAINER_ and upper case
+        NAME.val(NAME.val().replace(/[^\w_]/g, '').replace(/^(?!TRAINER_)/, 'TRAINER_').toUpperCase())
+        const NAMEVal = NAME.val()
+        if (NAMEVal == previousName) return
         //check if it doesn't enter in conflict with another trainer
-        if (trainerNameList.indexOf(nameVal) != -1){
+        if (trainerNAMEList.indexOf(NAMEVal) != -1){
             //conflict
             $('#trainers-infobar-err').show().text('This trainer name already exist')
             $('#trainers-save').hide()
             return
         }
-        trainerNameList[trainerNameList.indexOf(previousName)] = nameVal
-        previousName = nameVal
+        trainerNAMEList[trainerNAMEList.indexOf(previousName)] = NAMEVal
+        previousName = NAMEVal
         $('#trainers-infobar-err').hide().text('')
+        trainer.NAME = NAMEVal
+        trainer.hasChanged = true
+        $('#trainers-save').show()
+    }
+    NAME[0].addEventListener("focusout", (event) => {
+        const NAMEVal = NAME.val()
+        if ($('#trainers-infobar-err').show().text() || baseNAME === NAMEVal) return
+        bridge.send('rename-trainer', baseNAME,  NAMEVal)
+        baseNAME = NAMEVal
+    });
+
+    const name = s($('#trainers-name'), $(e('input#trainers-name')), "text2val")
+    name[0].onkeyup = function(){
+        name.val(name.val().replace(/[^\w_ ]+/g, ''))
+        const nameVal = name.val()
         trainer.name = nameVal
         $('#trainers-list > .btn').eq(currentTrainerID).text(nameVal)
         trainer.hasChanged = true
@@ -276,6 +318,7 @@ export function setTrainerToReadMode(){
     s($('#trainers-double'), $(e('div#trainers-double')), "val2text")
     s($('#trainers-gender'), $(e('div#trainers-gender')), "val2text")
     s($('#trainers-name'), $(e('div#trainers-name')), "val2text")
+    s($('#trainers-NAME'), $(e('div#trainers-NAME')), "val2text")
     s($('#trainers-tclass'), $(e('div#trainers-tclass')), "val2text")
     s($('#trainers-music'), $(e('div#trainers-music')), "val2text")
     s($('#trainers-pic'), $(e('div#trainers-pic')), "val2text")

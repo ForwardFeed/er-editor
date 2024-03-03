@@ -17,7 +17,7 @@ export function setupGameDataRetrieving(){
     bridge.receive('no-game-data', function(){
         bridge.send('ask-for-folder')
     })
-    bridge.receive('ok-folder', function(){
+    bridge.receive('ok-folder', function(path){
         bridge.send('get-game-data')
     })
     //bridge.send('get-game-data')

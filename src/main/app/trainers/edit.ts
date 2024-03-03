@@ -5,7 +5,7 @@ import { CallQueue } from "../../call_queue";
 import { Trainer } from "./trainers";
 import { configuration } from '../configuration'
 
-export const trainerEditCQ = new CallQueue()
+export const trainerEditCQ = new CallQueue("Evolutions")
 
 function pokeToCData(poke: TrainerPokemon, comma: boolean = false){
     return `    {
@@ -54,7 +54,7 @@ export function modTrainerParty(ptr: string, party: TrainerPokemon[]){
             const lines = rawData.split('\n')
             const lineLen = lines.length
             for (let i = 0; i < lineLen; i++){
-                const line = lines[i]
+                const line = lines[i].replace(/\/\/.*/, '')
                 if (!line) continue
                 if (status == 0 && line.match(ptr)){
                     lineMatch = i + 1
@@ -81,7 +81,7 @@ export function modTrainerParty(ptr: string, party: TrainerPokemon[]){
         })
 }
 
-function removeTrainerParty(ptr: string){
+function removeTrainerParty(ptr: string, callback: ()=>void){
     const filepath = path.join(configuration.project_root, "/src/data/trainer_parties.h")
     getRawFile(filepath)
         .then((rawData)=>{
@@ -91,7 +91,7 @@ function removeTrainerParty(ptr: string){
             const lines = rawData.split('\n')
             const lineLen = lines.length
             for (let i = 0; i < lineLen; i++){
-                const line = lines[i]
+                const line = lines[i].replace(/\/\/.*/, '')
                 if (!line) continue
                 if (status == 0 && line.match(`\\s${ptr}\\[`)){
                     start = i
@@ -106,22 +106,22 @@ function removeTrainerParty(ptr: string){
             if (start == 0){
                 return console.error(`couldn't find pointer ${ptr}`)
             }
-            console.log(start, stop)
             lines.splice(start, stop - start + 1)
-            writeRawFile("./test.test", lines.join('\n'))
+            writeRawFile(filepath, lines.join('\n'))
                 .then(()=>{
-                    console.log('success removed trainer party')
+                    console.log('success removed trainer party ' + ptr)
                 })
                 .catch((err)=>{
                     console.error(`couldn't write to remove trainer party, reason: ${err}`)
+                })
+                .finally(()=>{
+                    callback()
                 })
         })
         .catch((err)=>{
             console.log(`Error while opening in remove Trainer party ${err}`)
         })
-        .finally(()=>{
-            trainerEditCQ.unlock().poll()
-        })
+        
     
 }
 
@@ -133,7 +133,7 @@ function addTrainerParty(ptr: string, party: TrainerPokemon[]){
         const poke = party[i]
         newPokeData += pokeToCData(poke, i != (partyLen - 1))
     }
-    const CData = `\nstatic const struct TrainerMonItemCustomMoves ${ptr}[] = {\n${newPokeData}\n};`
+    const CData = `\n\nstatic const struct TrainerMonItemCustomMoves ${ptr}[] = {\n${newPokeData}\n};`
     getRawFile(filepath)
         .then((rawData)=>{
             rawData += CData
@@ -144,12 +144,12 @@ function addTrainerParty(ptr: string, party: TrainerPokemon[]){
                 .catch((err)=>{
                     console.error(`couldn't add party, reason: ${err}`)
                 })
+                .finally(()=>{
+                    trainerEditCQ.unlock().poll()
+                })
         })
         .catch((err)=>{
             console.log(err)
-        })
-        .finally(()=>{
-            trainerEditCQ.unlock().poll()
         })
 }
 
@@ -163,10 +163,9 @@ export function modTrainer(trainer: Trainer){
             const lines = rawData.split('\n')
             const lineLen = lines.length
             for (let i = 0; i < lineLen; i++){
-                const line = lines[i]
+                const line = lines[i].replace(/\/\/.*/, '')
                 if (!line) continue
                 if (status == 0 && line.match(`\\[${trainer.NAME}\\]`)){
-                    console.log(line)
                     start = i
                     status = 1
                     continue
@@ -192,7 +191,7 @@ export function modTrainer(trainer: Trainer){
             console.log(err)
         })
         .finally(()=>{
-            console.log('mod trainer finished')
+            trainerEditCQ.unlock().poll()
         })
 }
 export function rmInsane(ptrInsane: string){
@@ -205,7 +204,7 @@ export function rmInsane(ptrInsane: string){
             const lines = rawData.split('\n')
             const lineLen = lines.length
             for (let i = 0; i < lineLen; i++){
-                const line = lines[i]
+                const line = lines[i].replace(/\/\/.*/, '')
                 if (!line) continue
                 if (status <= 1 && line.match(`Insane.*${ptrInsane}[^\\w]`)){
                     status += 1
@@ -222,10 +221,10 @@ export function rmInsane(ptrInsane: string){
             }
             lines.splice(a, 1)
             lines.splice(b - 1, 1)
-            writeRawFile("./test.test", lines.join('\n'))
+            writeRawFile(filepath, lines.join('\n'))
                 .then(()=>{
                     console.log('success modifying trainer')
-                    removeTrainerParty(ptrInsane)
+                    removeTrainerParty(ptrInsane, ()=>{})
                 })
                 .catch((err)=>{
                     console.error(`couldn't modify trainer, reason: ${err}`)
@@ -233,6 +232,9 @@ export function rmInsane(ptrInsane: string){
         })
         .catch((err)=>{
             console.log(err)
+        })
+        .finally(()=>{
+            trainerEditCQ.unlock().poll()
         })
 }
 export function addInsane(tNAME: string, ptrInsane: string, insaneParty: TrainerPokemon[]){
@@ -244,7 +246,7 @@ export function addInsane(tNAME: string, ptrInsane: string, insaneParty: Trainer
             const lines = rawData.split('\n')
             const lineLen = lines.length
             for (let i = 0; i < lineLen; i++){
-                const line = lines[i]
+                const line = lines[i].replace(/\/\/.*/, '')
                 if (!line) continue
                 if (status == 0 && line.match(`\\[${tNAME}\\]`)){
                     status = 1
@@ -273,22 +275,233 @@ export function addInsane(tNAME: string, ptrInsane: string, insaneParty: Trainer
         .catch((err)=>{
             console.log(err)
         })
+        .finally(()=>{
+            trainerEditCQ.unlock().poll()
+        })
 }
-export function rmRem(tNAME: string){
-    
-    trainerEditCQ.unlock().poll()
-}
-export function addRem(tNAME: string, tName: string, ptr: string, party: TrainerPokemon[]){
-
-    trainerEditCQ.unlock().poll()
-}
-export function removeTrainer(tNAME: string){
-
-
-    trainerEditCQ.unlock().poll()
+export function removeTrainer(tNAME: string, ptrs: string[]){
+    trainerEditCQ.locks(3)
+    function removePartyPtr(){
+        if (ptrs.length == 0){
+            trainerEditCQ.unlock().poll()
+            return
+        }
+        const ptr = ptrs.splice(0,1)[0]
+        removeTrainerParty(ptr, ()=>{
+            removePartyPtr()
+        })
+    }
+    removePartyPtr()
+    const filepath = path.join(configuration.project_root, "/src/data/trainers.h")
+    getRawFile(filepath)
+        .then((rawData)=>{
+            let start = 0
+            let stop = 0
+            let status = 0
+            const lines = rawData.split('\n')
+            const lineLen = lines.length
+            for (let i = 0; i < lineLen; i++){
+                const line = lines[i].replace(/\/\/.*/, '')
+                if (!line) continue
+                if (status == 0 && line.match(`\\[${tNAME}\\]`)){
+                    start = i
+                    status = 1
+                    continue
+                }
+                if (status == 0) continue
+                if (line.match(/\[TRAINER_\w+\]/)){
+                    stop = i
+                    break
+                }
+            }
+            if (!start){
+                return console.error(`couldn't remove trainer: couldn't find ${tNAME}`)
+            }
+            lines.splice(start, stop - start)
+            writeRawFile(filepath, lines.join('\n'))
+                .then(()=>{
+                    console.log('success remove trainer')
+                })
+                .catch((err)=>{
+                    console.error(`couldn't remove trainer, reason: ${err}`)
+                })
+                .finally(()=>{
+                    trainerEditCQ.unlock().poll()
+                })
+        })
+        .catch((err)=>{
+            console.log(err)
+        })
+        
+    const filepath2 = path.join(configuration.project_root, "/include/constants/opponents.h")
+    getRawFile(filepath2)
+        .then((rawData)=>{
+            let status = 0
+            const lines = rawData.split('\n')
+            const lineLen = lines.length
+            for (let i = 0; i < lineLen; i++){
+                const line = lines[i].replace(/\/\/.*/, '')
+                if (!line) continue
+                if (status == 0 && line.match(`\\s${tNAME}\\s`)){
+                    status = 1
+                    lines[i] = line.replace(`${tNAME}`, `UNUSED_${tNAME}`)
+                    break
+                }
+            }
+            if (!status){
+                return console.error(`couldn't remove trainer in opponents.h: couldn't find ${tNAME}`)
+            }
+            writeRawFile(filepath2, lines.join('\n'))
+                .then(()=>{
+                    console.log('success remove trainer internal id')
+                })
+                .catch((err)=>{
+                    console.error(`couldn't remove trainer, reason: ${err}`)
+                })
+                .finally(()=>{
+                    trainerEditCQ.unlock().poll()
+                })
+        })
+        .catch((err)=>{
+            console.log(err)
+        })
 }
 export function addTrainer(trainer: Trainer){
+    trainerEditCQ.locks(3)
+    addTrainerParty(trainer.ptr, trainer.party)
+    const filepath = path.join(configuration.project_root, "/src/data/trainers.h")
+    getRawFile(filepath)
+        .then((rawData)=>{
+            const lines = rawData.split('\n')
+            const lineLen = lines.length
+            for (let i = 0; i < lineLen; i++){
+                const line = lines[i].replace(/\/\/.*/, '')
+                if (!line) continue
+                if (line.match(';')){
+                    lines.splice(i, 0, "\n" + trainerToCData(trainer))
+                    break
+                }
+            }
+            writeRawFile(filepath, lines.join('\n'))
+                .then(()=>{
+                    console.log('success add trainer data')
+                })
+                .catch((err)=>{
+                    console.error(`couldn't remove trainer, reason: ${err}`)
+                })
+                .finally(()=>{
+                    trainerEditCQ.unlock().poll()
+                })
+        
+        })
+        .catch((err)=>{
+            console.log(err)
+        })
 
+    const filepath2 = path.join(configuration.project_root, "/include/constants/opponents.h")
+    getRawFile(filepath2)
+        .then((rawData)=>{
+            let status = 0
+            let last = 0
+            const lines = rawData.split('\n')
+            const lineLen = lines.length
+            for (let i = 0; i < lineLen; i++){
+                const line = lines[i].replace(/\/\/.*/, '')
+                if (!line) continue
+                if (line.match('#define TRAINERS_COUNT')){
+                    let text = `#define ${trainer.NAME} `
+                    lines.splice(i, 0, `${text}${" ".repeat(55 - text.length)}${last + 1}`)
+                    status = 1
+                    break
+                }
+                if (line.match('#define')){
+                    last = +line.split(/\s+/)[2]
+                }
+            }
+            if (!status){
+                return console.error(`couldn't add trainer in opponents.h: couldn't find #define TRAINERS_COUNT}`)
+            }
+            writeRawFile(filepath2, lines.join('\n'))
+                .then(()=>{
+                    console.log('success add trainer internal ID')
+                })
+                .catch((err)=>{
+                    console.error(`couldn't remove trainer, reason: ${err}`)
+                })
+                .finally(()=>{
+                    trainerEditCQ.unlock().poll()
+                })
+        
+        })
+        .catch((err)=>{
+            console.log(err)
+        })
+        .finally(()=>{
+            trainerEditCQ.unlock().poll()
+        })
+}
 
-    trainerEditCQ.unlock().poll()
+export function renameTrainer(previous: string, next: string){
+    trainerEditCQ.locks(2)
+    const filepath = path.join(configuration.project_root, "/src/data/trainers.h")
+    getRawFile(filepath)
+        .then((rawData)=>{
+            const lines = rawData.split('\n')
+            const lineLen = lines.length
+            for (let i = 0; i < lineLen; i++){
+                const line = lines[i].replace(/\/\/.*/, '')
+                if (!line) continue
+                if (line.match(`\\[${previous}\\]`)){
+                    lines.splice(i, 1, line.replace(previous, next))
+                    break
+                }
+                if (i == lineLen -1){
+                    console.log(`failed to find ${previous} into trainers.h`)
+                }
+            }
+            writeRawFile(filepath, lines.join('\n'))
+                .then(()=>{
+                    console.log('success rename trainer internal NAME')
+                })
+                .catch((err)=>{
+                    console.error(`couldn't rename trainer internal NAME, reason: ${err}`)
+                })
+                .finally(()=>{
+                    trainerEditCQ.unlock().poll()
+                })        
+        })
+        .catch((err)=>{
+            console.log(err)
+        })
+        
+    const filepath2 = path.join(configuration.project_root, "/include/constants/opponents.h")
+    getRawFile(filepath2)
+        .then((rawData)=>{
+            const lines = rawData.split('\n')
+            const lineLen = lines.length
+            for (let i = 0; i < lineLen; i++){
+                const line = lines[i].replace(/\/\/.*/, '')
+                if (!line) continue
+                if (line.match(`\\s${previous}\\s`)){
+                    lines.splice(i, 1, line.replace(previous, next))
+                    break
+                }
+                if (i == lineLen -1){
+                    console.log(`failed to find ${previous} into opponents.h`)
+                }
+            }
+            writeRawFile(filepath2, lines.join('\n'))
+                .then(()=>{
+                    console.log('success add trainer internal ID')
+                })
+                .catch((err)=>{
+                    console.error(`couldn't rename trainer internal NAME, reason: ${err}`)
+                })
+        })
+        .catch((err)=>{
+            console.log(err)
+        })
+        .finally(()=>{
+            trainerEditCQ.unlock().poll()
+        })
 }

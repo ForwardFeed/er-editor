@@ -3,7 +3,7 @@ import { regexGrabStr } from "../parse_utils"
 import { getRawFile, writeRawFile } from "../utils_edit"
 import { CallQueue } from "../../call_queue";
 
-export const evoCQ = new CallQueue()
+export const evoCQ = new CallQueue("Evolutions")
 
 export interface Result{
     fileIterator: number,
