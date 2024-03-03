@@ -16,7 +16,7 @@ function pokeToCData(poke: TrainerPokemon, comma: boolean = false){
 ${poke.ivs[5]?"":"\n    .zeroSpeedIvs = TRUE,"}
     .evs = {${poke.evs.join(', ')}},
     .nature = ${poke.nature},
-    .moves = ${poke.moves.join(', ')}
+    .moves = ${[0,1,2,3].map((_x,i) => poke.moves[i] || "MOVE_NONE").join(', ')}
     }${comma?",\n":""}`
 }
 
@@ -25,7 +25,7 @@ function trainerToCData(trainer: Trainer): string{
     {
         .partyFlags = F_TRAINER_PARTY_HELD_ITEM | F_TRAINER_PARTY_CUSTOM_MOVESET,
         .trainerClass = ${trainer.tclass},
-        .encounterMusic_gender = ${trainer.music},
+        .encounterMusic_gender = ${trainer.gender ? "F_TRAINER_FEMALE | ": ""}${trainer.music},
         .trainerPic = ${trainer.pic},
         .trainerName = _("${trainer.name}"),
         .items = {},
@@ -72,12 +72,12 @@ export function modTrainerParty(ptr: string, party: TrainerPokemon[]){
                 .catch((err)=>{
                     console.error(`couldn't modify trainer, reason: ${err}`)
                 })
+                .finally(()=>{
+                    trainerEditCQ.unlock().poll()
+                })
         })
         .catch((err)=>{
             console.log(err)
-        })
-        .finally(()=>{
-            trainerEditCQ.unlock().poll()
         })
 }
 
@@ -104,7 +104,8 @@ function removeTrainerParty(ptr: string, callback: ()=>void){
                 }
             }
             if (start == 0){
-                return console.error(`couldn't find pointer ${ptr}`)
+                console.error(`couldn't find party pointer ${ptr}`)
+                return callback()
             }
             lines.splice(start, stop - start + 1)
             writeRawFile(filepath, lines.join('\n'))
@@ -175,7 +176,9 @@ export function modTrainer(trainer: Trainer){
                 if (line.match(/\[TRAINER\w+]/)) break
             }
             if (start == 0){
-                return console.error(`couldn't find trainer ${trainer.NAME}`)
+                console.error(`couldn't find trainer ${trainer.NAME}`)
+                trainerEditCQ.unlock().poll()
+                return 
             }
             lines.splice(start, lastP - start + 1, trainerToCData(trainer))
             writeRawFile(filepath, lines.join('\n'))
@@ -186,12 +189,12 @@ export function modTrainer(trainer: Trainer){
                 .catch((err)=>{
                     console.error(`couldn't modify trainer, reason: ${err}`)
                 })
+                .finally(()=>{
+                    trainerEditCQ.unlock().poll()
+                })
         })
         .catch((err)=>{
             console.log(err)
-        })
-        .finally(()=>{
-            trainerEditCQ.unlock().poll()
         })
 }
 export function rmInsane(ptrInsane: string){
@@ -217,7 +220,9 @@ export function rmInsane(ptrInsane: string){
                 if (status > 1) break
             }
             if (!a && !b) {
-                return console.error(`couldn't find any insane associated pointer ${ptrInsane}`)
+                console.error(`couldn't find any insane associated pointer ${ptrInsane}`)
+                trainerEditCQ.unlock().poll()
+                return
             }
             lines.splice(a, 1)
             lines.splice(b - 1, 1)
@@ -229,12 +234,12 @@ export function rmInsane(ptrInsane: string){
                 .catch((err)=>{
                     console.error(`couldn't modify trainer, reason: ${err}`)
                 })
+                .finally(()=>{
+                    trainerEditCQ.unlock().poll()
+                })
         })
         .catch((err)=>{
             console.log(err)
-        })
-        .finally(()=>{
-            trainerEditCQ.unlock().poll()
         })
 }
 export function addInsane(tNAME: string, ptrInsane: string, insaneParty: TrainerPokemon[]){
@@ -259,7 +264,9 @@ export function addInsane(tNAME: string, ptrInsane: string, insaneParty: Trainer
                 }   
             }
             if (!insert){
-                return console.error(`couldn't find any trainer ${tNAME}`)
+                console.error(`couldn't find any trainer ${tNAME}`)
+                trainerEditCQ.unlock().poll()
+                return 
             }
             lines.splice(insert + 2, 0, `        .partySizeInsane = ARRAY_COUNT(${ptrInsane}),
         .partyInsane = {.ItemCustomMoves = ${ptrInsane}},`)
@@ -271,12 +278,12 @@ export function addInsane(tNAME: string, ptrInsane: string, insaneParty: Trainer
                 .catch((err)=>{
                     console.error(`couldn't modify trainer, reason: ${err}`)
                 })
+                .finally(()=>{
+                    trainerEditCQ.unlock().poll()
+                })
         })
         .catch((err)=>{
             console.log(err)
-        })
-        .finally(()=>{
-            trainerEditCQ.unlock().poll()
         })
 }
 export function removeTrainer(tNAME: string, ptrs: string[]){
@@ -309,18 +316,20 @@ export function removeTrainer(tNAME: string, ptrs: string[]){
                     continue
                 }
                 if (status == 0) continue
-                if (line.match(/\[TRAINER_\w+\]/)){
+                if (line.match(/\[TRAINER_\w+\]/ ) || line.match(';')){
                     stop = i
                     break
                 }
             }
-            if (!start){
-                return console.error(`couldn't remove trainer: couldn't find ${tNAME}`)
+            if (!start || !stop){
+                console.error(`couldn't remove trainer: couldn't find ${tNAME}`)
+                trainerEditCQ.unlock().poll()
+                return
             }
             lines.splice(start, stop - start)
             writeRawFile(filepath, lines.join('\n'))
                 .then(()=>{
-                    console.log('success remove trainer')
+                    console.log(`success remove trainer ${tNAME}`)
                 })
                 .catch((err)=>{
                     console.error(`couldn't remove trainer, reason: ${err}`)
@@ -344,12 +353,14 @@ export function removeTrainer(tNAME: string, ptrs: string[]){
                 if (!line) continue
                 if (status == 0 && line.match(`\\s${tNAME}\\s`)){
                     status = 1
-                    lines[i] = line.replace(`${tNAME}`, `UNUSED_${tNAME}`)
+                    lines.splice(i, 1)
                     break
                 }
             }
             if (!status){
-                return console.error(`couldn't remove trainer in opponents.h: couldn't find ${tNAME}`)
+                console.error(`couldn't remove trainer in opponents.h: couldn't find ${tNAME}`)
+                trainerEditCQ.unlock().poll()
+                return
             }
             writeRawFile(filepath2, lines.join('\n'))
                 .then(()=>{
@@ -419,7 +430,9 @@ export function addTrainer(trainer: Trainer){
                 }
             }
             if (!status){
-                return console.error(`couldn't add trainer in opponents.h: couldn't find #define TRAINERS_COUNT}`)
+                console.error(`couldn't add trainer in opponents.h: couldn't find #define TRAINERS_COUNT}`)
+                trainerEditCQ.unlock().poll()
+                return
             }
             writeRawFile(filepath2, lines.join('\n'))
                 .then(()=>{
@@ -435,9 +448,6 @@ export function addTrainer(trainer: Trainer){
         })
         .catch((err)=>{
             console.log(err)
-        })
-        .finally(()=>{
-            trainerEditCQ.unlock().poll()
         })
 }
 
@@ -455,7 +465,7 @@ export function renameTrainer(previous: string, next: string){
                     lines.splice(i, 1, line.replace(previous, next))
                     break
                 }
-                if (i == lineLen -1){
+                if (i == lineLen - 1){
                     console.log(`failed to find ${previous} into trainers.h`)
                 }
             }
@@ -497,11 +507,12 @@ export function renameTrainer(previous: string, next: string){
                 .catch((err)=>{
                     console.error(`couldn't rename trainer internal NAME, reason: ${err}`)
                 })
+                .finally(()=>{
+                    trainerEditCQ.unlock().poll()
+                })
         })
         .catch((err)=>{
             console.log(err)
         })
-        .finally(()=>{
-            trainerEditCQ.unlock().poll()
-        })
+        
 }

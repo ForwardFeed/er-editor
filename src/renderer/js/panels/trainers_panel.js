@@ -27,6 +27,7 @@ export function feedPanelTrainers(trainerID){
         gameData.tmusicT[trainer.music].replace('TRAINER_ENCOUNTER_', '').toLowerCase().split('_').map(x => capitalizeFirstLetter(x)).join(' '))
     $('#trainers-pic').text(
         gameData.tpicT[trainer.pic].replace('TRAINER_PIC_', '').toLowerCase().split('_').map(x => capitalizeFirstLetter(x)).join(' '))
+
     setBaseTrainer(trainer)
     setRematchesBar(trainer.rem)
     setInsane(trainer)
@@ -54,7 +55,7 @@ function setBaseTrainer(trainer){
     nodeNormal.onclick = ()=>{
         trainerParam.elite = false
         setPartyPanel(party)
-        $('#trainers-infobar').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
+        $('#trainers-infobar1').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
         nodeNormal.className = "trainer-match-btn sel-active"
     }
     $('#trainers-normal').empty().append(nodeNormal)
@@ -73,7 +74,7 @@ function setInsane(trainer){
     nodeElite.onclick = ()=>{
         trainerParam.elite = true
         setPartyPanel(insaneTeam)
-        $('#trainers-infobar').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
+        $('#trainers-infobar1').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
         nodeElite.className = "trainer-match-btn sel-active"
     }
     $('#trainers-elite').empty().append(nodeElite)
@@ -98,7 +99,7 @@ function setRematchesBar(rematches){
         nodeRem.className = "trainer-match-btn sel-n-active"
         nodeRem.onclick = ()=>{
             setPartyPanel(rem.party)
-            $('#trainers-infobar').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
+            $('#trainers-infobar1').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
             $('#trainers-rematch').children().eq(+remI + 1).addClass("sel-active").removeClass("sel-n-active")
             setDouble(rem.db)
         }
@@ -244,7 +245,7 @@ export function getTextNature(nature){
 function getNodeRedirectToEditorPokemon(party){
     const redirectTeamBuilder = ()=>{
         setFullTeam(party)
-        editedTrainerTeam = $('#trainers-infobar').find(".sel-active").text()
+        editedTrainerTeam = $('#trainers-infobar1').find(".sel-active").text()
         editedTrainerId = currentTrainerID
         $('#btn-species').click()
         if ($('#btn-species').find('.big-select').text() === "Species") $('#btn-species').click()

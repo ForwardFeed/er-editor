@@ -120,10 +120,7 @@ export const teamData = [...Array(6).keys()].map((_) => {
 })
 // this can be called only when gamedata is loaded
 export function restoreSave() {
-    const savedString = fetchFromLocalstorage("team-builder")
-    if (!savedString) return
-    const saveObj = JSON.parse(savedString)
-    setFullTeam(saveObj)
+    return
 }
 
 
@@ -199,7 +196,9 @@ export function setupTeamBuilder() {
                 return
             }
             const viewID = +ev.dataTransfer.getData("v-id")
-            swapAndRefresh(index, viewID)
+            if (!isNaN(viewID)){
+                swapAndRefresh(index, viewID)
+            }
         }
         $(this)[0].setAttribute('draggable', true);
         $(this)[0].ondragstart = (ev) => {

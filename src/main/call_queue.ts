@@ -31,9 +31,9 @@ export class CallQueue{
      */
     poll(): CallQueue{
         if (this.lock) {
-            if (this.warning && this.timeoutWarn) this.timeoutWarn = setTimeout(()=>{
+            if (this.warning && !this.timeoutWarn) this.timeoutWarn = setTimeout(()=>{
                 dialog.showErrorBox('Error while editing',`Editions of ${this.name} has been locked for now 5 seconds, something has bugged and for data protection nothing related to ${this.name} can\
-be edited, apologies for the inconvenience`)
+ be edited, apologies for the inconvenience`)
                 console.error('error locking too long of call queue ' + this.lock)
             }, 5000)
             return this

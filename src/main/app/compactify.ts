@@ -345,7 +345,7 @@ export function compactify(gameData: GameData): CompactGameData{
             }),
             tutor: val.tutorMoves.map((x) => {
                 if (!movesT.includes(x)) {
-                    console.warn(`couldn't figure out ${x} TMHM move`)
+                    console.warn(`couldn't figure out ${x} tutor move`)
                 }
                 return movesT.indexOf(x)
             }),

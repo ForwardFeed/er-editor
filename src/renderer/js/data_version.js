@@ -11,7 +11,7 @@ export let gameData, compareData;
 export function setupGameDataRetrieving(){
     bridge.receive('game-data', function(data){
         gameData = data
-        console.log(gameData)
+        //console.log(gameData)
         hydrate()
     })
     bridge.receive('no-game-data', function(){
@@ -20,8 +20,8 @@ export function setupGameDataRetrieving(){
     bridge.receive('ok-folder', function(path){
         bridge.send('get-game-data')
     })
-    //bridge.send('get-game-data')
-    fetchFromJSONFile()
+    bridge.send('get-game-data')
+    //fetchFromJSONFile()
 }
 
 function fetchFromJSONFile(){
