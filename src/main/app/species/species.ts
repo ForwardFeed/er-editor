@@ -83,7 +83,7 @@ export function getSpecies(ROOT_PRJ: string, optionsGlobal_h: FileDataOptions, g
             resolve()
         })
         .catch((reason)=>{
-            const err = 'Failed at gettings species reason: ' + reason
+            const err = 'Failed at getting species reason: ' + reason
             reject(err)
         })
     })

@@ -214,6 +214,7 @@ function hydrateSpecies() {
         const row = e('div', "btn data-list-row sel-n-active")
         row.setAttribute('draggable', true);
         row.ondragstart = (ev) => {
+            console.log('drag start')
             ev.dataTransfer.setData("id", i)
         }
         //Node id because for correlation with nodelist in sorting

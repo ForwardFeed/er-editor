@@ -511,6 +511,7 @@ span{
 .species-move-list{
     flex-grow: 1;
     overflow-y: scroll;
+    min-height: 50%;
 }
 .species-move-list > *{
     border-bottom: var(--shadow);

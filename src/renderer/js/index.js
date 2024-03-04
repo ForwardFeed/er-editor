@@ -14,9 +14,6 @@ import { load } from "./loading.js"
 document.addEventListener("DOMContentLoaded", loadApplication);
 
 function loadApplication() {
-    window.onerror = function(msg, url, lineN){
-        //document.getElementById('ugly-error-span').innerText += `in ${url.replace(/[^/]+\//g, '')} ${lineN}: ${msg}`
-    }
     const setupSteps = [
         [setupSettings, "settings"],
         [setupPanels, "side bar"],

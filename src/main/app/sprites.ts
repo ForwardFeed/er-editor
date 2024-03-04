@@ -147,7 +147,7 @@ export function getSprites(ROOT_PRJ: string, optionsGlobal_h: FileDataOptions, o
             resolve(undefined)
         })
         .catch((reason)=>{
-            const err = 'Failed at gettings species reason: ' + reason
+            const err = 'Failed at getting sprites reason: ' + reason
             reject(err)
         })
     })

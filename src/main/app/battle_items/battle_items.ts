@@ -35,7 +35,7 @@ export function getItems(ROOT_PRJ: string, gameData: GameData): Promise<void>{
             resolve()
         })
         .catch((reason)=>{
-            const err = 'Failed at gettings species reason: ' + reason
+            const err = 'Failed at getting battle items reason: ' + reason
             reject(err)
         })
     })

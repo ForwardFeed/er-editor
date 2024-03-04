@@ -1,5 +1,5 @@
 import { locationEdit } from "./locations.js"
-import { evosEdit } from "./species.js"
+import { evosEdit, MoveEdit } from "./species.js"
 import { gameData } from "../data_version.js"
 import { setupEditorBuilder } from "./trainers.js"
 import { e } from "../utils.js"
@@ -7,19 +7,25 @@ import { setTrainerToEditMode } from "./trainers.js"
 import { bridge } from '../context_bridge.js'
 
 export let dataList = [], pokeList = [], itemList = [], moveList = [], SPECIESList = [], 
-trainerNAMEList = [], trainerClassList = [], trainerMusicList = [], teamPtrList = [], trainerPicList = []
+trainerNAMEList = [], trainerClassList = [], trainerMusicList = [], teamPtrList = [], trainerPicList = [],
+TMHMList = [], TutorList = []
 
 
-function setTrainerPicList(){
-    dataList = e("datalist")
-    dataList.id = "tpic-datalist"
-    gameData.tpicT.forEach(function(val){
-        trainerPicList.push(val)
-        const option =  e("option")
-        option.value = val
-        dataList.append(option)
+function setXList(inputArray, outputArray, dataListID, valTransformation = x => x, valOptionTransformation = x => x){
+    let dataList
+    if (dataListID){
+        dataList = e("datalist")
+        dataList.id = dataListID
+    }
+    inputArray.forEach((val)=>{
+        outputArray.push(valTransformation(val))
+        if (dataListID){
+            const option =  e("option")
+            option.value = valOptionTransformation(val)
+            dataList.append(option)
+        }
+        if (dataListID) $('body').append(dataList)
     })
-    $('body').append(dataList)
 }
 
 function setTeamPtrList(){
@@ -29,97 +35,6 @@ function setTeamPtrList(){
     teamPtrList = teamPtrList.filter(x => x)
 }
 
-function setTrainerNameList(){
-    gameData.trainers.forEach(function(val){
-        trainerNAMEList.push(val.NAME)
-    })
-}
-function setTrainerMusicList(){
-    dataList = e("datalist")
-    dataList.id = "music-datalist"
-    gameData.tmusicT.forEach(function(val){
-        trainerMusicList.push(val)
-        const option =  e("option")
-        option.value = val
-        dataList.append(option)
-    })
-    $('body').append(dataList)
-}
-
-function setTrainerClassList(){
-    dataList = e("datalist")
-    dataList.id = "tclass-datalist"
-    gameData.tclassT.forEach(function(val){
-        trainerClassList.push(val)
-        const option =  e("option")
-        option.value = val
-        dataList.append(option)
-    })
-    $('body').append(dataList)
-}
-
- function getPokeList(){
-    if (!pokeList) {
-        pokeList = gameData.species.map(x => x.name)
-        dataList = e("datalist")
-        dataList.id = "poke-datalist"
-        pokeList.map((x)=>{
-            const option =  e("option")
-            option.value = x
-            dataList.append(option)
-        })
-        $('body').append(dataList)
-    }
-    return pokeList
-}
-
-function getItemList(){
-    if (!itemList){
-        itemList = []
-        dataList = e("datalist")
-        dataList.id = "item-datalist"
-        gameData.items.map((x)=>{
-            const option =  e("option",null, x.name)
-            itemList.push(x.name)
-            option.value = x.NAME
-            dataList.append(option)
-        })
-        $('body').append(dataList)
-    }
-    return itemList
-}
-    
-export function getMoveList(){
-    if (!moveList){
-        moveList = []
-        dataList = e("datalist")
-        dataList.id = "move-datalist"
-        gameData.moves.map((x)=>{
-            const option =  e("option",null, x.name)
-            moveList.push(x.name)
-            option.value = x.NAME
-            dataList.append(option)
-        })
-        $('body').append(dataList)
-    }
-    return moveList
-}
-
-export function getSPECIESList(){
-    if (!SPECIESList){
-        SPECIESList = []
-        dataList = e("datalist")
-        dataList.id = "SPECIES-datalist"
-        gameData.species.map((x)=>{
-            const option =  e("option",null, x.name)
-            SPECIESList.push(x.name)
-            option.value = x.NAME
-            dataList.append(option)
-        })
-        $('body').append(dataList)
-    }
-    return SPECIESList
-}
 /**
  * @type {Array.<Array<string, ()=>void>>}
  */
@@ -135,6 +50,12 @@ const targetibleMap = [
     }],
     ["#trainers-data", (ev)=>{
         setTrainerToEditMode(ev)
+    }],
+    ["#tutor", (ev)=>{
+        MoveEdit(ev, "tutor")
+    }],
+    ["#tmhm", (ev)=>{
+        MoveEdit(ev, "TMHMMoves")
     }]
 ]
 /**
@@ -179,15 +100,17 @@ export function setupEditor(){
         bridge.send('ask-for-folder')
     })
 }
-
+TMHMList = [], TutorList = []
 export function hydrateEditor(){
-    getPokeList()
-    getItemList()
-    getMoveList()
-    getSPECIESList()
-    setTrainerNameList()
-    setTrainerClassList()
-    setTrainerMusicList()
+    setXList(gameData.tmusicT,trainerMusicList,"music-datalist")
+    setXList(gameData.tclassT, trainerClassList, "tclass-datalist")
+    setXList(gameData.species.map(x => x.name), pokeList, "poke-datalist")
+    setXList(gameData.items, itemList, "item-datalist", x => x.name, x => x.NAME)
+    setXList(gameData.moves, moveList, "move-datalist", x => x.name, x => x.NAME)
+    setXList(gameData.species, SPECIESList, "SPECIES-datalist", x => x.name, x => x.NAME )
+    setXList(gameData.trainers,trainerNAMEList,null, x => x.NAME)
     setTeamPtrList()
-    setTrainerPicList()
+    setXList(gameData.tpicT, trainerPicList, "tpic-datalist")
+    setXList(gameData.tmhm, TMHMList, "tmhm-datalist", x => gameData.moves[x].NAME, x => gameData.moves[x].NAME)
+    setXList(gameData.tutors, TutorList, "tutor-datalist", x => gameData.moves[x].NAME, x => gameData.moves[x].NAME)
 }

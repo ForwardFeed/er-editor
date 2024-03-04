@@ -90,7 +90,7 @@ export function getAbilities(ROOT_PRJ: string, optionsGlobal_h: FileDataOptions,
                 resolve()
             })
             .catch((reason)=>{
-                const err = 'Failed at gettings species reason: ' + reason
+                const err = 'Failed at getting abilities reason: ' + reason
                 reject(err)
             })
     })

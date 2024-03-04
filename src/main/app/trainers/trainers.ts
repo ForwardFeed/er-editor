@@ -36,6 +36,15 @@ function parse(fileData: string): Map<string, Trainer>{
     const TrainersTeamResult = TrainersTeam.parse(lines, TrainerNamesResult.fileIterator)
     const trainers: Map<string, Trainer> = new Map()
     TrainerNamesResult.trainers.forEach((value, key)=>{
+        if (!value) return
+        if (!value.NAME){
+            for (const remI in value.rematches){
+                const rem = value.rematches[remI]
+                if (rem && rem.NAME){
+                    value = value.rematches.splice(+remI, 1)[0]
+                }
+            } 
+        }
         trainers.set(value.NAME, {
             name: key,
             realName: value.name,
@@ -47,7 +56,7 @@ function parse(fileData: string): Map<string, Trainer>{
             rematches: value.rematches
                 .filter((x)=> { 
                     if (TrainersTeamResult.trainers.has(x.partyPtr)){
-                        return TrainersTeamResult.trainers.get(x.partyPtr)?.length || 0 > 0
+                        return TrainersTeamResult.trainers.get(x.partyPtr)?.length || 0
                     } else {
                         return false
                     }     
@@ -80,7 +89,7 @@ export function getTrainers(ROOT_PRJ: string, gameData: GameData): Promise<void>
                 resolve()
         })
         .catch((reason)=>{
-            const err = 'Failed at gettings species reason: ' + reason
+            const err = 'Failed at getting trainers reason: ' + reason
             reject(err)
         })
     })

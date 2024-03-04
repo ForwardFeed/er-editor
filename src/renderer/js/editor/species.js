@@ -1,8 +1,8 @@
 import { cubicRadial } from "../radial.js"
 import { createInformationWindow, removeInformationWindow } from "../window.js"
-import { setEvos, currentSpecieID , getSpritesURL} from "../panels/species_panel.js"
+import { setEvos, currentSpecieID , getSpritesURL, setAllMoves} from "../panels/species_panel.js"
 import { gameData } from "../data_version.js"
-import { pokeList, itemList, moveList } from "./editor.js"
+import { moveList, pokeList, TMHMList, TutorList } from "./editor.js"
 import { JSHAC, e } from "../utils.js"
 import { bridge } from '../context_bridge.js'
 
@@ -145,3 +145,43 @@ const evoKindList = [
     "EVO_LEVEL_DAY" ,
     "EVO_SPECIFIC_MAPSEC" 
 ]
+
+export function MoveEdit(ev, moveCat){
+    const row = $(ev.target).closest('.species-move-row')
+    const rowIndex = row.parent().children().index(row[0])
+    const specie = gameData.species[currentSpecieID]
+    const move = gameData.moves[specie[moveCat][rowIndex]]
+    console.log(move)
+    const isRow = row.length > 0
+    
+    createInformationWindow(cubicRadial(
+        [
+            ['+Add Move', (ev_cb)=>{
+                removeInformationWindow(ev_cb)
+                const input = e('input', "builder-overlay-list")
+                input.setAttribute('list', `${moveCat==="tutor"?"tutor":"tmhm"}-datalist`)
+                input.addEventListener('focusout', ()=>{
+                    const value = input.value
+                    let moveID
+                    if (moveCat==="tutor"){
+                        moveID = gameData.tutors[TutorList.indexOf(value)]
+                    } else {
+                        moveID = gameData.tmhm[TMHMList.indexOf(value)]
+                    }   
+                    const newMove = gameData.moves[moveID]
+                    if (!newMove) return
+                    specie[moveCat].push(newMove)
+                    bridge.send('add-move', moveCat==="tutor"?"tutor":"tmhm", specie.NAME, newMove.NAME)
+                    setAllMoves()
+                })
+                createInformationWindow(input, ev_cb, "focus", true, false)
+            }],
+            [isRow?`-Rem ${move?.name}`:null, (ev_cb)=>{
+                removeInformationWindow(ev_cb)
+                specie[moveCat].splice(rowIndex, 1)
+                bridge.send('remove-move', moveCat==="tutor"?"tutor":"tmhm", specie.NAME, move.NAME)
+                setAllMoves()
+            }]
+        ]
+    , "6em", "1em"), ev, null, true, false)
+}

@@ -171,6 +171,8 @@ export interface CompactGameData{
     tclassT: string[],
     tmusicT: string[],
     tpicT: string[],
+    tutors: number[],
+    tmhm: number[],
 }
 function initCompactGameData(): CompactGameData{
     return {
@@ -196,6 +198,8 @@ function initCompactGameData(): CompactGameData{
         tclassT: [],
         tmusicT: [],
         tpicT: [],
+        tutors: [],
+        tmhm: [],
     }
 }
 
@@ -454,5 +458,7 @@ export function compactify(gameData: GameData): CompactGameData{
         }
         return 0
     })
+    compacted.tutors = gameData.tutors.map((val) => movesT.indexOf(val))
+    compacted.tmhm = gameData.tmhm.map((val) => movesT.indexOf(val))
     return compacted
 }

@@ -2,7 +2,7 @@ import * as FS from 'fs'
 import * as Path from 'path'
 
 import {getFileData} from './utils';
-import * as Moves from './moves'
+import * as Moves from './moves/moves'
 import * as Species from './species/species'
 import * as Abilities from './abilities'
 import * as Sprites from './sprites'
@@ -14,6 +14,7 @@ import * as BattleItems from './battle_items/battle_items'
 import * as InternalID from './internal_id'
 import { compactify } from './compactify';
 import * as Configuration from './configuration';
+import { getTutorTMHMList } from './moves/list_tutor_tmhm';
 //import { comparify } from './comparify';
 
 
@@ -30,6 +31,8 @@ export interface GameData {
     speciesInternalID: Map<string, number>,
     movesInternalID: Map<string, number>,
     trainerInternalID: Map<string, number>,
+    tutors: string[],
+    tmhm: string[],
 }
 
 const gameData: GameData = {
@@ -45,6 +48,8 @@ const gameData: GameData = {
     speciesInternalID: new Map(),
     movesInternalID: new Map(),
     trainerInternalID: new Map(),
+    tutors: [],
+    tmhm: [],
 }
 
 export function getGameData(window: Electron.BrowserWindow){
@@ -84,6 +89,7 @@ function getGameDataData(webContents: Electron.WebContents){
         promiseArray.push(InternalID.getSpeciesInternalID(ROOT_PRJ, gameData))
         promiseArray.push(InternalID.getMovesInternalID(ROOT_PRJ, gameData))
         promiseArray.push(InternalID.getTrainersInternalID(ROOT_PRJ, gameData))
+        promiseArray.push(getTutorTMHMList(ROOT_PRJ, gameData))
         //promiseArray.push()
         Promise.allSettled(promiseArray)
             .then((values)=>{
@@ -107,7 +113,7 @@ function getGameDataData(webContents: Electron.WebContents){
         
     })
     .catch((reason) => {
-        const err = 'Failed at gettings global.h reason: ' + reason
+        const err = 'Failed at getting global.h reason: ' + reason
         console.error(err)
     })
 }

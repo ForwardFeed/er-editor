@@ -7,7 +7,8 @@ import { addEvolution, removeEvolution, modEvolution, evoCQ } from './app/specie
 import { modTrainerParty , trainerEditCQ, modTrainer, rmInsane, addInsane, removeTrainer, addTrainer, renameTrainer} from './app/trainers/edit'
 import { TrainerPokemon } from './app/trainers/teams'
 import { Trainer } from './app/trainers/trainers'
-
+import { addTMHM, removeTMHM, TMHMCQ} from './app/species/tmhm_learnsets'
+import { TutorCQ, addTutor, removeTutor } from './app/species/tutor_learnsets'
 
 export function setupApi(window: Electron.BrowserWindow){
     ipcMain.on('get-game-data', () => {
@@ -71,5 +72,37 @@ export function setupApi(window: Electron.BrowserWindow){
         trainerEditCQ.feed(()=>{
             renameTrainer(previous, next)
         }).poll()
+    })
+    const targetRemoveMove = {
+        "tmhm": (specie: string, move:string)=>{
+            TMHMCQ.feed(()=>{
+                removeTMHM(specie, move)
+            }).poll()
+        },
+        "tutor": (specie: string, move:string)=>{
+            TutorCQ.feed(()=>{
+                removeTutor(specie, move)
+            }).poll()
+        }
+    }
+    ipcMain.on('remove-move', (_event, target: string, specie: string, move:string)  => {
+        const targetCall = targetRemoveMove[target]
+        if (targetCall) targetCall(specie, move)
+    })
+    const targetAddMove = {
+        "tmhm": (specie: string, move:string)=>{
+            TMHMCQ.feed(()=>{
+                addTMHM(specie, move)
+            }).poll()
+        },
+        "tutor": (specie: string, move:string)=>{
+            TutorCQ.feed(()=>{
+                addTutor(specie, move)
+            }).poll()
+        }
+    }
+    ipcMain.on('add-move', (_event, target: string, specie: string, move:string)  => {
+        const targetCall = targetAddMove[target]
+        if (targetCall) targetCall(specie, move)
     })
 }
