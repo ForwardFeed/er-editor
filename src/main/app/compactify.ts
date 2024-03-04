@@ -96,9 +96,9 @@ export interface CompactSpecie{
     name: string,
     stats: CompactBaseStats,
     evolutions: CompactEvolution[],
-    eggMoves: number[],
-    levelUpMoves: CompactLevelUpMove[],
-    TMHMMoves: number[],
+    eggmoves: number[],
+    learnset: CompactLevelUpMove[],
+    tmhm: number[],
     tutor: number[],
     forms: number[],
     SEnc:CompactedScripted[], // scripted encounters
@@ -326,11 +326,11 @@ export function compactify(gameData: GameData): CompactGameData{
                 evo.in = NAMET.indexOf(x.into)
                 return evo
             }),
-            eggMoves: val.eggMoves.map((x) => {
+            eggmoves: val.eggmoves.map((x) => {
                 if (!movesT.includes(x)) return 0
                     return movesT.indexOf(x)
             }),
-            levelUpMoves: val.levelUpMoves.map((x) => {
+            learnset: val.learnset.map((x) => {
                 return {
                     id: ((y)=>{
                         if (!movesT.includes(y)) return 0
@@ -339,7 +339,7 @@ export function compactify(gameData: GameData): CompactGameData{
                     lv: x.level
                 }
             }),
-            TMHMMoves: val.TMHMMoves.map((x) => {
+            tmhm: val.tmhm.map((x) => {
                 x = x.replace(/((TM)|(HM))[^_]+/, 'MOVE')
                 if (x === "MOVE_SOLARBEAM") x = "MOVE_SOLAR_BEAM"
                 if (!movesT.includes(x)) {

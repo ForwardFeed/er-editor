@@ -218,6 +218,7 @@ export function setupTeamBuilder() {
         ev.stopPropagation()
         document.body.append(window)
     })
+    setupExport()
 }
 
 let updateTeamWeaknessesLock = false
@@ -583,4 +584,42 @@ function editionStats(statField, viewID, callback) {
             rowDiv,
         ]
     ])
+}
+
+function setupExport(){
+    $('#builder-export').on('keyup', function(){
+        console.log()
+    })
+    function toggle(){
+        if ($('#builder-edt-save').is(':visible')){
+            const heightPx = Math.round(($('#builder-weaknesses').height() * 3) - $('#builder-export-bar').height())
+            $('#builder-export').css('height', heightPx + 'px')
+        } else {
+            $('#builder-export').css('height', 'unset')
+        }
+        $('#builder-weaknesses').toggle()
+        $('#builder-screenshot').toggle()
+        $('#builder-edt-save').toggle()
+        
+    }
+    $('#builder-export').on('focusout', function(){
+        console.log('focusout')
+        toggle()
+    })
+    $('#builder-export').on('focus', function(){
+        console.log('focus')
+        toggle()
+    })
+}
+
+function copyClipboard(){
+
+}
+
+function updateExport(){
+    $('#builder-export')
+}
+
+function updateFromExport(){
+
 }

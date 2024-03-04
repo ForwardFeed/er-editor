@@ -55,7 +55,13 @@ const targetibleMap = [
         MoveEdit(ev, "tutor")
     }],
     ["#tmhm", (ev)=>{
-        MoveEdit(ev, "TMHMMoves")
+        MoveEdit(ev, "tmhm")
+    }],
+    ["#eggmoves", (ev)=>{
+        MoveEdit(ev, "eggmoves")
+    }],
+    ["#learnset", (ev)=>{
+        MoveEdit(ev, "learnset")
     }]
 ]
 /**

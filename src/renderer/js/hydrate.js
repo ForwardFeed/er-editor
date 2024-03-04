@@ -143,8 +143,8 @@ function hydrateNextEvolutionWithMoves(previousSpecieID, currentEvo) {
     if (currentEvo.in == -1 || currentEvo.from) return
     const previousSpecie = gameData.species[previousSpecieID]
     const currentSpecie = gameData.species[currentEvo.in]
-    if (!currentSpecie.eggMoves.length) currentSpecie.eggMoves = previousSpecie.eggMoves
-    if (!currentSpecie.TMHMMoves.length) currentSpecie.TMHMMoves = previousSpecie.TMHMMoves
+    if (!currentSpecie.eggmoves.length) currentSpecie.eggmoves = previousSpecie.eggmoves
+    if (!currentSpecie.tmhm.length) currentSpecie.tmhm = previousSpecie.tmhm
     if (!currentSpecie.tutor.length) currentSpecie.tutor = previousSpecie.tutor
     //import evolution
     currentSpecie.evolutions.push({
@@ -175,9 +175,9 @@ function hydrateSpecies() {
         spec.locations = new Map();
         // concatenate all moves into a new variable
         // also remove all duplicates
-        spec.allMoves = [...new Set(spec.eggMoves.concat(
-            spec.levelUpMoves.map(x => x.id).concat(
-                spec.TMHMMoves.concat(
+        spec.allMoves = [...new Set(spec.eggmoves.concat(
+            spec.learnset.map(x => x.id).concat(
+                spec.tmhm.concat(
                     spec.tutor
                 )
             )

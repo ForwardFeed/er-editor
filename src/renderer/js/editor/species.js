@@ -146,12 +146,13 @@ const evoKindList = [
     "EVO_SPECIFIC_MAPSEC" 
 ]
 
-export function MoveEdit(ev, moveCat){
+export function MoveEdit(ev, moveCat, listcat){
     const row = $(ev.target).closest('.species-move-row')
     const rowIndex = row.parent().children().index(row[0])
     const specie = gameData.species[currentSpecieID]
     const move = gameData.moves[specie[moveCat][rowIndex]]
-    console.log(move)
+
+    return
     const isRow = row.length > 0
     
     createInformationWindow(cubicRadial(

@@ -239,16 +239,15 @@ aside>div {
     background-color: var(--btnActive);
 } 
 
-input[type="text"] {
-    
-}
 
-.btn,
-.side-btn {
+.btn, .side-btn {
     box-shadow: inset 0 0 1vmax var(--shadow);
-    ;
-    cursor: pointer;
+    cursor: default;
+    user-select: none;
 } 
+.btn:hover{
+    background-color: var(--selHover);
+}
 #to-filter{
     height: fit-content;
     margin: auto;

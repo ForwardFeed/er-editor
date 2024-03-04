@@ -17,10 +17,10 @@ export interface Specie {
     name: string,
     baseStats: BaseStats.BaseStats,
     evolutions: Evolutions.Evolution[],
-    eggMoves: string[],
-    levelUpMoves: LevelUpLearnSets.LevelUpMove[],
+    eggmoves: string[],
+    learnset: LevelUpLearnSets.LevelUpMove[],
     tutorMoves: string[],
-    TMHMMoves: string[],
+    tmhm: string[],
     forms: string[],
     dex: PokePokedex.PokePokedex
     sprite: string, //sprite relative path
@@ -32,8 +32,8 @@ function parse(pokeData: string): Specie[]{
     const speciesNamesResult = SpeciesNames.parse(lines, pokePokedexResult.fileIterator)
     const baseStatsResult = BaseStats.parse(lines, speciesNamesResult.fileIterator)
     const evolutionsResult = Evolutions.parse(lines, baseStatsResult.fileIterator)
-    const eggMovesResult = EggMoves.parse(lines, evolutionsResult.fileIterator)
-    const levelUpLearnsetsResult = LevelUpLearnSets.parse(lines, eggMovesResult.fileIterator)
+    const eggmovesResult = EggMoves.parse(lines, evolutionsResult.fileIterator)
+    const levelUpLearnsetsResult = LevelUpLearnSets.parse(lines, eggmovesResult.fileIterator)
     const TMHMLearnsetsResult = TMHMLearnsets.parse(lines, levelUpLearnsetsResult.fileIterator)
     const TutorMovesResult = TutorMoves.parse(lines, TMHMLearnsetsResult.fileIterator)
     const formsResult = FormsSpecies.parse(lines, TutorMovesResult.fileIterator)
@@ -46,9 +46,9 @@ function parse(pokeData: string): Specie[]{
             name: speciesNamesResult.names.get(key) || "undefined",
             baseStats: BaseStats,
             evolutions: evolutionsResult.evolutions.get(key) || [],
-            eggMoves: eggMovesResult.eggMoves.get(key) || [],
-            levelUpMoves: levelUpLearnsetsResult.levelLearnsets.get(key) || [],
-            TMHMMoves: TMHMLearnsetsResult.tmhmLearnsets.get(key) || [],
+            eggmoves: eggmovesResult.eggmoves.get(key) || [],
+            learnset: levelUpLearnsetsResult.levelLearnsets.get(key) || [],
+            tmhm: TMHMLearnsetsResult.tmhmLearnsets.get(key) || [],
             tutorMoves: TutorMovesResult.tutorMoves.get(key) || [],
             forms: formsResult.forms.get(key) || [],
             dex: pokePokedexResult.data.get(key) || {} as PokePokedex.PokePokedex,

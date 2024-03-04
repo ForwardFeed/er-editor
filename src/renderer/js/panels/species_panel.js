@@ -98,10 +98,10 @@ function setTypes(types, specie) {
 }
 
 export function setAllMoves(specie = gameData.species[currentSpecieID]){
-    setLevelUpMoves($('#learnset'), specie.levelUpMoves)
-    setMoves($('#tmhm'), specie.TMHMMoves)
+    setlearnset($('#learnset'), specie.learnset)
+    setMoves($('#tmhm'), specie.tmhm)
     setMoves($('#tutor'), specie.tutor)
-    setMoves($('#eggmoves'), specie.eggMoves)
+    setMoves($('#eggmoves'), specie.eggmoves)
 }
 
 function filterMoves(moveIDlist) {
@@ -162,7 +162,7 @@ function setMoves(core, moves) {
     }
     core.append(frag)
 }
-function setLevelUpMoves(core, moves) {
+function setlearnset(core, moves) {
     core.empty()
     const frag = document.createDocumentFragment()
     for (const { lv: lvl, id: id } of moves) {
