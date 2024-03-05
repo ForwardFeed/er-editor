@@ -11,31 +11,23 @@ import { configuration } from "./app/configuration"
  * reRead prop will tell the parser to reread the line it was on, it is usefull if you change status 
  * but maybe the next status will need the data available on the line it was already on
  */
-export interface GEditContext{
-    status: number,
-    next: ()=>void, //wrapper for status
-    reRead: boolean,
-    loopOnce: ()=>void, //wrapper for reRead
-    badReadMsg: string,
-    stopRead: boolean,
-    stop: ()=>void, //wrapper for stop read
-}
 
-export function initGEditContext(): GEditContext{
-    return {
-        status: 0,
-        next: function(){
-            this.status++
-        },
-        reRead: false,
-        loopOnce: function(){
-            this.reRead = true
-        },
-        badReadMsg: "",
-        stopRead: false,
-        stop: function(){
-            this.stopRead = true
-        }
+export class GEditContext{
+    status: number = 0
+    next(): GEditContext{
+        this.status++
+        return this
+    }
+    reRead: boolean = false
+    loopOnce(): GEditContext{
+        this.reRead = true
+        return this
+    }
+    badReadMsg: string = ""
+    stopRead: boolean = false
+    stop(): GEditContext{
+        this.stopRead = true
+        return this
     }
 }
 
@@ -85,7 +77,7 @@ export class GEdit{
     }
     private onRead(rawData: string){
         const lines = rawData.split('\n')
-            const ctx:  GEditContext = initGEditContext()
+            const ctx:  GEditContext = new GEditContext()
             const lineLen = lines.length
             for (let i = 0; i < lineLen; i++){
                 const line = this.param.cf?lines[i]?.replace(/\/\/.*/, ''):lines[i]

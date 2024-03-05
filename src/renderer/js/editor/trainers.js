@@ -78,7 +78,7 @@ export function setupEditorBuilder(){
     $('#trainers-save').on('click', saveTrainerData).hide()
     $('#trainers-rm-insane').on('click', function(){
         const trainer = gameData.trainers[currentTrainerID]
-        bridge.send('rm-insane', trainer.ptrInsane)
+        bridge.send('rm-insane', trainer.NAME, trainer.ptrInsane)
         trainer.insane = []
         trainer.ptrInsane = ""
         refreshEditTrainer(false)

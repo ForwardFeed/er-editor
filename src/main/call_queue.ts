@@ -15,15 +15,18 @@ export class CallQueue{
         this.warning = warning
         this.name = name
     }
+    /**
+     * adds a callback
+     */
     feed(call: Call): CallQueue{
         this.queue.push(call)
         return this
     }
     /**
-     * apply n locks that have to be 
+     * adds a lock
      */
-    locks(nlocks: number): CallQueue{
-        this.lock = nlocks
+    addLock(){
+        this.lock += 1
         return this
     }
     /**

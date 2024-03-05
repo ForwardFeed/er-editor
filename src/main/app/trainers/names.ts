@@ -80,7 +80,7 @@ const executionMap: {[key: string]: (line: string, context: Context) => void} = 
                         if (context.trainers.has(context.key)){
                             const preExistingTrainer = context.trainers.get(context.key)
                             context.current.rematches = preExistingTrainer?.rematches || []
-                        } 
+                        }
                         context.trainers.set(context.key, context.current)
                     }
                 } else {

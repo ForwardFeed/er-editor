@@ -98,6 +98,8 @@ export function replaceEvolution(specie: string, evos: Evolution[]){
                 ctx.next()
             } else if (line.match(';')){
                 lines.splice(i,0, createTextEvo(specie, evos))
+                ctx.next()
+                ctx.stop()
             }
         },
         (line, ctx, i, lines)=>{
@@ -107,6 +109,6 @@ export function replaceEvolution(specie: string, evos: Evolution[]){
             }
         }
     ]
-    const gedit =  new GEdit("/src/data/pokemon/evolution.h", evoCQ, "add Evolutions", execArray, {cf: true})
+    const gedit =  new GEdit("/src/data/pokemon/evolution.h", evoCQ, "replace Evolutions", execArray, {cf: true})
     gedit.go()
 }

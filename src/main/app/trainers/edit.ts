@@ -1,13 +1,11 @@
-import path from "path";
-import { getRawFile, writeRawFile } from "../utils_edit";
 import { TrainerPokemon } from "./teams";
 import { CallQueue } from "../../call_queue";
 import { Trainer } from "./trainers";
-import { configuration } from '../configuration'
+import { ExecArray, GEdit } from "../../gedit";
 
 export const trainerEditCQ = new CallQueue("Evolutions")
 
-function pokeToCData(poke: TrainerPokemon, comma: boolean = false){
+function pokeToCData(poke: TrainerPokemon){
     return `    {
     .lvl = 0,
     .species = ${poke.specie},
@@ -17,7 +15,7 @@ ${poke.ivs[5]?"":"\n    .zeroSpeedIvs = TRUE,"}
     .evs = {${poke.evs.join(', ')}},
     .nature = ${poke.nature},
     .moves = ${[0,1,2,3].map((_x,i) => poke.moves[i] || "MOVE_NONE").join(', ')}
-    }${comma?",\n":""}`
+    }`
 }
 
 function trainerToCData(trainer: Trainer): string{
@@ -40,479 +38,221 @@ ${trainer.ptrInsane?`\n        .partyInsane = {.ItemCustomMoves = ${trainer.ptrI
 
 
 export function modTrainerParty(ptr: string, party: TrainerPokemon[]){
-    const filepath = path.join(configuration.project_root, "/src/data/trainer_parties.h")
-    getRawFile(filepath)
-        .then((rawData)=>{
-            let newPokeData = ""
-            const partyLen = party.length
-            for (let i = 0; i < partyLen; i++){
-                const poke = party[i]
-                newPokeData += pokeToCData(poke, i != (partyLen - 1))
+    let begin = 0
+    const execArray: ExecArray = [
+        (line, ctx, i, lines)=>{
+            if (line.match(ptr)){
+                begin = i + 1
+                ctx.next()
             }
-            let status = 0
-            let lineMatch = 0
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (status == 0 && line.match(ptr)){
-                    lineMatch = i + 1
-                    status = 1
-                }
-                if (status == 1 && line.match(";")){
-                    lines.splice(lineMatch, i - lineMatch, newPokeData)
-                    break
-                }
+            if (i == lines.length - 1) ctx.badReadMsg = `couldn't find pointer ${ptr}`
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match(";")){
+                lines.splice(begin, i - begin, party.map(x => pokeToCData(x)).join(',\n'))
+                ctx.stop()
             }
-            writeRawFile(filepath, lines.join('\n'))
-                .then(()=>{
-                    console.log('success modifying trainer')
-                })
-                .catch((err)=>{
-                    console.error(`couldn't modify trainer, reason: ${err}`)
-                })
-                .finally(()=>{
-                    trainerEditCQ.unlock().poll()
-                })
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
+        }
+    ]
+    const gedit =  new GEdit("/src/data/trainer_parties.h",trainerEditCQ, "modify trainer party", execArray, {cf: true})
+    gedit.go()
 }
 
-function removeTrainerParty(ptr: string, callback: ()=>void){
-    const filepath = path.join(configuration.project_root, "/src/data/trainer_parties.h")
-    getRawFile(filepath)
-        .then((rawData)=>{
-            let start = 0
-            let stop = 0
-            let status = 0
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (status == 0 && line.match(`\\s${ptr}\\[`)){
-                    start = i
-                    status = 1
-                }
-                if (status == 0) continue
-                if (line.match(';')){
-                    stop = i
-                    break
-                }
+function removeTrainerParty(ptr: string){
+    let begin = 0
+    const execArray: ExecArray = [
+        (line, ctx, i, lines)=>{
+            if (line.match(`\\s${ptr}\\[`)){
+                begin = i + 1
+                ctx.next()
             }
-            if (start == 0){
-                console.error(`couldn't find party pointer ${ptr}`)
-                return callback()
+            if (i == lines.length - 1) ctx.badReadMsg = `couldn't find pointer ${ptr}`
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match(';')){
+                lines.splice(begin, i - begin + 1)
+                ctx.stop()
             }
-            lines.splice(start, stop - start + 1)
-            writeRawFile(filepath, lines.join('\n'))
-                .then(()=>{
-                    console.log('success removed trainer party ' + ptr)
-                })
-                .catch((err)=>{
-                    console.error(`couldn't write to remove trainer party, reason: ${err}`)
-                })
-                .finally(()=>{
-                    callback()
-                })
-        })
-        .catch((err)=>{
-            console.log(`Error while opening in remove Trainer party ${err}`)
-        })
-        
-    
+        }
+    ]
+    const gedit =  new GEdit("/src/data/trainer_parties.h",trainerEditCQ, "remove trainer party", execArray, {cf: true})
+    gedit.go()
 }
 
 function addTrainerParty(ptr: string, party: TrainerPokemon[]){
-    const filepath = path.join(configuration.project_root, "/src/data/trainer_parties.h")
-    let newPokeData = ""
-    const partyLen = party.length
-    for (let i = 0; i < partyLen; i++){
-        const poke = party[i]
-        newPokeData += pokeToCData(poke, i != (partyLen - 1))
-    }
-    const CData = `\n\nstatic const struct TrainerMonItemCustomMoves ${ptr}[] = {\n${newPokeData}\n};`
-    getRawFile(filepath)
-        .then((rawData)=>{
-            rawData += CData
-            writeRawFile(filepath, rawData)
-                .then(()=>{
-                    console.log('success add party')
-                })
-                .catch((err)=>{
-                    console.error(`couldn't add party, reason: ${err}`)
-                })
-                .finally(()=>{
-                    trainerEditCQ.unlock().poll()
-                })
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
+    const CData = `\nstatic const struct TrainerMonItemCustomMoves ${ptr}[] = {\n${party.map(x => pokeToCData(x)).join(',\n')}\n};`
+    const execArray: ExecArray = [
+        (_line, ctx, _i, lines)=>{
+            lines.push(CData)
+            ctx.next().stop()
+        },
+    ]
+    const gedit =  new GEdit("/src/data/trainer_parties.h",trainerEditCQ, "add trainer party", execArray, {cf: true})
+    gedit.go()
 }
 
 export function modTrainer(trainer: Trainer){
-    const filepath = path.join(configuration.project_root, "/src/data/trainers.h")
-    getRawFile(filepath)
-        .then((rawData)=>{
-            let status = 0
-            let start = 0
-            let lastP = 0
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (status == 0 && line.match(`\\[${trainer.NAME}\\]`)){
-                    start = i
-                    status = 1
-                    continue
-                }
-                if (status == 0) continue
-                if (line.match(/\}/)) lastP = i
-                if (line.match(/\[TRAINER\w+]/)) break
+    let begin = 0
+    let lastP = 0
+    const execArray: ExecArray = [
+        (line, ctx, i, lines)=>{
+            if (line.match(`\\[${trainer.NAME}\\]`)){
+                begin = i
+                ctx.next()
             }
-            if (start == 0){
-                console.error(`couldn't find trainer ${trainer.NAME}`)
-                trainerEditCQ.unlock().poll()
-                return 
-            }
-            lines.splice(start, lastP - start + 1, trainerToCData(trainer))
-            writeRawFile(filepath, lines.join('\n'))
-                .then(()=>{
-                    console.log('success modifying trainer')
-                    trainerEditCQ.unlock().poll()
-                })
-                .catch((err)=>{
-                    console.error(`couldn't modify trainer, reason: ${err}`)
-                })
-                .finally(()=>{
-                    trainerEditCQ.unlock().poll()
-                })
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
+            if (i == lines.length - 1) ctx.badReadMsg = `couldn't find trainer ${trainer.NAME}`
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match(/\[TRAINER\w+]/) || line.match(';')){
+                lines.splice(begin, lastP - begin, trainerToCData(trainer))
+                ctx.stop()
+            } 
+            if (line.match(/\}/)) lastP = i + 1
+        }
+    ]
+    const gedit =  new GEdit("/src/data/trainers.h", trainerEditCQ, "modify trainer", execArray, {cf: true})
+    gedit.go()
 }
-export function rmInsane(ptrInsane: string){
-    const filepath = path.join(configuration.project_root, "/src/data/trainers.h")
-    getRawFile(filepath)
-        .then((rawData)=>{
-            let status = 0
-            let a = 0
-            let b = 0
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (status <= 1 && line.match(`Insane.*${ptrInsane}[^\\w]`)){
-                    status += 1
-                    if (a){
-                        b = i
-                    } else{
-                        a = i
-                    }
+export function rmInsane(tNAME: string, ptrInsane: string){
+    let a = 0
+    const execArray: ExecArray = [
+        (line, ctx, i, lines) =>{
+            if (line.match(`\\[${tNAME}\\]`)){
+                ctx.next()
+            }
+            if (i == lines.length - 1) ctx.badReadMsg = `couldn't find trainer ${tNAME}`
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match(`Insane.*${ptrInsane}[^\\w]`)){
+                if (!a){
+                    a = i
+                } else{
+                    lines.splice(a, 1)
+                    lines.splice(i - 1, 1)
+                    ctx.next().stop()
                 }
-                if (status > 1) break
+                
             }
-            if (!a && !b) {
-                console.error(`couldn't find any insane associated pointer ${ptrInsane}`)
-                trainerEditCQ.unlock().poll()
-                return
-            }
-            lines.splice(a, 1)
-            lines.splice(b - 1, 1)
-            writeRawFile(filepath, lines.join('\n'))
-                .then(()=>{
-                    console.log('success modifying trainer')
-                    removeTrainerParty(ptrInsane, ()=>{})
-                })
-                .catch((err)=>{
-                    console.error(`couldn't modify trainer, reason: ${err}`)
-                })
-                .finally(()=>{
-                    trainerEditCQ.unlock().poll()
-                })
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
+            if (i == lines.length - 1) ctx.badReadMsg = `couldn't find ptr ${ptrInsane}`
+        }
+    ]
+    const gedit =  new GEdit("/src/data/trainers.h", trainerEditCQ, "remove Insane", execArray, {cf: true})
+    gedit.go()
 }
 export function addInsane(tNAME: string, ptrInsane: string, insaneParty: TrainerPokemon[]){
-    const filepath = path.join(configuration.project_root, "/src/data/trainers.h")
-    getRawFile(filepath)
-        .then((rawData)=>{
-            let insert = 0
-            let status = 0
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (status == 0 && line.match(`\\[${tNAME}\\]`)){
-                    status = 1
-                }
-                if (status == 0) continue
-                if (line.match(/\.party/)) status += 1
-                if (status == 3) {
-                    insert = i
-                    break
-                }   
+    let lastP = 0
+    const execArray: ExecArray = [
+        (line, ctx, i, lines) =>{
+            if (line.match(`\\[${tNAME}\\]`)){
+                ctx.next()
             }
-            if (!insert){
-                console.error(`couldn't find any trainer ${tNAME}`)
-                trainerEditCQ.unlock().poll()
-                return 
-            }
-            lines.splice(insert + 2, 0, `        .partySizeInsane = ARRAY_COUNT(${ptrInsane}),
+            if (i == lines.length - 1) ctx.badReadMsg = `couldn't find trainer ${tNAME}`
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match(/\}/)) lastP = i
+            if (line.match(/\[TRAINER_\w+\]/) || line.match(';')){
+                lines.splice(lastP, 0, `        .partySizeInsane = ARRAY_COUNT(${ptrInsane}),
         .partyInsane = {.ItemCustomMoves = ${ptrInsane}},`)
-            writeRawFile(filepath, lines.join('\n'))
-                .then(()=>{
-                    console.log('success modifying trainer')
-                    addTrainerParty(ptrInsane, insaneParty)
-                })
-                .catch((err)=>{
-                    console.error(`couldn't modify trainer, reason: ${err}`)
-                })
-                .finally(()=>{
-                    trainerEditCQ.unlock().poll()
-                })
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
+                trainerEditCQ.addLock()
+                addTrainerParty(ptrInsane, insaneParty)
+                ctx.stop()
+            }
+        }
+    ]
+    const gedit =  new GEdit("/src/data/trainers.h", trainerEditCQ, "remove Insane", execArray, {cf: true})
+    gedit.go()
 }
 export function removeTrainer(tNAME: string, ptrs: string[]){
-    trainerEditCQ.locks(3)
-    function removePartyPtr(){
-        if (ptrs.length == 0){
-            trainerEditCQ.unlock().poll()
-            return
+    ptrs.forEach((ptr)=>{
+        trainerEditCQ.feed(()=>{
+            removeTrainerParty(ptr)
+        }).poll()
+    })
+    let begin = 0
+    const execArray: ExecArray = [
+        (line, ctx, i, lines) =>{
+            if (line.match(`\\[${tNAME}\\]`)){
+                begin = i
+                ctx.next()
+            }
+            if (i == lines.length - 1) ctx.badReadMsg = `couldn't find trainer ${tNAME}`
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match(/\[TRAINER_\w+\]/) || line.match(';')){
+                lines.splice(begin, i - begin)
+                ctx.stop()
+            }
         }
-        const ptr = ptrs.splice(0,1)[0]
-        removeTrainerParty(ptr, ()=>{
-            removePartyPtr()
-        })
-    }
-    removePartyPtr()
-    const filepath = path.join(configuration.project_root, "/src/data/trainers.h")
-    getRawFile(filepath)
-        .then((rawData)=>{
-            let start = 0
-            let stop = 0
-            let status = 0
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (status == 0 && line.match(`\\[${tNAME}\\]`)){
-                    start = i
-                    status = 1
-                    continue
-                }
-                if (status == 0) continue
-                if (line.match(/\[TRAINER_\w+\]/ ) || line.match(';')){
-                    stop = i
-                    break
-                }
+    ]
+    const gedit =  new GEdit("/src/data/trainers.h", trainerEditCQ, "remove Trainer", execArray, {cf: true})
+    gedit.go()
+    trainerEditCQ.addLock()
+    const execArray2: ExecArray = [
+        (line, ctx, i, lines) =>{
+            if (line.match(`\\s${tNAME}\\s`)){
+                lines.splice(i, 1)
+                ctx.next().stop()
             }
-            if (!start || !stop){
-                console.error(`couldn't remove trainer: couldn't find ${tNAME}`)
-                trainerEditCQ.unlock().poll()
-                return
-            }
-            lines.splice(start, stop - start)
-            writeRawFile(filepath, lines.join('\n'))
-                .then(()=>{
-                    console.log(`success remove trainer ${tNAME}`)
-                })
-                .catch((err)=>{
-                    console.error(`couldn't remove trainer, reason: ${err}`)
-                })
-                .finally(()=>{
-                    trainerEditCQ.unlock().poll()
-                })
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
-        
-    const filepath2 = path.join(configuration.project_root, "/include/constants/opponents.h")
-    getRawFile(filepath2)
-        .then((rawData)=>{
-            let status = 0
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (status == 0 && line.match(`\\s${tNAME}\\s`)){
-                    status = 1
-                    lines.splice(i, 1)
-                    break
-                }
-            }
-            if (!status){
-                console.error(`couldn't remove trainer in opponents.h: couldn't find ${tNAME}`)
-                trainerEditCQ.unlock().poll()
-                return
-            }
-            writeRawFile(filepath2, lines.join('\n'))
-                .then(()=>{
-                    console.log('success remove trainer internal id')
-                })
-                .catch((err)=>{
-                    console.error(`couldn't remove trainer, reason: ${err}`)
-                })
-                .finally(()=>{
-                    trainerEditCQ.unlock().poll()
-                })
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
+            if (i == lines.length - 1) ctx.badReadMsg = `couldn't find Macro ${tNAME}`
+        },
+    ]
+    const gedit2 =  new GEdit("/include/constants/opponents.h", trainerEditCQ, "remove trainer internal id", execArray2, {cf: true})
+    gedit2.go()
 }
 export function addTrainer(trainer: Trainer){
-    trainerEditCQ.locks(3)
-    addTrainerParty(trainer.ptr, trainer.party)
-    const filepath = path.join(configuration.project_root, "/src/data/trainers.h")
-    getRawFile(filepath)
-        .then((rawData)=>{
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (line.match(';')){
-                    lines.splice(i, 0, "\n" + trainerToCData(trainer))
-                    break
-                }
+    const execArray: ExecArray = [
+        (line, ctx, i, lines) =>{
+            if (line.match(';')){
+                lines.splice(i, 0, "\n" + trainerToCData(trainer))
+                trainerEditCQ.addLock()
+                addTrainerParty(trainer.ptr, trainer.party)
+                ctx.next().stop()
             }
-            writeRawFile(filepath, lines.join('\n'))
-                .then(()=>{
-                    console.log('success add trainer data')
-                })
-                .catch((err)=>{
-                    console.error(`couldn't remove trainer, reason: ${err}`)
-                })
-                .finally(()=>{
-                    trainerEditCQ.unlock().poll()
-                })
-        
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
-
-    const filepath2 = path.join(configuration.project_root, "/include/constants/opponents.h")
-    getRawFile(filepath2)
-        .then((rawData)=>{
-            let status = 0
-            let last = 0
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (line.match('#define TRAINERS_COUNT')){
-                    let text = `#define ${trainer.NAME} `
-                    lines.splice(i, 0, `${text}${" ".repeat(55 - text.length)}${last + 1}`)
-                    status = 1
-                    break
-                }
-                if (line.match('#define')){
-                    last = +line.split(/\s+/)[2]
-                }
+        },
+    ]
+    const gedit =  new GEdit("/src/data/trainers.h", trainerEditCQ, "add Trainer", execArray, {cf: true})
+    gedit.go()
+    trainerEditCQ.addLock()
+    let lastD = 0
+    const execArray2: ExecArray = [
+        (line, ctx, i, lines) =>{
+            if (line.match('#define TRAINERS_COUNT')){
+                let text = `#define ${trainer.NAME} `
+                lines.splice(i, 0, `${text}${" ".repeat(55 - text.length)}${lastD + 1}`)
+                ctx.next().stop()
             }
-            if (!status){
-                console.error(`couldn't add trainer in opponents.h: couldn't find #define TRAINERS_COUNT}`)
-                trainerEditCQ.unlock().poll()
-                return
+            if (line.match('#define')){
+                lastD = +line.split(/\s+/)[2]
             }
-            writeRawFile(filepath2, lines.join('\n'))
-                .then(()=>{
-                    console.log('success add trainer internal ID')
-                })
-                .catch((err)=>{
-                    console.error(`couldn't remove trainer, reason: ${err}`)
-                })
-                .finally(()=>{
-                    trainerEditCQ.unlock().poll()
-                })
-        
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
+            if (i == lines.length - 1) ctx.badReadMsg = `couldn't find Macro #define TRAINERS_COUNT`
+        },
+    ]
+    const gedit2 =  new GEdit("/include/constants/opponents.h", trainerEditCQ, "add trainer internal id", execArray2, {cf: true})
+    gedit2.go()
 }
 
 export function renameTrainer(previous: string, next: string){
-    trainerEditCQ.locks(2)
-    const filepath = path.join(configuration.project_root, "/src/data/trainers.h")
-    getRawFile(filepath)
-        .then((rawData)=>{
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (line.match(`\\[${previous}\\]`)){
-                    lines.splice(i, 1, line.replace(previous, next))
-                    break
-                }
-                if (i == lineLen - 1){
-                    console.log(`failed to find ${previous} into trainers.h`)
-                }
+    const execArray: ExecArray = [
+        (line, ctx, i, lines) =>{
+            if (line.match(`\\[${previous}\\]`)){
+                lines.splice(i, 1, line.replace(previous, next))
+                ctx.next().stop()
             }
-            writeRawFile(filepath, lines.join('\n'))
-                .then(()=>{
-                    console.log('success rename trainer internal NAME')
-                })
-                .catch((err)=>{
-                    console.error(`couldn't rename trainer internal NAME, reason: ${err}`)
-                })
-                .finally(()=>{
-                    trainerEditCQ.unlock().poll()
-                })        
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
-        
-    const filepath2 = path.join(configuration.project_root, "/include/constants/opponents.h")
-    getRawFile(filepath2)
-        .then((rawData)=>{
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (line.match(`\\s${previous}\\s`)){
-                    lines.splice(i, 1, line.replace(previous, next))
-                    break
-                }
-                if (i == lineLen -1){
-                    console.log(`failed to find ${previous} into opponents.h`)
-                }
+            if (i == lines.length - 1) ctx.badReadMsg = `couldn't find trainer ${previous}`
+        },
+    ]
+    const gedit =  new GEdit("/src/data/trainers.h", trainerEditCQ, "Rename Trainer", execArray, {cf: true})
+    gedit.go()
+    trainerEditCQ.addLock()
+    const execArray2: ExecArray = [
+        (line, ctx, i, lines) =>{
+            if (line.match(`\\s${previous}\\s`)){
+                lines.splice(i, 1, line.replace(previous, next))
+                ctx.next().stop()
             }
-            writeRawFile(filepath2, lines.join('\n'))
-                .then(()=>{
-                    console.log('success add trainer internal ID')
-                })
-                .catch((err)=>{
-                    console.error(`couldn't rename trainer internal NAME, reason: ${err}`)
-                })
-                .finally(()=>{
-                    trainerEditCQ.unlock().poll()
-                })
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
-        
+            if (i == lines.length - 1) ctx.badReadMsg = `couldn't find macro ${previous}`
+        },
+    ]
+    const gedit2 =  new GEdit("/include/constants/opponents.h", trainerEditCQ, "Rename trainer internal id", execArray2, {cf: true})
+    gedit2.go()
 }

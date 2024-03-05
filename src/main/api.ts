@@ -37,9 +37,9 @@ export function setupApi(window: Electron.BrowserWindow){
             modTrainer(trainer)
         }).poll()
     })
-    ipcMain.on('rm-insane', (_event, ptrInsane: string) => {
+    ipcMain.on('rm-insane', (_event, tNAME: string, ptrInsane: string) => {
         trainerEditCQ.feed(()=>{
-            rmInsane(ptrInsane)
+            rmInsane(tNAME, ptrInsane)
         }).poll()
     })
     ipcMain.on('add-insane', (_event, tNAME: string, ptrInsane: string, insaneParty: TrainerPokemon[]) => {
