@@ -1,4 +1,8 @@
 import { regexGrabStr } from "../parse_utils"
+import { CallQueue } from "../../call_queue";
+import { ExecArray, GEdit } from "../../gedit";
+
+export const EggMoveCQ = new CallQueue('Egg Moves')
 
 export interface Result{
     fileIterator: number,
@@ -59,4 +63,49 @@ export function parse(lines: string[], fileIterator: number): Result{
         fileIterator: fileIterator,
         eggmoves: context.eggmoves
     }
+}
+
+export function addEggmove(specie: string, moves: string[]){
+    specie = specie.replace('SPECIES_', '')
+    let begin = 0
+    const execArray: ExecArray = [
+        (line, ctx, i, _lines)=>{
+            if (line.match(`\\(${specie},`)) {
+                ctx.next()
+                ctx.loopOnce()
+                begin = i
+            }
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match(/\)/)) {
+                const newText = `egg_moves(${specie},\n${moves.map(x => `        ${x}`).join(',\n')}),`
+                lines.splice(begin, i - begin, newText)
+                ctx.stop()
+            }
+        }
+    ]
+    const gedit = new GEdit("src/data/pokemon/egg_moves.h", EggMoveCQ, "add egg move", execArray, {cf: true})
+    gedit.go()
+}
+
+export function removeEggmove(specie: string, move: string){
+    const execArray: ExecArray = [
+        (line, ctx, _i, _lines)=>{
+            if (line.match(`\\(${specie},`)) {
+                ctx.next()
+            }
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match(move)){
+                lines.splice(i, 1)
+                ctx.stop()
+            }
+            if (line.match('egg_moves')) {
+                ctx.badReadMsg = `couldn't find move ${move} in egg moves`
+                ctx.stop()
+            }
+        }
+    ]
+    const gedit = new GEdit("src/data/pokemon/egg_moves.h", EggMoveCQ, "remove egg move", execArray, {cf: true})
+    gedit.go()
 }

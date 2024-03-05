@@ -52,16 +52,16 @@ const targetibleMap = [
         setTrainerToEditMode(ev)
     }],
     ["#tutor", (ev)=>{
-        MoveEdit(ev, "tutor")
+        MoveEdit(ev, "tutor", TutorList)
     }],
     ["#tmhm", (ev)=>{
-        MoveEdit(ev, "tmhm")
+        MoveEdit(ev, "tmhm", TMHMList)
     }],
     ["#eggmoves", (ev)=>{
-        MoveEdit(ev, "eggmoves")
+        MoveEdit(ev, "eggmoves", moveList)
     }],
     ["#learnset", (ev)=>{
-        MoveEdit(ev, "learnset")
+        MoveEdit(ev, "learnset", moveList)
     }]
 ]
 /**
@@ -117,6 +117,6 @@ export function hydrateEditor(){
     setXList(gameData.trainers,trainerNAMEList,null, x => x.NAME)
     setTeamPtrList()
     setXList(gameData.tpicT, trainerPicList, "tpic-datalist")
-    setXList(gameData.tmhm, TMHMList, "tmhm-datalist", x => gameData.moves[x].NAME, x => gameData.moves[x].NAME)
+    setXList(gameData.tmhms, TMHMList, "tmhm-datalist", x => gameData.moves[x].NAME, x => gameData.moves[x].NAME)
     setXList(gameData.tutors, TutorList, "tutor-datalist", x => gameData.moves[x].NAME, x => gameData.moves[x].NAME)
 }

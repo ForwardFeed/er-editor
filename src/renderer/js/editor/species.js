@@ -6,6 +6,19 @@ import { moveList, pokeList, TMHMList, TutorList } from "./editor.js"
 import { JSHAC, e } from "../utils.js"
 import { bridge } from '../context_bridge.js'
 
+/**
+ * @returns {@type {import('../../../main/app/species/evolutions').Evolution}}}
+ */
+function evoCompactToEvo(/**@type {import('../../../main/app/compactify').CompactEvolution[]}*/ evo){
+    return evo.map(x => {
+        return {
+            kind: gameData.evoKindT[x.kd],
+            specifier: x.rs,
+            into: gameData.species[x.in].NAME
+        }
+    })
+    
+}
 
 function callbackModifyEvo(row, ev_cb){
     removeInformationWindow(ev_cb)
@@ -18,12 +31,9 @@ function callbackModifyEvo(row, ev_cb){
             const poke = gameData.species[currentSpecieID]
             const evo = poke.evolutions[rowIndex]
             bridge.send(
-                'mod-evolution',
+                'change-evolution',
                 poke.NAME,
-                rowIndex,
-                gameData.evoKindT[evo.kd],
-                evo.rs,
-                gameData.species[evo.in].NAME
+                evoCompactToEvo(poke.evolutions)
             )
         }
     }
@@ -94,13 +104,18 @@ export function evosEdit(ev){
         [
             ['+ Add Evo', (ev_cb)=>{
                 removeInformationWindow(ev_cb)
-                bridge.send('add-evolution', gameData.species[currentSpecieID].NAME, gameData.evoKindT[0], "0", gameData.species[0].NAME)
-                gameData.species[currentSpecieID].evolutions.push({
+                const poke = gameData.species[currentSpecieID]
+                poke.evolutions.push({
                     kd: 0,
                     rs: "0",
                     in: 0,
                 })
-                setEvos(gameData.species[currentSpecieID].evolutions)
+                bridge.send(
+                    'change-evolution',
+                    poke.NAME,
+                    evoCompactToEvo(poke.evolutions)
+                )
+                setEvos(poke.evolutions)
                 callbackModifyEvo($(document).find('#species-evos .evo-parent:last'), ev_cb)
             }],
             [isRow? '~ Modify Evo': null, (ev_cb)=>{
@@ -109,9 +124,14 @@ export function evosEdit(ev){
             [isRow? '! Remove Evo': null, (ev_cb)=>{
                 removeInformationWindow(ev_cb)
                 const rowIndex = row.closest('#species-evos').find('.evo-parent').index(row)
-                gameData.species[currentSpecieID].evolutions.splice(rowIndex, 1)
-                setEvos(gameData.species[currentSpecieID].evolutions)
-                bridge.send('rem-evolution', gameData.species[currentSpecieID].NAME, rowIndex)
+                const poke = gameData.species[currentSpecieID]
+                poke.evolutions.splice(rowIndex, 1)
+                setEvos(poke.evolutions)
+                bridge.send(
+                    'change-evolution',
+                    poke.NAME,
+                    evoCompactToEvo(poke.evolutions)
+                )
                 
             }]
         ].filter(x => x[0]), "6em", "1em"
@@ -146,33 +166,38 @@ const evoKindList = [
     "EVO_SPECIFIC_MAPSEC" 
 ]
 
-export function MoveEdit(ev, moveCat, listcat){
+export function MoveEdit(ev, moveCat, list){
     const row = $(ev.target).closest('.species-move-row')
     const rowIndex = row.parent().children().index(row[0])
     const specie = gameData.species[currentSpecieID]
-    const move = gameData.moves[specie[moveCat][rowIndex]]
+    let move
+    if (moveCat === "learnset"){
+        move = gameData.moves[specie.learnset[rowIndex].id]
+    } else {
+        move = gameData.moves[specie[moveCat][rowIndex]]
+    }
 
-    return
     const isRow = row.length > 0
-    
+    let moveCatData
+    if ((moveCat === "eggmoves")||(moveCat == "learnset"))  {
+        moveCatData = "move" 
+    } else {
+        moveCatData = moveCat
+    }
     createInformationWindow(cubicRadial(
         [
             ['+Add Move', (ev_cb)=>{
                 removeInformationWindow(ev_cb)
                 const input = e('input', "builder-overlay-list")
-                input.setAttribute('list', `${moveCat==="tutor"?"tutor":"tmhm"}-datalist`)
+                input.setAttribute('list', `${moveCatData}-datalist`)
                 input.addEventListener('focusout', ()=>{
                     const value = input.value
-                    let moveID
-                    if (moveCat==="tutor"){
-                        moveID = gameData.tutors[TutorList.indexOf(value)]
-                    } else {
-                        moveID = gameData.tmhm[TMHMList.indexOf(value)]
-                    }   
+                    const moveID = gameData.tutors[list.indexOf(value)]  
                     const newMove = gameData.moves[moveID]
                     if (!newMove) return
                     specie[moveCat].push(newMove)
-                    bridge.send('add-move', moveCat==="tutor"?"tutor":"tmhm", specie.NAME, newMove.NAME)
+                    console.log(newMove, newMove)
+                    bridge.send('add-move', moveCat, specie.NAME, newMove.NAME)
                     setAllMoves()
                 })
                 createInformationWindow(input, ev_cb, "focus", true, false)
@@ -180,7 +205,7 @@ export function MoveEdit(ev, moveCat, listcat){
             [isRow?`-Rem ${move?.name}`:null, (ev_cb)=>{
                 removeInformationWindow(ev_cb)
                 specie[moveCat].splice(rowIndex, 1)
-                bridge.send('remove-move', moveCat==="tutor"?"tutor":"tmhm", specie.NAME, move.NAME)
+                bridge.send('remove-move', moveCat, specie.NAME, move.NAME)
                 setAllMoves()
             }]
         ]

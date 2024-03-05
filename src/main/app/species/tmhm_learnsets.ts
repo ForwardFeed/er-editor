@@ -1,8 +1,6 @@
-import path from "path"
-import { configuration } from "../configuration"
 import { regexGrabStr } from "../parse_utils"
-import { getRawFile, writeRawFile } from "../utils_edit"
 import { CallQueue } from "../../call_queue";
+import { ExecArray, GEdit } from "../../gedit";
 
 export const TMHMCQ = new CallQueue("TMHM")
 
@@ -69,77 +67,34 @@ export function parse(lines: string[], fileIterator: number): Result{
 }
 
 export function addTMHM(specie: string, move: string){
-    const filepath = path.join(configuration.project_root, "src/data/pokemon/tmhm_learnsets.h")
-    getRawFile(filepath)
-        .then((rawData)=>{
-            let status = 0
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (status == 0 && line.match('\\[' + specie + '\\]')){
-                    status = 1
-                }
-                if (status == 0) continue
-                if (line.match('TMHM_LEARNSET_END')){
-                    lines.splice(i, 0, `        TM(${move})`)
-                    break
-                }
+    const execArray: ExecArray = [
+        (line, ctx, _i, _lines)=>{
+            if (line.match('\\[' + specie + '\\]')) ctx.next()
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match('TMHM_LEARNSET_END')){
+                lines.splice(i, 0, `        TM(${move})`)
+                ctx.stop()
             }
-            writeRawFile(filepath, lines.join('\n'))
-                .then(()=>{
-                    console.log('success add TMHM')
-                })
-                .catch((err)=>{
-                    console.error(`couldn't add TMHM, reason: ${err}`)
-                })
-                .finally(()=>{
-                   TMHMCQ.unlock().poll()
-                })        
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
+        }
+    ]
+    const gedit =  new GEdit("src/data/pokemon/tmhm_learnsets.h",TMHMCQ, "add TMHM", execArray, {cf: true})
+    gedit.go()
 }
 
 export function removeTMHM(specie: string, move: string){
-    const filepath = path.join(configuration.project_root, "src/data/pokemon/tmhm_learnsets.h")
-    getRawFile(filepath)
-        .then((rawData)=>{
-            let status = 0
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (status == 0 && line.match('\\[' + specie + '\\]')){
-                    status = 1
-                }
-                if (status == 0) continue
-                if (line.match('TM\(.*' + move + '\)')){
-                    lines.splice(i, 1)
-                    break
-                }
-                if (line.match(/\[SPECIES_/)) break
+    const execArray: ExecArray = [
+        (line, ctx, _i, _lines)=>{
+            if (line.match('\\[' + specie + '\\]')) ctx.next()
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match('TM\(.*' + move + '\)')){
+                lines.splice(i, 1)
+                ctx.stop()
             }
-            if (status == 0){
-                console.error(`couldn't find tmhm ${move} for ${specie}`)
-                TMHMCQ.unlock().poll()
-                return
-            }
-            writeRawFile(filepath, lines.join('\n'))
-                .then(()=>{
-                    console.log('success remove TMHM')
-                })
-                .catch((err)=>{
-                    console.error(`couldn't remove TMHM, reason: ${err}`)
-                })
-                .finally(()=>{
-                   TMHMCQ.unlock().poll()
-                })        
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
+            if (line.match(/\[SPECIES_/)) ctx.stop()
+        }
+    ]
+    const gedit =  new GEdit("src/data/pokemon/tmhm_learnsets.h", TMHMCQ, "remove TMHM", execArray, {cf: true})
+    gedit.go()
 }

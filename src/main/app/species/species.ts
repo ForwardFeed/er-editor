@@ -24,6 +24,7 @@ export interface Specie {
     forms: string[],
     dex: PokePokedex.PokePokedex
     sprite: string, //sprite relative path
+    lrnPtr: string,
 }
 
 function parse(pokeData: string): Specie[]{
@@ -52,7 +53,8 @@ function parse(pokeData: string): Specie[]{
             tutorMoves: TutorMovesResult.tutorMoves.get(key) || [],
             forms: formsResult.forms.get(key) || [],
             dex: pokePokedexResult.data.get(key) || {} as PokePokedex.PokePokedex,
-            sprite: spritesResult.spritesPath.get(key) || ""
+            sprite: spritesResult.spritesPath.get(key) || "",
+            lrnPtr: levelUpLearnsetsResult.lrnPtr.get(key) || ""
         })
     })
     return species

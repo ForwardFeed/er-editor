@@ -1,9 +1,8 @@
 import { ipcMain } from 'electron'
-import { configuration } from './app/configuration'
 import { getGameData } from './app/main'
 import { askForFolder } from './app/configuration'
 import { setLocation, locationCQ } from './app/locations'
-import { addEvolution, removeEvolution, modEvolution, evoCQ } from './app/species/evolutions'
+import { replaceEvolution, evoCQ, Evolution } from './app/species/evolutions'
 import { modTrainerParty , trainerEditCQ, modTrainer, rmInsane, addInsane, removeTrainer, addTrainer, renameTrainer} from './app/trainers/edit'
 import { TrainerPokemon } from './app/trainers/teams'
 import { Trainer } from './app/trainers/trainers'
@@ -22,19 +21,9 @@ export function setupApi(window: Electron.BrowserWindow){
             setLocation(mapName, field, monID, key, value)
         }).poll()
     })
-    ipcMain.on('add-evolution', (_event, specie: string, kind: string, reason: string, into: string) => {
+    ipcMain.on('change-evolution', (_event, specie: string, evos: Evolution[]) => {
         evoCQ.feed(()=>{
-            addEvolution(configuration.project_root, specie, kind, reason, into)
-        }).poll()
-    })
-    ipcMain.on('rem-evolution', (_event, specie: string, evoIndex: number) => {
-        evoCQ.feed(()=>{
-            removeEvolution(configuration.project_root, specie, evoIndex)
-        }).poll()
-    })
-    ipcMain.on('mod-evolution', (_event, specie: string, evoIndex: number, kind: string, reason: string, into: string) => {
-        evoCQ.feed(()=>{
-            modEvolution(configuration.project_root, specie, evoIndex, kind, reason, into)
+            replaceEvolution(specie, evos)
         }).poll()
     })
     ipcMain.on('mod-trainer-party', (_event, ptr: string, party: TrainerPokemon[]) => {

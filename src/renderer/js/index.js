@@ -24,6 +24,7 @@ function loadApplication() {
         [setupFilters, "filter frame"],
         [setupGameDataRetrieving, "gamedata loader"],
         [setupEditor, "editor loader"],
+        [console.log('done'), "finished somehow"],
     ]
     for (const step of setupSteps){
         load(step[0], step[1])

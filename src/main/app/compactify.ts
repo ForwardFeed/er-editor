@@ -105,6 +105,7 @@ export interface CompactSpecie{
     dex: PokePokedex,
     id: number,
     sprite: string,
+    lrnPtr: string,
 }
 
 export interface CompactTrainers{
@@ -172,7 +173,7 @@ export interface CompactGameData{
     tmusicT: string[],
     tpicT: string[],
     tutors: number[],
-    tmhm: number[],
+    tmhms: number[],
 }
 function initCompactGameData(): CompactGameData{
     return {
@@ -199,7 +200,7 @@ function initCompactGameData(): CompactGameData{
         tmusicT: [],
         tpicT: [],
         tutors: [],
-        tmhm: [],
+        tmhms: [],
     }
 }
 
@@ -359,7 +360,8 @@ export function compactify(gameData: GameData): CompactGameData{
             SEnc: sEnc,
             dex: val.dex,
             id: gameData.speciesInternalID.get(val.NAME) || -1,
-            sprite: val.sprite
+            sprite: val.sprite,
+            lrnPtr: val.lrnPtr,
         })
     })
     compacted.locations = {
@@ -459,6 +461,6 @@ export function compactify(gameData: GameData): CompactGameData{
         return 0
     })
     compacted.tutors = gameData.tutors.map((val) => movesT.indexOf(val))
-    compacted.tmhm = gameData.tmhm.map((val) => movesT.indexOf(val))
+    compacted.tmhms = gameData.tmhm.map((val) => movesT.indexOf(val))
     return compacted
 }
