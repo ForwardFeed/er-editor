@@ -216,8 +216,7 @@ function learnsetCompactToLearnset(lrn){
 
 function sendUpdateLearnset(){
     const specie = gameData.species[currentSpecieID]
-    console.log('change-learnset', specie.lrnPtr, specie.learnset.map(x => learnsetCompactToLearnset(x)))
-    //bridge.send('add-learnset', moveCat, specie.NAME, newMove.NAME)
+    bridge.send('change-learnset', specie.lrnPtr, specie.learnset.map(x => learnsetCompactToLearnset(x)))
     
 }
 
@@ -277,7 +276,7 @@ export function LearnsetEdit(ev){
                 setAllMoves()
                 sendUpdateLearnset()
             }],
-            [move?`-Mod ${move?.name}`:null, (ev_cb)=>{
+            [move?`~Mod ${move?.name}`:null, (ev_cb)=>{
                 removeInformationWindow(ev_cb)
                 const newMove = specie.learnset[rowIndex]
                 showLearnsetEdit(ev_cb, newMove)

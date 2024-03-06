@@ -105,8 +105,8 @@ export function replaceLearnset(ptr: string, moves: LevelUpMove[]){
         (line, ctx, i, lines)=>{
             if (line.match(';')) {
                 const moveText = moves.map(x => `    LEVEL_UP_MOVE(${x.level}, ${x.move}),`).join('\n')
-                const msg = `static const struct LevelUpMove ${ptr}[] = {\n${moveText}),\n    LEVEL_UP_END\n};`
-                lines.splice(begin, i, msg)
+                const msg = `static const struct LevelUpMove ${ptr}[] = {\n${moveText}\n    LEVEL_UP_END\n};`
+                lines.splice(begin, i - begin + 1, msg)
                 ctx.stop()
             }
         }

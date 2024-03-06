@@ -12,10 +12,12 @@ const api: CustomAPI = {
       // whitelist channels
       let validChannels = ["get-game-data", "ask-for-folder", "set-location", "change-evolution",
     "mod-trainer-party", 'remove-trainer', 'add-trainer', "mod-trainer", 'rm-insane', 'add-insane', 'rm-rem', 'add-rem',
-    "rename-trainer", "remove-move", "add-move"];
+    "rename-trainer", "remove-move", "add-move", "change-learnset"];
       if (validChannels.includes(channel)) {
         console.log(channel, ...args)
           ipcRenderer.send(channel, ...args);
+      } else  {
+        console.warn('invalid send call:' + channel)
       }
     },
     receive: (channel, func) => {
@@ -28,6 +30,8 @@ const api: CustomAPI = {
               console.error(e)
             }
             
+        } else {
+          console.warn('invalid receive call:' + channel)
         }
     }
 }
