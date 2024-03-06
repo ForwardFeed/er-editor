@@ -137,9 +137,10 @@ function hydrateMoves(moves = gameData.moves) {
 /**
  * Not a fully functionnally recursive way to add specie evolution
  * @param {number} currentSpecieID - species into what the pokemon is evolving
- * @param {import("./compactify.js").CompactEvolution} currentEvo - the how this pokemon is getting evolved (first degree)
+ * @param {import("../../main/app/compactify.js").CompactEvolution} currentEvo - the how this pokemon is getting evolved (first degree)
+ * @param {number[]}
  */
-function hydrateNextEvolutionWithMoves(previousSpecieID, currentEvo) {
+function hydrateNextEvolutionWithMoves(previousSpecieID, currentEvo, megaEvoKindIndexes) {
     if (currentEvo.in == -1 || currentEvo.from) return
     const previousSpecie = gameData.species[previousSpecieID]
     const currentSpecie = gameData.species[currentEvo.in]
@@ -153,6 +154,10 @@ function hydrateNextEvolutionWithMoves(previousSpecieID, currentEvo) {
         in: previousSpecieID,
         from: true// its a added flag so we can know if into into but from
     })
+    //track if the evo is a mega
+    if (megaEvoKindIndexes.indexOf(currentEvo.kd) != -1) {
+        currentSpecie.isMega = previousSpecieID
+    }
     //import region for megas
     if (!currentSpecie.region) currentSpecie.region = previousSpecie.region
 }
@@ -207,14 +212,18 @@ function hydrateSpecies() {
             spec.region = regionsMapped[1]
         }
         //share the eggmoves to the evolutions !TODO recursively
+        const megaEvoKind = [
+            gameData.evoKindT.indexOf("EVO_MEGA_EVOLUTION"),
+            gameData.evoKindT.indexOf("EVO_MOVE_MEGA_EVOLUTION"),
+            gameData.evoKindT.indexOf("EVO_PRIMAL_REVERSION"),
+        ]
         for (const evo of spec.evolutions) {
-            hydrateNextEvolutionWithMoves(i, evo)
+            hydrateNextEvolutionWithMoves(i, evo, megaEvoKind)
         }
         // add to the html list 
         const row = e('div', "btn data-list-row sel-n-active")
         row.setAttribute('draggable', true);
         row.ondragstart = (ev) => {
-            console.log('drag start')
             ev.dataTransfer.setData("id", i)
         }
         //Node id because for correlation with nodelist in sorting

@@ -11,8 +11,11 @@ import { hydrateTrainers } from '../hydrate.js'
  * @returns @type import('../../../main/app/trainers/teams').TrainerPokemon 
  */
 export function convertToTextableTrainerTeam(/** @type import('../../../main/app/compactify').CompactTrainerPokemon */ trainerPkm){
+    const poke = gameData.species[trainerPkm.spc]
+    //down grades to pre-evolutions
+    const specieName = poke.isMega ? gameData.species[poke.isMega].NAME : poke.NAME
     return {
-        specie: gameData.species[trainerPkm.spc].NAME,
+        specie: specieName,
         ability: trainerPkm.abi,
         ivs: trainerPkm.ivs,
         evs: trainerPkm.evs,

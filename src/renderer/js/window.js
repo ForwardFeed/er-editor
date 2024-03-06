@@ -11,7 +11,7 @@ let windowFrame, callbackDelete
  * @param {HTMLElement} node
  * @param {CursorPosition} cursorPosition
  */
-export function createInformationWindow(node, ev, cursorPlacement, transparency=false, absorb = true) {
+export function createInformationWindow(node, ev, cursorPlacement, transparency=false, absorb = true, cbOnClose = null) {
     // remove previous window
     removeInformationWindow()
 
@@ -22,7 +22,7 @@ export function createInformationWindow(node, ev, cursorPlacement, transparency=
     if (transparency) windowFrame.style.backgroundColor = "rgba(0,0,0,0)"
     windowFrame.append(node)
     document.body.append(windowFrame)
-    callbackDelete = clickOutsideToRemove(windowFrame, absorb)
+    callbackDelete = clickOutsideToRemove(windowFrame, absorb, cbOnClose)
     ev.stopPropagation()
     // apply cursorPlacement
     if (cursorPlacement === "mid"){
@@ -40,7 +40,7 @@ export function createInformationWindow(node, ev, cursorPlacement, transparency=
     windowFrame.style.left = x + "px"
     windowFrame.style.top = y + "px"
     if (cursorPlacement === "focus"){
-        $(windowFrame).find('input').focus()
+        $(windowFrame).find('input').eq(0).trigger('focus')
     }
 }
 

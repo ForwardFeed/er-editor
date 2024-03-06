@@ -1,12 +1,12 @@
 import { locationEdit } from "./locations.js"
-import { evosEdit, MoveEdit } from "./species.js"
+import { evosEdit, MoveEdit, LearnsetEdit} from "./species.js"
 import { gameData } from "../data_version.js"
 import { setupEditorBuilder } from "./trainers.js"
 import { e } from "../utils.js"
 import { setTrainerToEditMode } from "./trainers.js"
 import { bridge } from '../context_bridge.js'
 
-export let dataList = [], pokeList = [], itemList = [], moveList = [], SPECIESList = [], 
+export let dataList = [], pokeList = [], itemList = [], moveList = [], MOVEList = [], SPECIESList = [], 
 trainerNAMEList = [], trainerClassList = [], trainerMusicList = [], teamPtrList = [], trainerPicList = [],
 TMHMList = [], TutorList = []
 
@@ -52,16 +52,16 @@ const targetibleMap = [
         setTrainerToEditMode(ev)
     }],
     ["#tutor", (ev)=>{
-        MoveEdit(ev, "tutor", TutorList)
+        MoveEdit(ev, "tutor", "tutor")
     }],
     ["#tmhm", (ev)=>{
-        MoveEdit(ev, "tmhm", TMHMList)
+        MoveEdit(ev, "tmhm", "tmhm")
     }],
     ["#eggmoves", (ev)=>{
-        MoveEdit(ev, "eggmoves", moveList)
+        MoveEdit(ev, "eggmoves", "move")
     }],
     ["#learnset", (ev)=>{
-        MoveEdit(ev, "learnset", moveList)
+        LearnsetEdit(ev)
     }]
 ]
 /**
@@ -113,6 +113,7 @@ export function hydrateEditor(){
     setXList(gameData.species.map(x => x.name), pokeList, "poke-datalist")
     setXList(gameData.items, itemList, "item-datalist", x => x.name, x => x.NAME)
     setXList(gameData.moves, moveList, "move-datalist", x => x.name, x => x.NAME)
+    setXList(gameData.moves, MOVEList, "move-datalist", x => x.NAME, x => x.NAME)
     setXList(gameData.species, SPECIESList, "SPECIES-datalist", x => x.name, x => x.NAME )
     setXList(gameData.trainers,trainerNAMEList,null, x => x.NAME)
     setTeamPtrList()

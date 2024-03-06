@@ -63,7 +63,7 @@ function removeTrainerParty(ptr: string){
     const execArray: ExecArray = [
         (line, ctx, i, lines)=>{
             if (line.match(`\\s${ptr}\\[`)){
-                begin = i + 1
+                begin = i
                 ctx.next()
             }
             if (i == lines.length - 1) ctx.badReadMsg = `couldn't find pointer ${ptr}`

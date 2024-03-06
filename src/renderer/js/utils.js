@@ -49,7 +49,7 @@ export function clickOutsideToHide(htmlNodeToHide, htmlNodeClickedOn){
     $(document).on('click', clickToHide)
 }
 
-export function clickOutsideToRemove(node, absorb = false){
+export function clickOutsideToRemove(node, absorb = false, cbOnClose = null){
     function hasParent(node, nodeToCompare){
         if (!node) return false
         if (node != nodeToCompare){
@@ -62,6 +62,7 @@ export function clickOutsideToRemove(node, absorb = false){
         if (absorb) ev.stopPropagation()
         node.remove()
         document.body.removeEventListener('click', clickToHide, absorb)
+        if (cbOnClose) cbOnClose()
     }
     // will work as long no future event.stop propagation is written in the code
     document.body.addEventListener('click', clickToHide, absorb)
@@ -80,14 +81,21 @@ export function clickOutsideToRemove(node, absorb = false){
  */
 export function e(tag = "div", classname = "", innerText = "", events = {}){
     tag = tag.split("#")
-    const htmlTag = document.createElement(tag[0])
-    if (tag[1]) htmlTag.id = tag[1]
-    if (classname) htmlTag.className = classname
-    htmlTag.innerText = innerText
-    for (const event in events){
-        htmlTag[event] = events[event]
+    const id = tag[1]
+    tag = tag[0]
+    const htmlElement = document.createElement(tag)
+    if (id) htmlElement.id = id
+    if (classname) htmlElement.className = classname
+    if (tag === "input"){
+        htmlElement.value = innerText
+    } else {
+        htmlElement.innerText = innerText
     }
-    return htmlTag
+    
+    for (const event in events){
+        htmlElement[event] = events[event]
+    }
+    return htmlElement
 }
 /**
  * Javascript HTML Array Concatenation

@@ -2,7 +2,7 @@ import { cubicRadial } from "../radial.js"
 import { createInformationWindow, removeInformationWindow } from "../window.js"
 import { setEvos, currentSpecieID , getSpritesURL, setAllMoves} from "../panels/species_panel.js"
 import { gameData } from "../data_version.js"
-import { moveList, pokeList, TMHMList, TutorList } from "./editor.js"
+import { MOVEList, moveList, pokeList, TMHMList, TutorList } from "./editor.js"
 import { JSHAC, e } from "../utils.js"
 import { bridge } from '../context_bridge.js'
 
@@ -166,38 +166,24 @@ const evoKindList = [
     "EVO_SPECIFIC_MAPSEC" 
 ]
 
-export function MoveEdit(ev, moveCat, list){
+export function MoveEdit(ev, moveCat, moveCatDatalist){
     const row = $(ev.target).closest('.species-move-row')
     const rowIndex = row.parent().children().index(row[0])
     const specie = gameData.species[currentSpecieID]
-    let move
-    if (moveCat === "learnset"){
-        move = gameData.moves[specie.learnset[rowIndex].id]
-    } else {
-        move = gameData.moves[specie[moveCat][rowIndex]]
-    }
-
+    const move =gameData.moves[specie[moveCat][rowIndex]]
     const isRow = row.length > 0
-    let moveCatData
-    if ((moveCat === "eggmoves")||(moveCat == "learnset"))  {
-        moveCatData = "move" 
-    } else {
-        moveCatData = moveCat
-    }
     createInformationWindow(cubicRadial(
         [
             ['+Add Move', (ev_cb)=>{
                 removeInformationWindow(ev_cb)
                 const input = e('input', "builder-overlay-list")
-                input.setAttribute('list', `${moveCatData}-datalist`)
+                input.setAttribute('list', `${moveCatDatalist}-datalist`)
                 input.addEventListener('focusout', ()=>{
-                    const value = input.value
-                    const moveID = gameData.tutors[list.indexOf(value)]  
+                    const moveID = MOVEList.indexOf(input.value)
                     const newMove = gameData.moves[moveID]
                     if (!newMove) return
-                    specie[moveCat].push(newMove)
-                    console.log(newMove, newMove)
-                    bridge.send('add-move', moveCat, specie.NAME, newMove.NAME)
+                    specie[moveCat].push(moveID)
+                    //bridge.send('add-move', moveCat, specie.NAME, newMove.NAME)
                     setAllMoves()
                 })
                 createInformationWindow(input, ev_cb, "focus", true, false)
@@ -205,8 +191,91 @@ export function MoveEdit(ev, moveCat, list){
             [isRow?`-Rem ${move?.name}`:null, (ev_cb)=>{
                 removeInformationWindow(ev_cb)
                 specie[moveCat].splice(rowIndex, 1)
-                bridge.send('remove-move', moveCat, specie.NAME, move.NAME)
+                //bridge.send('remove-move', moveCat, specie.NAME, move.NAME)
                 setAllMoves()
+            }]
+        ]
+    , "6em", "1em"), ev, null, true, false)
+}
+
+/** 
+ * @param {@type import('../../../main/app/compactify').CompactLevelUpMove} lrn 
+ * @returns {@type import('../../../main/app/species/level_up_learnsets.js').LevelUpMove}
+ */
+function learnsetCompactToLearnset(lrn){
+    return {
+        level: lrn.lv,
+        move: gameData.moves[lrn.id].NAME,
+    }
+}
+
+function sendUpdateLearnset(){
+    const specie = gameData.species[currentSpecieID]
+    console.log('change-learnset', specie.NAME, specie.learnset.map(x => learnsetCompactToLearnset(x)))
+    //bridge.send('add-learnset', moveCat, specie.NAME, newMove.NAME)
+}
+
+function showLearnsetEdit(ev_cb, newMove){
+    const specie = gameData.species[currentSpecieID]
+    function sortByLevel(a, b){
+        return a.lv - b.lv
+    }
+    const lvlInput = e('input', "overlay-stats-edit", newMove.lv)
+    const input = e('input', "builder-overlay-list", gameData.moves[newMove.id].NAME)
+    input.setAttribute('list', 'move-datalist')
+    input.addEventListener('focus', ()=>{
+        input.value = ""
+    })
+    input.addEventListener('focusout', ()=>{
+        if (MOVEList.indexOf(input.value) == -1) {
+            input.value = gameData.moves[newMove.id].NAME
+            return
+        }
+        newMove.id = MOVEList.indexOf(input.value)
+        specie.learnset = specie.learnset.sort (sortByLevel)
+        setAllMoves()
+        
+    })
+    lvlInput.setAttribute('type', 'number')
+    lvlInput.onkeyup = function(ev){
+        ev.target.value = Math.min(ev.target.value.replace(/[^0-9]/g, "").replace(/^0(?=\d)/,''), 100)
+    }
+    lvlInput.addEventListener('focusout', ()=>{
+        newMove.lv = lvlInput.value = +lvlInput.value
+        specie.learnset = specie.learnset.sort (sortByLevel)
+        setAllMoves()
+    })
+    
+    let row = e('div', 'species-move-row')
+    row.append(lvlInput, input)
+    createInformationWindow(row, ev_cb, "focus", true, true, sendUpdateLearnset)
+}
+
+export function LearnsetEdit(ev){
+    const row = $(ev.target).closest('.species-move-row')
+    const rowIndex = row.parent().children().index(row[0])
+    const specie = gameData.species[currentSpecieID]
+    const move =gameData.moves[specie.learnset[rowIndex]?.id]
+    createInformationWindow(cubicRadial(
+        [
+            ['+Add Move', (ev_cb)=>{
+                removeInformationWindow(ev_cb)
+                const newMove = {lv: 0, id: 0}
+                specie.learnset.push(newMove)
+                showLearnsetEdit(ev_cb, newMove)
+                
+            }],
+            [move?`-Rem ${move?.name}`:null, (ev_cb)=>{
+                removeInformationWindow(ev_cb)
+                specie.learnset.splice(rowIndex, 1)
+                setAllMoves()
+                sendUpdateLearnset()
+            }],
+            [move?`-Mod ${move?.name}`:null, (ev_cb)=>{
+                removeInformationWindow(ev_cb)
+                const newMove = specie.learnset[rowIndex]
+                showLearnsetEdit(ev_cb, newMove)
+                
             }]
         ]
     , "6em", "1em"), ev, null, true, false)

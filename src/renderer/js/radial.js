@@ -36,7 +36,7 @@ export function cubicRadial(buttons, buttonWidth, buttonHeight){
     for (let i = 0; i < nbSides; i++){//row
         for (let j = 0; j < nbSides; j++){//columns
             const btnData =  buttons[i * nbSides + j]
-            if (!btnData) continue
+            if (!btnData || !btnData[0]) continue
             const btnNode = e("div","radial-btn" , btnData[0])
             btnNode.style.left = `calc(${buttonWidth} * ${j})`
             btnNode.style.top = `calc(${buttonHeight} * ${i})`
