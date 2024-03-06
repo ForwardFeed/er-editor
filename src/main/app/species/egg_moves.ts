@@ -65,7 +65,7 @@ export function parse(lines: string[], fileIterator: number): Result{
     }
 }
 
-export function addEggmove(specie: string, moves: string[]){
+export function replaceEggMoves(specie: string, moves: string[]){
     specie = specie.replace('SPECIES_', '')
     let begin = 0
     const execArray: ExecArray = [
@@ -78,34 +78,12 @@ export function addEggmove(specie: string, moves: string[]){
         },
         (line, ctx, i, lines)=>{
             if (line.match(/\)/)) {
-                const newText = `egg_moves(${specie},\n${moves.map(x => `        ${x}`).join(',\n')}),`
-                lines.splice(begin, i - begin, newText)
+                const newText = `    egg_moves(${specie},\n${moves.map(x => `        ${x}`).join(',\n')}),`
+                lines.splice(begin, i - begin + 1, newText)
                 ctx.stop()
             }
         }
     ]
     const gedit = new GEdit("src/data/pokemon/egg_moves.h", EggMoveCQ, "add egg move", execArray, {cf: true})
-    gedit.go()
-}
-
-export function removeEggmove(specie: string, move: string){
-    const execArray: ExecArray = [
-        (line, ctx, _i, _lines)=>{
-            if (line.match(`\\(${specie},`)) {
-                ctx.next()
-            }
-        },
-        (line, ctx, i, lines)=>{
-            if (line.match(move)){
-                lines.splice(i, 1)
-                ctx.stop()
-            }
-            if (line.match('egg_moves')) {
-                ctx.badReadMsg = `couldn't find move ${move} in egg moves`
-                ctx.stop()
-            }
-        }
-    ]
-    const gedit = new GEdit("src/data/pokemon/egg_moves.h", EggMoveCQ, "remove egg move", execArray, {cf: true})
     gedit.go()
 }

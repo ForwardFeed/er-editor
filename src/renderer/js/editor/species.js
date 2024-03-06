@@ -184,7 +184,7 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
                     if (!newMove) return
                     specie[moveCat].push(moveID)
                     if (moveCat === "eggmoves"){
-                        bridge.send('add-move', "moveCat", specie.NAME, specie.eggmoves.map(x => gameData.moves[x].NAME))
+                        bridge.send('change-eggmoves', specie.NAME, specie.eggmoves.map(x => gameData.moves[x].NAME))
                     } else {
                         bridge.send('add-move', moveCat, specie.NAME, newMove.NAME)
                     }
@@ -196,7 +196,12 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
             [isRow?`-Rem ${move?.name}`:null, (ev_cb)=>{
                 removeInformationWindow(ev_cb)
                 specie[moveCat].splice(rowIndex, 1)
-                //bridge.send('remove-move', moveCat, specie.NAME, move.NAME)
+                if (moveCat === "eggmoves"){
+                    bridge.send('change-eggmoves', specie.NAME, specie.eggmoves.map(x => gameData.moves[x].NAME))
+                } else {
+                    bridge.send('remove-move', moveCat, specie.NAME, move.NAME)
+                }
+                
                 setAllMoves()
             }]
         ]
