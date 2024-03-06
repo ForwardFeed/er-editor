@@ -8,6 +8,8 @@ import { TrainerPokemon } from './app/trainers/teams'
 import { Trainer } from './app/trainers/trainers'
 import { addTMHM, removeTMHM, TMHMCQ} from './app/species/tmhm_learnsets'
 import { TutorCQ, addTutor, removeTutor } from './app/species/tutor_learnsets'
+import { EggMoveCQ, addEggmove, removeEggmove } from './app/species/egg_moves'
+import { LevelUPLearnsetCQ, LevelUpMove, replaceLearnset} from './app/species/level_up_learnsets'
 
 export function setupApi(window: Electron.BrowserWindow){
     ipcMain.on('get-game-data', () => {
@@ -72,6 +74,11 @@ export function setupApi(window: Electron.BrowserWindow){
             TutorCQ.feed(()=>{
                 removeTutor(specie, move)
             }).poll()
+        },
+        "eggmoves": (specie: string, move: string)=>{
+            EggMoveCQ.feed(()=>{
+                removeEggmove(specie, move)
+            }).poll()
         }
     }
     ipcMain.on('remove-move', (_event, target: string, specie: string, move:string)  => {
@@ -88,10 +95,20 @@ export function setupApi(window: Electron.BrowserWindow){
             TutorCQ.feed(()=>{
                 addTutor(specie, move)
             }).poll()
+        },
+        "eggmoves": (specie: string, moves: string[])=>{
+            EggMoveCQ.feed(()=>{
+                addEggmove(specie, moves)
+            }).poll()
         }
     }
     ipcMain.on('add-move', (_event, target: string, specie: string, move:string)  => {
         const targetCall = targetAddMove[target]
         if (targetCall) targetCall(specie, move)
+    })
+    ipcMain.on('change-learnset', (_event, ptr: string, moves: LevelUpMove[])  => {
+        LevelUPLearnsetCQ.feed(()=>{
+            replaceLearnset(ptr, moves)
+        }).poll()
     })
 }

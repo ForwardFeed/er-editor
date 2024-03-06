@@ -183,7 +183,12 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
                     const newMove = gameData.moves[moveID]
                     if (!newMove) return
                     specie[moveCat].push(moveID)
-                    //bridge.send('add-move', moveCat, specie.NAME, newMove.NAME)
+                    if (moveCat === "eggmoves"){
+                        bridge.send('add-move', "moveCat", specie.NAME, specie.eggmoves.map(x => gameData.moves[x].NAME))
+                    } else {
+                        bridge.send('add-move', moveCat, specie.NAME, newMove.NAME)
+                    }
+                    
                     setAllMoves()
                 })
                 createInformationWindow(input, ev_cb, "focus", true, false)
@@ -211,8 +216,9 @@ function learnsetCompactToLearnset(lrn){
 
 function sendUpdateLearnset(){
     const specie = gameData.species[currentSpecieID]
-    console.log('change-learnset', specie.NAME, specie.learnset.map(x => learnsetCompactToLearnset(x)))
+    console.log('change-learnset', specie.lrnPtr, specie.learnset.map(x => learnsetCompactToLearnset(x)))
     //bridge.send('add-learnset', moveCat, specie.NAME, newMove.NAME)
+    
 }
 
 function showLearnsetEdit(ev_cb, newMove){
@@ -267,7 +273,7 @@ export function LearnsetEdit(ev){
             }],
             [move?`-Rem ${move?.name}`:null, (ev_cb)=>{
                 removeInformationWindow(ev_cb)
-                specie.learnset.splice(rowIndex, 1)
+                const moveID = specie.learnset.splice(rowIndex, 1)[0]
                 setAllMoves()
                 sendUpdateLearnset()
             }],

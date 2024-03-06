@@ -1,8 +1,7 @@
-import path from "path"
 import { regexGrabNum, regexGrabStr } from "../parse_utils"
-import { getRawFile, writeRawFile } from "../utils_edit"
 import { CallQueue } from "../../call_queue";
-import { configuration } from "../configuration";
+import { ExecArray, GEdit } from "../../gedit";
+
 
 export const LevelUPLearnsetCQ = new CallQueue('Level Up Learnset')
 
@@ -93,83 +92,25 @@ export function parse(lines: string[], fileIterator: number): Result{
     }
 }
 
-export function addLearnset(ptr: string, move: string, level: number){
-    const filepath = path.join(configuration.project_root, "src/data/pokemon/level_up_learnsets.h")
-    getRawFile(filepath)
-        .then((rawData)=>{
-            let status = 0
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (status == 0 && line.match(`${ptr}\\[\\]`)){
-                    status = 1
-                }
-                if (status == 0) continue
-                if (line.match('LEVEL_UP_END')){
-                    lines.splice(i, 0, `        LEVEL_UP_MOVE(${level}, ${move}),`)
-                    break
-                }
+export function replaceLearnset(ptr: string, moves: LevelUpMove[]){
+    let begin = 0
+    const execArray: ExecArray = [
+        (line, ctx, i, lines)=>{
+            if (line.match(`${ptr}\\[\\]`)) {
+                begin = i
+                ctx.next()
             }
-            if (status == 0){
-                console.error(`couldn't find Learnset ${move} for ${ptr}`)
-                LevelUPLearnsetCQ.unlock().poll()
-                return
+            if (i == lines.length - 1) ctx.badReadMsg = `couldn't find pointer ${ptr}`
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match(';')) {
+                const moveText = moves.map(x => `    LEVEL_UP_MOVE(${x.level}, ${x.move}),`).join('\n')
+                const msg = `static const struct LevelUpMove ${ptr}[] = {\n${moveText}),\n    LEVEL_UP_END\n};`
+                lines.splice(begin, i, msg)
+                ctx.stop()
             }
-            writeRawFile(filepath, lines.join('\n'))
-                .then(()=>{
-                    console.log('success add Learnset')
-                })
-                .catch((err)=>{
-                    console.error(`couldn't add Learnset, reason: ${err}`)
-                })
-                .finally(()=>{
-                    LevelUPLearnsetCQ.unlock().poll()
-                })        
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
-}
-
-export function removeLearnset(ptr: string, move: string){
-    const filepath = path.join(configuration.project_root, "src/data/pokemon/level_up_learnsets.h")
-    getRawFile(filepath)
-        .then((rawData)=>{
-            let status = 0
-            const lines = rawData.split('\n')
-            const lineLen = lines.length
-            for (let i = 0; i < lineLen; i++){
-                const line = lines[i].replace(/\/\/.*/, '')
-                if (!line) continue
-                if (status == 0 && line.match(`${ptr}\\[\\]`)){
-                    status = 1
-                }
-                if (status == 0) continue
-                if (line.match('TUTOR\(.*' + move + '\)')){
-                    lines.splice(i, 1)
-                    break
-                }
-                if (line.match('LEVEL_UP_END')) break
-            }
-            if (status == 0){
-                console.error(`couldn't find Learnset ${move} for ${ptr}`)
-                LevelUPLearnsetCQ.unlock().poll()
-                return
-            }
-            writeRawFile(filepath, lines.join('\n'))
-                .then(()=>{
-                    console.log('success remove Learnset')
-                })
-                .catch((err)=>{
-                    console.error(`couldn't remove Learnset, reason: ${err}`)
-                })
-                .finally(()=>{
-                    LevelUPLearnsetCQ.unlock().poll()
-                })        
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
+        }
+    ]
+    const gedit =  new GEdit("src/data/pokemon/level_up_learnsets.h", LevelUPLearnsetCQ, "replace level up learnset", execArray, {cf: true})
+    gedit.go()
 }
