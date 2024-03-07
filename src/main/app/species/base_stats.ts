@@ -190,7 +190,7 @@ export function changeBaseStats(specie: string, values: number[]){
                 if (line.match(field)){
                     foundFields.push(j)
                     const baseText = `    .${field}`
-                    lines.splice(i, 1, `${baseText}${" ".repeat(19 - baseText.length)}= ${values[j]},`)
+                    lines.splice(i, 1, `${baseText}${" ".repeat(20 - baseText.length)}= ${values[j]},`)
                 }
             }
         }
@@ -209,7 +209,7 @@ export function changeAbis(specie: string, field: string, abis: string[]){
         (line, ctx, i, lines)=>{
             if (line.match(field)){
                 const baseText = `    .${field}`
-                lines.splice(i, 1, `${baseText}${" ".repeat(19 - baseText.length)}= {${abis.join(', ')}},`)
+                lines.splice(i, 1, `${baseText}${" ".repeat(20 - baseText.length)}= {${abis.join(', ')}},`)
                 ctx.stop()
             } else if (line.match(/\[SPECIES/)){
                 ctx.badReadMsg = `couldn't find field ${field}`
@@ -235,9 +235,9 @@ export function changeTypes(specie: string, types: [string, string]){
                 const typeNb = regexGrabStr(line, /(?<=type)\d/)
                 const baseText = `    .type${typeNb}`
                 if (typeNb === "1"){
-                    lines.splice(i, 1, `${baseText}${" ".repeat(19 - baseText.length)}= ${types[0]},`)
+                    lines.splice(i, 1, `${baseText}${" ".repeat(20 - baseText.length)}= ${types[0]},`)
                 } else {
-                    lines.splice(i, 1, `${baseText}${" ".repeat(19 - baseText.length)}= ${types[1]},`)
+                    lines.splice(i, 1, `${baseText}${" ".repeat(20 - baseText.length)}= ${types[1]},`)
                 }
                 found = true
             } else if (line.match(/\[SPECIES/)){

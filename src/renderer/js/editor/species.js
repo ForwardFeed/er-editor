@@ -311,6 +311,7 @@ export function modSpecieBS(ev){
     ]
     const specie = gameData.species[currentSpecieID]
     specie.stats.modBase = structuredClone(specie.stats.base)
+    let hasChanged = false
     const modPanel = JSHAC(
         baseStatsTable.map((x, i)=>{
             return JSHAC([
@@ -319,6 +320,7 @@ export function modSpecieBS(ev){
                     e(`${i != 6?`input#m${x}`:`div#m${x}`}`, 'stat-num mod-stat-num', specie.stats.base[i], {
                         onkeyup: (ev_keyup)=>{
                             if (i == 6) return
+                            hasChanged = true
                             const prevVal = specie.stats.modBase[i]
                             const val = ev_keyup.target.value =
                                 Math.min(ev_keyup.target.value.replace('').replace(/[^0-9]/g, "").replace(/^0(?=\d)/,''), 255)
@@ -333,6 +335,7 @@ export function modSpecieBS(ev){
         , e('div#specie-basestats-mod'))
     
     createInformationWindow(modPanel, ev, "", false, true, ()=>{
+        if (!hasChanged) return
         specie.stats.base = structuredClone(specie.stats.modBase)
         delete specie.stats.modBase
         updateBaseStats(specie.stats.base)
@@ -355,7 +358,7 @@ export function modAbi(ev, abiCat, target){
     
     createInformationWindow(input, ev, "focus", true, true, ()=>{
         const nextAbi = ABIList.indexOf(input.value)
-        if (nextAbi == -1) return
+        if (nextAbi == -1 || abiID == nextAbi) return
         // because some abilities repeat themselves if the pokemon only have one ability
         // so i have to replace all
         specie.stats[abiCat].forEach((x, i, arr)=> {
@@ -381,7 +384,7 @@ export function modSpcType(ev){
     input.setAttribute('list', 'type-datalist')
     createInformationWindow(input, ev, "focus", true, true, ()=>{
         const nextType = TYPEList.indexOf(input.value)
-        if (nextType == -1) return
+        if (nextType == -1 || nextType == spcType) return
         specie.stats.types[rowIndex] = nextType
         setTypes([...specie.stats.types, abilitiesExtraType(specie.activeAbi, specie)], specie)
         bridge.send('change-spc-type', specie.NAME, specie.stats.types.map(x => `TYPE_${gameData.typeT[x].toUpperCase()}`))
