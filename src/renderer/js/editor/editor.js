@@ -1,5 +1,5 @@
 import { locationEdit } from "./locations.js"
-import { evosEdit, MoveEdit, LearnsetEdit, modSpecieBS, modAbi, modSpcType} from "./species.js"
+import { evosEdit, MoveEdit, LearnsetEdit, modSpecieBS, modAbi, modSpcType, modDescription} from "./species.js"
 import { gameData } from "../data_version.js"
 import { setupEditorBuilder } from "./trainers.js"
 import { e } from "../utils.js"
@@ -72,6 +72,9 @@ const targetibleMap = [
     [".spc-type", (ev)=>{
         modSpcType(ev)
     }],
+    ["#species-misc", (ev)=>{
+        modDescription(ev)
+    }]
 ]
 /**
  * 

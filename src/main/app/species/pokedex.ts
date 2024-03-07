@@ -1,4 +1,8 @@
+import { CallQueue } from "../../call_queue"
+import { ExecArray, GEdit } from "../../gedit"
 import { regexGrabNum, regexGrabStr } from "../parse_utils"
+
+export const DexCQ = new CallQueue("dex entries")
 
 export interface Result{
     fileIterator: number,
@@ -7,6 +11,7 @@ export interface Result{
 export interface PokePokedex {
     id: number,
     desc: string,
+    descPtr: string,
     hw: [number, number]
     // category: string
 }
@@ -15,6 +20,7 @@ function initPokePokedex(): PokePokedex{
     return {
         id: -1,
         desc: "",
+        descPtr: "",
         hw: [0,0]
     }
 }
@@ -71,6 +77,7 @@ const executionMap: {[key: string]: (line: string, context: Context) => void} = 
         }else if (line.match('.description')){
             const descPtr = regexGrabStr(line.replace(/\s/g, ''), /(?<==)\w+/)
             context.current.desc = context.descMap.get(descPtr)?.replace(/--/g, '  ') || ""
+            context.current.descPtr = descPtr
         } else if (line.match(';')){
             if (context.currentKey){
                 context.dataCollection.set(context.currentKey, context.current)
@@ -97,3 +104,30 @@ export function parse(lines: string[], fileIterator: number): Result{
     }
 }
 
+
+export function changeDesc(ptr: string, lines: string[]){
+    const newText = `const u8 ${ptr}[] = _(\n${lines.map(x => `    "${x}"`).join('\n')});`
+    let begin = 0
+    const execArray: ExecArray = [
+        (line, ctx, i, lines)=>{
+            if (line.match(`${ptr}\\[\\]`)) {
+                begin = i
+                ctx.next()
+            }
+            if (i == lines.length - 1) {
+                lines.splice(lines.length,0,newText)
+                ctx.next().stop()
+            }
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match(';')){
+                lines.splice(begin, i - begin + 1, newText)
+                ctx.stop()
+            }
+            //return 
+        }
+    ]
+    
+    const gedit =  new GEdit("src/data/pokemon/pokedex_text.h",DexCQ, "changing pokemon desc", execArray, {cf: true})
+    gedit.go()
+}

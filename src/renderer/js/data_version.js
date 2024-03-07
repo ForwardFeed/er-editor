@@ -20,8 +20,8 @@ export function setupGameDataRetrieving(){
     bridge.receive('ok-folder', function(path){
         bridge.send('get-game-data')
     })
-    bridge.send('get-game-data')
-    //fetchFromJSONFile()
+    //bridge.send('get-game-data')
+    fetchFromJSONFile()
 }
 
 function fetchFromJSONFile(){

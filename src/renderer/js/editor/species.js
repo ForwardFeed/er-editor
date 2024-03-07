@@ -391,3 +391,56 @@ export function modSpcType(ev){
     })
     
 }
+
+export function modDescription(ev){
+    const specie = gameData.species[currentSpecieID]
+    function splitIntoLines (text){
+        text = text.split(' ')
+        const lines = []
+        const MAX_CHAR_LINE = 45
+        for (let li=0, w=0; li < 4; li++){
+            let line = ""
+            for (let i=0; i<MAX_CHAR_LINE; i++){
+                const word = text[w]
+                w += 1
+                if (!word) continue
+                if (i + word.length > MAX_CHAR_LINE) {
+                    w -= 1
+                    break
+                }
+                line += word + " "
+                i += word.length
+            }
+            if (li < 3) line = line.replace(/ $/, '\\n')
+            lines.push(line)
+        }
+        return lines.filter(x => x)
+    }
+    function toFullCCode(text, ptr){
+        return `const u8 ${ptr}[] = _(\n${splitIntoLines(text).map(x => `    "${x}"`).join('\n')});`
+    }
+    const panel = e('div', 'edt-panel-desc')
+    const input = e('textarea', 'edt-desc-textarea', specie.dex.desc, {
+        onkeyup: ()=>{
+            specie.dex.desc = input.value = input.value.replace(/"/g, '')
+            display.innerText = toFullCCode(input.value, specie.dex.descPtr)
+            saveRow.style.display = "flex"
+        }
+    })
+    const display = e('pre', 'edt-desc-display', toFullCCode(specie.dex.desc, specie.dex.descPtr))
+    const saveRow = e('div', 'edt-desc-save btn', null, {
+        onclick: ()=>{
+            bridge.send('change-spc-desc', specie.dex.descPtr, splitIntoLines(input.value))
+            saveRow.style.display = "none"
+        }
+    })
+    const save = e('span', null, 'save !')
+    saveRow.style.display = "none"
+    input.setAttribute('spellcheck', 'false')
+
+    createInformationWindow(JSHAC([
+        input,
+        display,
+        saveRow, [save]
+    ], panel), ev, "focus", true, true)
+}

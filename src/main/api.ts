@@ -11,6 +11,7 @@ import { TutorCQ, addTutor, removeTutor } from './app/species/tutor_learnsets'
 import { EggMoveCQ, replaceEggMoves } from './app/species/egg_moves'
 import { LevelUPLearnsetCQ, LevelUpMove, replaceLearnset} from './app/species/level_up_learnsets'
 import { BSCQ, changeAbis, changeBaseStats, changeTypes } from './app/species/base_stats'
+import { DexCQ, changeDesc } from './app/species/pokedex'
 
 export function setupApi(window: Electron.BrowserWindow){
     ipcMain.on('get-game-data', () => {
@@ -120,6 +121,11 @@ export function setupApi(window: Electron.BrowserWindow){
     ipcMain.on('change-spc-type', (_event, specie: string, types: [string, string])  => {
         BSCQ.feed(()=>{
             changeTypes(specie, types)
+        }).poll()
+    })
+    ipcMain.on('change-spc-desc', (_event, ptr: string, lines: string[])  => {
+        DexCQ.feed(()=>{
+            changeDesc(ptr, lines)
         }).poll()
     })
 }
