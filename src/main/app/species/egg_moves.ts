@@ -85,5 +85,5 @@ export function replaceEggMoves(specie: string, moves: string[]){
         }
     ]
     const gedit = new GEdit("src/data/pokemon/egg_moves.h", EggMoveCQ, "add egg move", execArray, {cf: true})
-    gedit.go()
+    gedit.go() 
 }

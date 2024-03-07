@@ -1,7 +1,7 @@
 import { GameData } from "../main";
 import { autojoinFilePath, getMulFilesData } from "../utils";
 import * as TrainerNames from './names'
-//import * as Rematches from './rematches'
+import * as Rematches from './rematches'
 import * as TrainersTeam from './teams'
 
 
@@ -20,6 +20,7 @@ export interface Trainer{
     gender: boolean, // true w*man
     music: string,
     pic: string,
+    rematchM: string,
 }
 
 export interface RematchTrainer{
@@ -29,51 +30,44 @@ export interface RematchTrainer{
     NAME: string,
 }
 
+
 function parse(fileData: string): Map<string, Trainer>{
     const lines = fileData.split('\n')
-    const TrainerNamesResult = TrainerNames.parse(lines,0)
-    //const RematchesResult = Rematches.parse(lines, TrainerNamesResult.fileIterator)
+    const RematchesResult = Rematches.parse(lines, 0)
+    const TrainerNamesResult = TrainerNames.parse(lines, RematchesResult.fileIterator)
     const TrainersTeamResult = TrainersTeam.parse(lines, TrainerNamesResult.fileIterator)
     const trainers: Map<string, Trainer> = new Map()
     TrainerNamesResult.trainers.forEach((value, key)=>{
-        if (!value) return
-        if (!value.NAME){
-            for (const remI in value.rematches){
-                const rem = value.rematches[remI]
-                if (rem && rem.NAME){
-                    value = value.rematches.splice(+remI, 1)[0]
-                }
-            } 
-        }
+        if (RematchesResult.rematched.indexOf(key) != -1) return
+        const rematchList = RematchesResult.rematches.get(key) || []
+        let rematchM: string= ""
+        const rematchs = rematchList.map((x, i)=> {
+            const rem = TrainerNamesResult.trainers.get(x)
+            if (!i) rematchM = x
+            if (!rem) return 
+            return {
+                double: rem.double,
+                party: TrainersTeamResult.trainers.get(rem.partyPtr) || [],
+                ptr: rem.partyPtr,
+                NAME: rem.NAME
+            } as RematchTrainer
+        }).filter(x => x) as RematchTrainer[]
+
         trainers.set(value.NAME, {
-            name: key,
+            name: value.NAME,
             realName: value.name,
             NAME: value.NAME,
             tclass: value.tclass,
             double: value.double,
             party: TrainersTeamResult.trainers.get(value.partyPtr) || [],
             insane: TrainersTeamResult.trainers.get(value.insanePtr) || [],
-            rematches: value.rematches
-                .filter((x)=> { 
-                    if (TrainersTeamResult.trainers.has(x.partyPtr)){
-                        return TrainersTeamResult.trainers.get(x.partyPtr)?.length || 0
-                    } else {
-                        return false
-                    }     
-                })
-                .map((x)=>{
-                    return {
-                        double: x.double,
-                        party: TrainersTeamResult.trainers.get(x.partyPtr) || [],
-                        ptr: x.partyPtr,
-                        NAME: x.NAME
-                    }
-                }),
+            rematches: rematchs,
             ptr: value.partyPtr,
             ptrInsane: value.insanePtr,
             gender: value.gender, // true w*man
             music: value.music,
-            pic: value.pic
+            pic: value.pic,
+            rematchM: rematchM
         })
     })
     return trainers
@@ -81,7 +75,9 @@ function parse(fileData: string): Map<string, Trainer>{
 
 export function getTrainers(ROOT_PRJ: string, gameData: GameData): Promise<void>{
     return new Promise((resolve: ()=>void, reject)=>{
-        const filepaths = autojoinFilePath(ROOT_PRJ, [  'src/data/trainers.h',
+        const filepaths = autojoinFilePath(ROOT_PRJ, [  
+                                                        'src/battle_setup.c',
+                                                        'src/data/trainers.h',
                                                         'src/data/trainer_parties.h'])
         getMulFilesData(filepaths, {filterComments: true, filterMacros: true, macros: new Map()})
         .then((fileData)=>{

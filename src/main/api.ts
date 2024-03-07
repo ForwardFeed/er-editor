@@ -49,14 +49,14 @@ export function setupApi(window: Electron.BrowserWindow){
             addInsane(tNAME, ptrInsane, insaneParty)
         }).poll()
     })
-    ipcMain.on('remove-trainer', (_event, tNAME: string, ptrs: string[])  => {
+    ipcMain.on('remove-trainer', (_event, tNAME: string, ptrs: string[], tRematch: string)  => {
         trainerEditCQ.feed(()=>{
-            removeTrainer(tNAME, ptrs)
+            removeTrainer(tNAME, ptrs, tRematch)
         }).poll()
     })
-    ipcMain.on('add-trainer', (_event, trainer: Trainer)  => {
+    ipcMain.on('add-trainer', (_event, trainer: Trainer, tRematch: string, tMap: string, tBase: string)  => {
         trainerEditCQ.feed(()=>{
-            addTrainer(trainer)
+            addTrainer(trainer, tRematch, tMap, tBase)
         }).poll()
     })
     ipcMain.on('rename-trainer', (_event, previous: string, next: string)  => {

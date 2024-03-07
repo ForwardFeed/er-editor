@@ -100,7 +100,7 @@ export function setupEditorBuilder(){
         if (!activeRem || isNaN(activeRem)) return
         const trainer = gameData.trainers[currentTrainerID]
         const ptrs = [trainer.rem[activeRem - 1].ptr].filter(x => x)
-        bridge.send('remove-trainer', trainer.rem.splice(+activeRem - 1, 1)[0].NAME, ptrs)
+        bridge.send('remove-trainer', trainer.rem.splice(+activeRem - 1, 1)[0].NAME, ptrs, "")
         refreshEditTrainer(false)
     })
     $('#trainers-add-rem').on('click', function(){
@@ -119,6 +119,9 @@ export function setupEditorBuilder(){
             NAME: trainerNAME
         }
         trainer.rem.push(newRem)
+        if (!trainer.rematchM){
+            trainer.rematchM = trainer.NAME.replace('TRAINER_', 'REMATCH_')
+        }
         bridge.send('add-trainer',{
             name: trainerName,
             NAME: trainerNAME,
@@ -132,16 +135,16 @@ export function setupEditorBuilder(){
             gender: trainer.gender,
             music: gameData.tmusicT[trainer.music],
             pic: gameData.tpicT[trainer.pic],
-        })
+        }, trainer.rematchM, gameData.MAPST[trainer.map] || "EVER_GRANDE_CITY", trainer.NAME)
         refreshEditTrainer(false)
     })
     $('#trainers-remove').on('click', function(){
         if (confirm('This will delete the trainer right away without turning back, proceed?')){
             const trainer = gameData.trainers[currentTrainerID]
             const ptrs = [trainer.ptr, trainer.ptrInsane].filter(x => x)
-            bridge.send('remove-trainer', trainer.NAME, ptrs)
+            bridge.send('remove-trainer', trainer.NAME, ptrs, trainer.rematchM)
             for (const rem of trainer.rem){
-                bridge.send('remove-trainer', rem.NAME, [rem.ptr])
+                bridge.send('remove-trainer', rem.NAME, [rem.ptr], "")
             }
             gameData.trainers.splice(currentTrainerID, 1)
             hydrateTrainers()
@@ -188,8 +191,9 @@ export function addTrainer(){
         gender: false,
         music: 3,
         pic: 3,
+        rematchM: ""
     }
-    bridge.send('add-trainer', transformCompactToBaseTrainer(defaultBaseTrainer))
+    bridge.send('add-trainer', transformCompactToBaseTrainer(defaultBaseTrainer), "", "", "")
     gameData.trainers.push(defaultBaseTrainer)
     teamPtrList.push(defaultBaseTrainer.ptr)
     hydrateTrainers()

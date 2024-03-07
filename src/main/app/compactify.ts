@@ -123,6 +123,7 @@ export interface CompactTrainers{
     music: number,
     pic: number,
     id: number,
+    rematchM: string,
 }
 
 export interface CompactTrainerPokemon{
@@ -168,6 +169,7 @@ export interface CompactGameData{
     natureT: string[],
     scriptedEncoutersHowT: string[],
     mapsT: string[],
+    MAPST: string[],
     projet_root: string,
     tclassT: string[],
     tmusicT: string[],
@@ -195,6 +197,7 @@ function initCompactGameData(): CompactGameData{
         natureT: [],
         scriptedEncoutersHowT: [],
         mapsT: [],
+        MAPST: [],
         projet_root: "",
         tclassT: [],
         tmusicT: [],
@@ -260,15 +263,15 @@ export function compactify(gameData: GameData): CompactGameData{
     compacted.mapsT = gameData.mapTable
     gameData.species.forEach((val)=>{
         const bs = val.baseStats
-        let sEnc: CompactedScripted[] = []
-        if (gameData.speciesScripted.has(val.NAME)){
-            gameData.speciesScripted.get(val.NAME)?.forEach((value)=>{
+        /*let sEnc: CompactedScripted[] = []
+        if (gameData.dataScripted.has(val.NAME)){
+            gameData.dataScripted.get(val.NAME)?.forEach((value)=>{
                 sEnc.push({
                     how: tablize(value.how, compacted.scriptedEncoutersHowT),
                     map: tablize(value.map, compacted.mapsT)
                 })
             })
-        }
+        }*/
         compacted.species.push({
             name: ((x, X)=>{
                 if (nameT.includes(x)){ // because megas are the same names as the non-megas
@@ -357,7 +360,7 @@ export function compactify(gameData: GameData): CompactGameData{
             forms: val.forms.map((x)=>{
                 return NAMET.indexOf(x)
             }),
-            SEnc: sEnc,
+            SEnc: [],
             dex: val.dex,
             id: gameData.speciesInternalID.get(val.NAME) || -1,
             sprite: val.sprite,
@@ -419,11 +422,9 @@ export function compactify(gameData: GameData): CompactGameData{
             })
         }
     }
+    const trainerT: string[] = []
     gameData.trainers.forEach((trainer, key)=>{
-        let mapName: string = ""
-        if (gameData.trainersScripted.has(key)){
-            mapName = gameData.trainersScripted.get(key)?.map || ""
-        }
+        trainerT.push(trainer.NAME)
         if (!trainer.party.length){
             return
         }
@@ -442,14 +443,15 @@ export function compactify(gameData: GameData): CompactGameData{
                     id: gameData.trainerInternalID.get(rem.NAME) || -1,
                 }
             }),
-            map: tablize(mapName, compacted.mapsT),
+            map: -1,
             ptr: trainer.ptr,
             ptrInsane: trainer.ptrInsane,
             tclass: tablize(trainer.tclass, compacted.tclassT),
             music: tablize(trainer.music, compacted.tmusicT),
             gender: trainer.gender,
             pic: tablize(trainer.pic, compacted.tpicT),
-            id: gameData.trainerInternalID.get(key) || -1
+            id: gameData.trainerInternalID.get(key) || -1,
+            rematchM: trainer.rematchM,
         })
     })
     compacted.trainers = compacted.trainers.sort((a, b)=>{
@@ -459,6 +461,22 @@ export function compactify(gameData: GameData): CompactGameData{
             return 1
         }
         return 0
+    })
+    gameData.dataScripted.forEach((val, index)=>{
+        compacted.mapsT.push(val.name)
+        compacted.MAPST.push(val.id)
+        val.species.forEach((value)=>{
+            if (!compacted.species[NAMET.indexOf(value.spc)]) return
+            compacted.species[NAMET.indexOf(value.spc)].SEnc.push({
+                map: index,
+                how: tablize(value.how, compacted.scriptedEncoutersHowT),
+            })
+        })
+        val.trainers.forEach((value)=>{
+            if (!compacted.trainers[trainerT.indexOf(value)]) return
+            compacted.trainers[trainerT.indexOf(value)].map = index
+        })
+        
     })
     compacted.tutors = gameData.tutors.map((val) => movesT.indexOf(val))
     compacted.tmhms = gameData.tmhm.map((val) => movesT.indexOf(val))
