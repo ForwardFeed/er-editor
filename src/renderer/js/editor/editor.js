@@ -1,5 +1,5 @@
 import { locationEdit } from "./locations.js"
-import { evosEdit, MoveEdit, LearnsetEdit, modSpecieBS, modAbi} from "./species.js"
+import { evosEdit, MoveEdit, LearnsetEdit, modSpecieBS, modAbi, modSpcType} from "./species.js"
 import { gameData } from "../data_version.js"
 import { setupEditorBuilder } from "./trainers.js"
 import { e } from "../utils.js"
@@ -8,7 +8,7 @@ import { bridge } from '../context_bridge.js'
 
 export let dataList = [], pokeList = [], itemList = [], moveList = [], MOVEList = [], SPECIESList = [], 
 trainerNAMEList = [], trainerClassList = [], trainerMusicList = [], teamPtrList = [], trainerPicList = [],
-TMHMList = [], TutorList = [], ABIList = []
+TMHMList = [], TutorList = [], ABIList = [], TYPEList = []
 
 
 function setXList(inputArray, outputArray, dataListID, valTransformation = x => x, valOptionTransformation = x => x){
@@ -69,6 +69,9 @@ const targetibleMap = [
     [".species-innate", (ev)=>{
         modAbi(ev, "inns", '.species-innate')
     }],
+    [".spc-type", (ev)=>{
+        modSpcType(ev)
+    }],
 ]
 /**
  * 
@@ -127,4 +130,5 @@ export function hydrateEditor(){
     setXList(gameData.tmhms, TMHMList, "tmhm-datalist", x => gameData.moves[x].NAME, x => gameData.moves[x].NAME)
     setXList(gameData.tutors, TutorList, "tutor-datalist", x => gameData.moves[x].NAME, x => gameData.moves[x].NAME)
     setXList(gameData.abilities, ABIList, "abi-datalist", x => x.NAME, x => x.NAME)
+    setXList(gameData.typeT, TYPEList, "type-datalist", x=> `TYPE_${x.toUpperCase()}`, x=> `TYPE_${x.toUpperCase()}`)
 }

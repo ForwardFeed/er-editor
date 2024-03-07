@@ -10,6 +10,7 @@ import { addTMHM, removeTMHM, TMHMCQ} from './app/species/tmhm_learnsets'
 import { TutorCQ, addTutor, removeTutor } from './app/species/tutor_learnsets'
 import { EggMoveCQ, replaceEggMoves } from './app/species/egg_moves'
 import { LevelUPLearnsetCQ, LevelUpMove, replaceLearnset} from './app/species/level_up_learnsets'
+import { BSCQ, changeAbis, changeBaseStats, changeTypes } from './app/species/base_stats'
 
 export function setupApi(window: Electron.BrowserWindow){
     ipcMain.on('get-game-data', () => {
@@ -104,6 +105,21 @@ export function setupApi(window: Electron.BrowserWindow){
     ipcMain.on('change-eggmoves', (_event, specie: string, moves: string[])  => {
         EggMoveCQ.feed(()=>{
             replaceEggMoves(specie, moves)
+        }).poll()
+    })
+    ipcMain.on('change-abis', (_event, specie: string, field: string, abis: string[])  => {
+        BSCQ.feed(()=>{
+            changeAbis(specie, field === "abis"? "abilities": "innates", abis)
+        }).poll()
+    })
+    ipcMain.on('change-bs', (_event, specie: string, values: number[])  => {
+        BSCQ.feed(()=>{
+            changeBaseStats(specie, values)
+        }).poll()
+    })
+    ipcMain.on('change-spc-type', (_event, specie: string, types: [string, string])  => {
+        BSCQ.feed(()=>{
+            changeTypes(specie, types)
         }).poll()
     })
 }

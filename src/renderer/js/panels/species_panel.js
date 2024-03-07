@@ -31,7 +31,7 @@ export function feedPanelSpecies(id) {
     setAbilities(specie.stats.abis, specie)
     setInnates(specie.stats.inns)
     specie.activeAbi = 0
-    setTypes([...new Set(specie.stats.types), abilitiesExtraType(specie.activeAbi, specie)], specie)
+    setTypes([...specie.stats.types, abilitiesExtraType(specie.activeAbi, specie)], specie)
     setAllMoves(specie)
     setEvos(specie.evolutions)
     setLocations(specie.locations, specie.SEnc)
@@ -77,7 +77,7 @@ function setDefensiveCoverage(coverage) {
     core.append(frag)
 }
 
-function setTypes(types, specie) {
+export function setTypes(types, specie) {
     types = types.filter(x => x != undefined)
     const core = $('#species-types')
     for (let i = 0; i < 3; i++) {
@@ -88,7 +88,7 @@ function setTypes(types, specie) {
             continue
         }
         node.show()
-        node.text(type).attr("class", `type ${type.toLowerCase()}`)
+        node.text(type).attr("class", `type ${type.toLowerCase()} spc-type`)
     }
     setDefensiveCoverage(
         getDefensiveCoverage(
@@ -281,7 +281,7 @@ export function setInnates(innates) {
     )
 }
 
-function abilitiesExtraType(abilityID, specie) {
+export function abilitiesExtraType(abilityID, specie) {
     return abilitiesToAddedType([specie.stats.abis[abilityID], ...specie.stats.inns])
 }
 

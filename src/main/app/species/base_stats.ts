@@ -1,5 +1,8 @@
+import { ExecArray, GEdit } from "../../gedit"
 import { regexGrabNum, regexGrabStr, Xtox } from "../parse_utils"
+import { CallQueue } from "../../call_queue"
 
+export const BSCQ = new CallQueue('Base Stats', true)
 
 export interface BaseStats {
     baseHP: number,
@@ -155,4 +158,95 @@ export function parse(lines: string[], fileIterator: number): Result{
         fileIterator: fileIterator,
         baseStats: context.baseStats
     }
+}
+
+export function changeBaseStats(specie: string, values: number[]){
+    const baseStatsFieldTable: string[] = [
+        'baseHP',
+        'baseAttack',
+        'baseDefense',
+        'baseSpeed',
+        'baseSpAttack',
+        'baseSpDefense',
+    ]
+    const foundFields: number[] = []
+    const execArray: ExecArray = [
+        (line, ctx, i, lines)=>{
+            if (line.match(`\\[${specie}\\]`)) ctx.next()
+            if (lines.length -1 == i) ctx.badReadMsg = `couldn't find specie :${specie}`
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match(/\[SPECIES/)){
+                if (foundFields.length != baseStatsFieldTable.length){
+                    ctx.badReadMsg = `couldn't find field(s): ${baseStatsFieldTable.filter((_x, xi)=>
+                        foundFields.indexOf(xi) == -1).join(' ,')}`
+                }
+                ctx.stop()
+            }
+            if (!baseStatsFieldTable.length) ctx.stop()
+            const fieldLen = baseStatsFieldTable.length
+            for (let j = 0; j < fieldLen; j++){
+                const field = baseStatsFieldTable[j]
+                if (line.match(field)){
+                    foundFields.push(j)
+                    const baseText = `    .${field}`
+                    lines.splice(i, 1, `${baseText}${" ".repeat(19 - baseText.length)}= ${values[j]},`)
+                }
+            }
+        }
+    ]
+    
+    const gedit =  new GEdit("src/data/pokemon/base_stats.h", BSCQ, "change base stats", execArray, {cf: true})
+    gedit.go()
+}
+
+export function changeAbis(specie: string, field: string, abis: string[]){
+    const execArray: ExecArray = [
+        (line, ctx, i, lines)=>{
+            if (line.match(`\\[${specie}\\]`)) ctx.next()
+            if (lines.length -1 == i) ctx.badReadMsg = `couldn't find specie :${specie}`
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match(field)){
+                const baseText = `    .${field}`
+                lines.splice(i, 1, `${baseText}${" ".repeat(19 - baseText.length)}= {${abis.join(', ')}},`)
+                ctx.stop()
+            } else if (line.match(/\[SPECIES/)){
+                ctx.badReadMsg = `couldn't find field ${field}`
+                ctx.stop()
+            }
+        }
+    ]
+    
+    const gedit =  new GEdit("src/data/pokemon/base_stats.h", BSCQ, "change base stats", execArray, {cf: true})
+    gedit.go()
+}
+
+
+export function changeTypes(specie: string, types: [string, string]){
+    let found = false
+    const execArray: ExecArray = [
+        (line, ctx, i, lines)=>{
+            if (line.match(`\\[${specie}\\]`)) ctx.next()
+            if (lines.length -1 == i) ctx.badReadMsg = `couldn't find specie :${specie}`
+        },
+        (line, ctx, i, lines)=>{
+            if (line.match('\.type')){
+                const typeNb = regexGrabStr(line, /(?<=type)\d/)
+                const baseText = `    .type${typeNb}`
+                if (typeNb === "1"){
+                    lines.splice(i, 1, `${baseText}${" ".repeat(19 - baseText.length)}= ${types[0]},`)
+                } else {
+                    lines.splice(i, 1, `${baseText}${" ".repeat(19 - baseText.length)}= ${types[1]},`)
+                }
+                found = true
+            } else if (line.match(/\[SPECIES/)){
+                if (!found) ctx.badReadMsg = `couldn't find field type}`
+                ctx.stop()
+            }
+        }
+    ]
+    
+    const gedit =  new GEdit("src/data/pokemon/base_stats.h", BSCQ, "change base stats", execArray, {cf: true})
+    gedit.go()
 }

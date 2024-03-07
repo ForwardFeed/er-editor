@@ -1,8 +1,8 @@
 import { cubicRadial } from "../radial.js"
 import { createInformationWindow, removeInformationWindow } from "../window.js"
-import { setEvos, currentSpecieID , getSpritesURL, setAllMoves, updateBaseStats, setAbilities, setInnates} from "../panels/species_panel.js"
+import { setEvos, currentSpecieID , getSpritesURL, setAllMoves, updateBaseStats, setAbilities, setInnates, setTypes, abilitiesExtraType} from "../panels/species_panel.js"
 import { gameData } from "../data_version.js"
-import { MOVEList, moveList, pokeList, ABIList } from "./editor.js"
+import { MOVEList, moveList, pokeList, ABIList, TYPEList } from "./editor.js"
 import { JSHAC, e } from "../utils.js"
 import { bridge } from '../context_bridge.js'
 
@@ -301,6 +301,14 @@ export function modSpecieBS(ev){
         'Spe',
         'BST',
     ]
+    const baseStatsFieldTable = [
+        'baseHP',
+        'baseAttack',
+        'baseDefense',
+        'baseSpeed',
+        'baseSpAttack',
+        'baseSpDefense',
+    ]
     const specie = gameData.species[currentSpecieID]
     specie.stats.modBase = structuredClone(specie.stats.base)
     const modPanel = JSHAC(
@@ -311,10 +319,11 @@ export function modSpecieBS(ev){
                     e(`${i != 6?`input#m${x}`:`div#m${x}`}`, 'stat-num mod-stat-num', specie.stats.base[i], {
                         onkeyup: (ev_keyup)=>{
                             if (i == 6) return
+                            const prevVal = specie.stats.modBase[i]
                             const val = ev_keyup.target.value =
                                 Math.min(ev_keyup.target.value.replace('').replace(/[^0-9]/g, "").replace(/^0(?=\d)/,''), 255)
                             specie.stats.modBase[i] = val
-                            specie.stats.modBase[6] = specie.stats.base[6] - specie.stats.base[i] + val
+                            specie.stats.modBase[6] += val - prevVal
                             document.getElementById(`mBST`).innerText = specie.stats.modBase[6]
                         }
                     })
@@ -327,7 +336,7 @@ export function modSpecieBS(ev){
         specie.stats.base = structuredClone(specie.stats.modBase)
         delete specie.stats.modBase
         updateBaseStats(specie.stats.base)
-        bridge.send('change-BS', specie.NAME, specie.stats.base)
+        bridge.send('change-bs', specie.NAME, specie.stats.base)
     })
 }
 
@@ -338,7 +347,7 @@ export function modAbi(ev, abiCat, target){
     const abiID = specie.stats[abiCat][rowIndex]
     const abiNAME = gameData.abilities[abiID].NAME
     
-    const input = e('input', 'builder-overlay-list', abiNAME, gameData)
+    const input = e('input', 'builder-overlay-list', abiNAME)
     input.addEventListener('focus', ()=>{
         input.value = "ABILITY_"
     })
@@ -350,13 +359,32 @@ export function modAbi(ev, abiCat, target){
         // because some abilities repeat themselves if the pokemon only have one ability
         // so i have to replace all
         specie.stats[abiCat].forEach((x, i, arr)=> {
-            if (x == abiID) arr[i] =nextAbi
+            if (x == abiID) arr[i] = nextAbi
         })
         if (abiCat === "abis"){
             setAbilities(specie.stats.abis, specie)
         } else {
             setInnates(specie.stats.inns, specie)
         }
-        bridge.send('change-specie', specie.NAME, abiCat, specie.stats[abiCat].map(x => gameData.abilities[x].NAME))
+        bridge.send('change-abis', specie.NAME, abiCat, specie.stats[abiCat].map(x => gameData.abilities[x].NAME))
     })
+}
+
+export function modSpcType(ev){
+    const rowIndex = $('.spc-type').index(ev.target)
+    const specie = gameData.species[currentSpecieID]
+    const spcType = specie.stats.types[rowIndex]
+    const input = e('input', 'builder-overlay-list', spcType)
+    input.addEventListener('focus', ()=>{
+        input.value = "TYPE_"
+    })
+    input.setAttribute('list', 'type-datalist')
+    createInformationWindow(input, ev, "focus", true, true, ()=>{
+        const nextType = TYPEList.indexOf(input.value)
+        if (nextType == -1) return
+        specie.stats.types[rowIndex] = nextType
+        setTypes([...specie.stats.types, abilitiesExtraType(specie.activeAbi, specie)], specie)
+        bridge.send('change-spc-type', specie.NAME, specie.stats.types.map(x => `TYPE_${gameData.typeT[x].toUpperCase()}`))
+    })
+    
 }
