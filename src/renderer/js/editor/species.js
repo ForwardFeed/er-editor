@@ -1,8 +1,8 @@
 import { cubicRadial } from "../radial.js"
 import { createInformationWindow, removeInformationWindow } from "../window.js"
-import { setEvos, currentSpecieID , getSpritesURL, setAllMoves} from "../panels/species_panel.js"
+import { setEvos, currentSpecieID , getSpritesURL, setAllMoves, updateBaseStats, setAbilities, setInnates} from "../panels/species_panel.js"
 import { gameData } from "../data_version.js"
-import { MOVEList, moveList, pokeList, TMHMList, TutorList } from "./editor.js"
+import { MOVEList, moveList, pokeList, ABIList } from "./editor.js"
 import { JSHAC, e } from "../utils.js"
 import { bridge } from '../context_bridge.js'
 
@@ -289,4 +289,74 @@ export function LearnsetEdit(ev){
             }]
         ]
     , "6em", "1em"), ev, null, true, false)
+}
+
+export function modSpecieBS(ev){
+    const baseStatsTable = [
+        'HP',
+        'Atk',
+        'Def',
+        'SpA',
+        'SpD',
+        'Spe',
+        'BST',
+    ]
+    const specie = gameData.species[currentSpecieID]
+    specie.stats.modBase = structuredClone(specie.stats.base)
+    const modPanel = JSHAC(
+        baseStatsTable.map((x, i)=>{
+            return JSHAC([
+                e('div', 'stat-row'), [
+                    e('span', 'stat-name', x),
+                    e(`${i != 6?`input#m${x}`:`div#m${x}`}`, 'stat-num mod-stat-num', specie.stats.base[i], {
+                        onkeyup: (ev_keyup)=>{
+                            if (i == 6) return
+                            const val = ev_keyup.target.value =
+                                Math.min(ev_keyup.target.value.replace('').replace(/[^0-9]/g, "").replace(/^0(?=\d)/,''), 255)
+                            specie.stats.modBase[i] = val
+                            specie.stats.modBase[6] = specie.stats.base[6] - specie.stats.base[i] + val
+                            document.getElementById(`mBST`).innerText = specie.stats.modBase[6]
+                        }
+                    })
+                ]
+            ])
+        })
+        , e('div#specie-basestats-mod'))
+    
+    createInformationWindow(modPanel, ev, "", false, true, ()=>{
+        specie.stats.base = structuredClone(specie.stats.modBase)
+        delete specie.stats.modBase
+        updateBaseStats(specie.stats.base)
+        bridge.send('change-BS', specie.NAME, specie.stats.base)
+    })
+}
+
+export function modAbi(ev, abiCat, target){
+    const rowIndex = $(target).index(ev.target)
+    if (rowIndex == -1) return
+    const specie = gameData.species[currentSpecieID]
+    const abiID = specie.stats[abiCat][rowIndex]
+    const abiNAME = gameData.abilities[abiID].NAME
+    
+    const input = e('input', 'builder-overlay-list', abiNAME, gameData)
+    input.addEventListener('focus', ()=>{
+        input.value = "ABILITY_"
+    })
+    input.setAttribute('list', 'abi-datalist')
+    
+    createInformationWindow(input, ev, "focus", true, true, ()=>{
+        const nextAbi = ABIList.indexOf(input.value)
+        if (nextAbi == -1) return
+        // because some abilities repeat themselves if the pokemon only have one ability
+        // so i have to replace all
+        specie.stats[abiCat].forEach((x, i, arr)=> {
+            if (x == abiID) arr[i] =nextAbi
+        })
+        if (abiCat === "abis"){
+            setAbilities(specie.stats.abis, specie)
+        } else {
+            setInnates(specie.stats.inns, specie)
+        }
+        bridge.send('change-specie', specie.NAME, abiCat, specie.stats[abiCat].map(x => gameData.abilities[x].NAME))
+    })
 }

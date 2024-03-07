@@ -9,6 +9,7 @@ export interface Result{
 
 export interface Ability {
     name: string,
+    NAME: string,
     desc: string,
 }
 
@@ -44,6 +45,7 @@ const executionMap: {[key: string]: (line: string, context: Context) => void} = 
             const name = regexGrabStr(line, /(?<=")[^"]+/)
             const ability = {
                 name: name,
+                NAME: abilityID,
                 desc: "",
             }
             context.abilities.set(abilityID, ability)

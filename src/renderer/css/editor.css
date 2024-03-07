@@ -47,3 +47,14 @@
 input#trainers-name, input#trainers-NAME, input#trainers-tclass{
     width: 14em;
 }
+
+.mod-stat-num{
+    background-color: var(--font-color);
+}
+input.mod-stat-num{
+    font-size: 1em;
+}
+
+#specie-basestats-mod .stat-name{
+    width: 2em;
+}

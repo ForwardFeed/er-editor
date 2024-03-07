@@ -187,7 +187,7 @@ function setlearnset(core, moves) {
     core.append(frag)
 }
 
-function updateBaseStats(stats) {
+export function updateBaseStats(stats) {
     const baseStatsTable = [
         '#BHP',
         '#BAT',
@@ -244,7 +244,7 @@ function changeBaseStat(node, value, statID, cmp) {
     })
 }
 
-function setAbilities(abilities, specie) {
+export function setAbilities(abilities, specie) {
     $('#species-abilities').empty().append(
         JSHAC(abilities.map((val, i) => {
             if (abilities[i] == abilities[i - 1] || abilities[i] === 0) {
@@ -266,7 +266,7 @@ function setAbilities(abilities, specie) {
     )
 }
 
-function setInnates(innates) {
+export function setInnates(innates) {
     $('#species-innates').empty().append(
         JSHAC(innates.map((val, i) => {
             if (innates[i] == innates[i - 1] || innates[i] === 0) {

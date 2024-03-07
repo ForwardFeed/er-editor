@@ -60,9 +60,10 @@ export function clickOutsideToRemove(node, absorb = false, cbOnClose = null){
     const clickToHide = (ev)=>{
         if (hasParent(ev.target, node)) return
         if (absorb) ev.stopPropagation()
+        if (cbOnClose) cbOnClose()
         node.remove()
         document.body.removeEventListener('click', clickToHide, absorb)
-        if (cbOnClose) cbOnClose()
+        
     }
     // will work as long no future event.stop propagation is written in the code
     document.body.addEventListener('click', clickToHide, absorb)

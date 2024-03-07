@@ -1,5 +1,5 @@
 import { locationEdit } from "./locations.js"
-import { evosEdit, MoveEdit, LearnsetEdit} from "./species.js"
+import { evosEdit, MoveEdit, LearnsetEdit, modSpecieBS, modAbi} from "./species.js"
 import { gameData } from "../data_version.js"
 import { setupEditorBuilder } from "./trainers.js"
 import { e } from "../utils.js"
@@ -8,7 +8,7 @@ import { bridge } from '../context_bridge.js'
 
 export let dataList = [], pokeList = [], itemList = [], moveList = [], MOVEList = [], SPECIESList = [], 
 trainerNAMEList = [], trainerClassList = [], trainerMusicList = [], teamPtrList = [], trainerPicList = [],
-TMHMList = [], TutorList = []
+TMHMList = [], TutorList = [], ABIList = []
 
 
 function setXList(inputArray, outputArray, dataListID, valTransformation = x => x, valOptionTransformation = x => x){
@@ -39,9 +39,6 @@ function setTeamPtrList(){
  * @type {Array.<Array<string, ()=>void>>}
  */
 const targetibleMap = [
-    ["#species-basestats", ()=>{
-        console.log('species base stats')
-    }], //
     [".location-field", (ev)=>{
         locationEdit(ev)
     }],
@@ -62,7 +59,16 @@ const targetibleMap = [
     }],
     ["#learnset", (ev)=>{
         LearnsetEdit(ev)
-    }]
+    }],
+    ["#species-basestats", (ev)=>{
+        modSpecieBS(ev)
+    }],
+    [".species-ability", (ev)=>{
+        modAbi(ev, "abis", ".species-ability")
+    }],
+    [".species-innate", (ev)=>{
+        modAbi(ev, "inns", '.species-innate')
+    }],
 ]
 /**
  * 
@@ -120,4 +126,5 @@ export function hydrateEditor(){
     setXList(gameData.tpicT, trainerPicList, "tpic-datalist")
     setXList(gameData.tmhms, TMHMList, "tmhm-datalist", x => gameData.moves[x].NAME, x => gameData.moves[x].NAME)
     setXList(gameData.tutors, TutorList, "tutor-datalist", x => gameData.moves[x].NAME, x => gameData.moves[x].NAME)
+    setXList(gameData.abilities, ABIList, "abi-datalist", x => x.NAME, x => x.NAME)
 }

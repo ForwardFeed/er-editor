@@ -9,6 +9,7 @@ let windowFrame, callbackDelete
  */
 /**
  * @param {HTMLElement} node
+ * @param {Event} ev
  * @param {CursorPosition} cursorPosition
  */
 export function createInformationWindow(node, ev, cursorPlacement, transparency=false, absorb = true, cbOnClose = null) {
