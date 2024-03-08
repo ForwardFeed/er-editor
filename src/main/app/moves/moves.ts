@@ -16,6 +16,7 @@ function initDescription(): Description{
 }
 
 export interface Move {
+    NAME: string,
     name: string,
     shortName: string,
     effect: string,
@@ -35,6 +36,7 @@ export interface Move {
 
 function initMove(): Move{
     return {
+        NAME: "",
         name: "",
         shortName: "",
         effect: "",
@@ -91,7 +93,7 @@ const stageBattleMovesExecutionMap: {[key: string]: (line: string, context: Cont
                 context.moves.set(context.currMove.name, context.currMove)
                 context.currMove = initMove()
             }
-            context.currMove.name = regexGrabStr(line, /MOVE_\w+/)
+            context.currMove.name = context.currMove.NAME= regexGrabStr(line, /MOVE_\w+/)
         } else if (line.match('.effect')){
             context.currMove.effect = Xtox('EFFECT_',regexGrabStr(line, /EFFECT_\w+/))
         } else if (line.match('.power')){

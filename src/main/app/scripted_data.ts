@@ -1,7 +1,7 @@
 import { readdirSync, access, readFile, readFileSync} from 'fs'
 import { join } from 'path'
 
-import { regexGrabStr } from './parse_utils'
+import { regexGrabStr, regexGrabAllStr} from './parse_utils'
 import { GameData } from './main'
 /**
  * collection of data found only in maps scripting file due to scripting
@@ -92,8 +92,8 @@ function fetchDataAvailable(data: string): DataAvailable{
             }
         }
         if (line.match('TRAINER_')){
-            const trainer = regexGrabStr(line, /TRAINER_\w+/)
-            trainerList.push(trainer)
+            const trainer = regexGrabAllStr(line, /TRAINER_\w+/g)
+            trainerList.push(...trainer)
         }
     }
     return {

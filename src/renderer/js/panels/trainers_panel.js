@@ -19,7 +19,7 @@ export function feedPanelTrainers(trainerID){
     $('#trainers-list > .btn').eq(trainerID).addClass("sel-active").removeClass("sel-n-active")
 
     const trainer = gameData.trainers[trainerID]
-    $('#trainers-map').text(gameData.mapsT[trainer.map])
+    $('#trainers-map').text(gameData.mapsT[trainer.map] || "Unknown")
     $('#trainers-tclass').text(setTrainerClassName(trainer.tclass))
     $('#trainers-name').text(trainer.name)
     $('#trainers-NAME').text(trainer.NAME)
@@ -41,7 +41,9 @@ export function setTrainerClassName(tclassID){
 }
 
 function setDouble(double){
-    $('#trainers-double').text(double?"Double":"Single")
+    const val = double?"Double":"Single"
+    $('div#trainers-double').text(val)
+    $('select#trainers-double').val(val)
 }
 
 function setBaseTrainer(trainer){
@@ -99,6 +101,7 @@ function setRematchesBar(rematches){
         nodeRem.innerText = +remI + 1
         nodeRem.className = "trainer-match-btn sel-n-active"
         nodeRem.onclick = ()=>{
+            $('#trainers-NAME').text(rem.NAME).val(rem.NAME)
             setPartyPanel(rem.party)
             $('#trainers-infobar1').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
             $('#trainers-rematch').children().eq(+remI + 1).addClass("sel-active").removeClass("sel-n-active")

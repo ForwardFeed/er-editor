@@ -358,7 +358,7 @@ export function renameTrainer(previous: string, next: string){
         },
         (line, ctx, i, lines) =>{
             if (line.match(previous)){
-                lines.splice(i, 1, line.replace(previous, next))
+                lines.splice(i, 1, line.replace(`${previous},`, `${next},`))
             }
             if (line.match(';')) {
                 ctx.stop()

@@ -36,9 +36,10 @@ const executionMap: {[key: string]: (line: string, context: Context) => void} = 
             if (rematches.length){
                 rematches.splice(rematches.length - 1, 1) // remove the map name
                 const trnName = rematches.splice(0,1)[0]
-                context.rematched.push(...rematches)
+                
+                context.rematched.push(...rematches.filter(x => x != trnName))
                 rematches.splice(0, 0, rematchMacro)
-                context.rematches.set(trnName, rematches)
+                context.rematches.set(trnName, rematches.filter(x => x != trnName))
             }
         } if (line.match(';')){
             context.stopRead = true

@@ -424,7 +424,6 @@ export function compactify(gameData: GameData): CompactGameData{
     }
     const trainerT: string[] = []
     gameData.trainers.forEach((trainer, key)=>{
-        trainerT.push(trainer.NAME)
         if (!trainer.party.length){
             return
         }
@@ -453,6 +452,7 @@ export function compactify(gameData: GameData): CompactGameData{
             id: gameData.trainerInternalID.get(key) || -1,
             rematchM: trainer.rematchM,
         })
+        trainerT.push(key)
     })
     compacted.trainers = compacted.trainers.sort((a, b)=>{
         if (a.map < b.map){
@@ -462,19 +462,19 @@ export function compactify(gameData: GameData): CompactGameData{
         }
         return 0
     })
-    gameData.dataScripted.forEach((val, index)=>{
-        compacted.mapsT.push(val.name)
+    gameData.dataScripted.forEach((val)=>{
+        const idMap = compacted.mapsT.push(val.name)
         compacted.MAPST.push(val.id)
         val.species.forEach((value)=>{
             if (!compacted.species[NAMET.indexOf(value.spc)]) return
             compacted.species[NAMET.indexOf(value.spc)].SEnc.push({
-                map: index,
+                map: idMap,
                 how: tablize(value.how, compacted.scriptedEncoutersHowT),
             })
         })
         val.trainers.forEach((value)=>{
-            if (!compacted.trainers[trainerT.indexOf(value)]) return
-            compacted.trainers[trainerT.indexOf(value)].map = index
+            if (!compacted.trainers[trainerT.indexOf(value)] || compacted.trainers[trainerT.indexOf(value)].map == undefined) return
+            compacted.trainers[trainerT.indexOf(value)].map = idMap
         })
         
     })
