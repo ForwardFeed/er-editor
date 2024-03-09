@@ -5,6 +5,7 @@ import { setupEditorBuilder } from "./trainers.js"
 import { e } from "../utils.js"
 import { setTrainerToEditMode } from "./trainers.js"
 import { bridge } from '../context_bridge.js'
+import { setToEditMove } from "./moves.js"
 
 export let dataList = [], pokeList = [], itemList = [], moveList = [], MOVEList = [], SPECIESList = [], 
 trainerNAMEList = [], trainerClassList = [], trainerMusicList = [], teamPtrList = [], trainerPicList = [],
@@ -74,7 +75,14 @@ const targetibleMap = [
     }],
     ["#species-misc", (ev)=>{
         modDescription(ev)
-    }]
+    }],
+    ["#moves-data", ()=>{
+        setToEditMove()
+    }],
+    ["#moves-edt-data", ()=>{
+        setToEditMove()
+    }],
+
 ]
 /**
  * 

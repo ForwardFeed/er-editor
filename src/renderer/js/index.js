@@ -10,6 +10,7 @@ import { activateInsanity } from "./insanity.js"
 import { setupMoves} from "./panels/moves_panel.js"
 import { setupEditor } from "./editor/editor.js"
 import { load } from "./loading.js"
+import { setupFormatShowdown } from "./format_showdown.js"
 
 document.addEventListener("DOMContentLoaded", loadApplication);
 
@@ -22,6 +23,7 @@ function loadApplication() {
         [setupTeamBuilder, "panel builder"], // the team builder BEFORE data version is Important
         [setupSearch, "search frame"],
         [setupFilters, "filter frame"],
+        [setupFormatShowdown, "Showdown format"],
         [setupGameDataRetrieving, "gamedata loader"],
         [setupEditor, "editor loader"],
         [console.log('done'), "finished somehow"],

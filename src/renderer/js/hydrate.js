@@ -8,7 +8,7 @@ import { e, JSHAC } from "./utils.js"
 import { load, endLoad} from "./loading.js"
 import { hydrateEditor } from "./editor/editor.js"
 import { addTrainer } from "./editor/trainers.js"
-
+import { initFormatShowdown } from "./format_showdown.js"
 
 export const nodeLists = {
     species: [],
@@ -46,6 +46,7 @@ export function hydrate(firstLoad=false) {
 
     // hydrate the UI with the data
     const steps = [
+        [initFormatShowdown, "showdown data"],
         [hydrateAbilities, "abilities data"],
         [hydrateMoves, "moves data"],
         [hydrateSpecies, "species  data"],
@@ -236,7 +237,7 @@ function hydrateSpecies() {
         image.loading = "lazy"
         row.appendChild(image)
 
-        const name = e('span', "species-name", spec.name)
+        const name = e('span', "species-name span-a", spec.name)
         row.append(name)
         row.dataset.id = i
         $(row).on('click', function () {
@@ -381,7 +382,7 @@ export function hydrateTrainers() {
             const mapName = document.createElement('span')
             mapName.innerText = gameData.mapsT[trainer.map] || "unknown"
             mapDiv.append(mapName)
-            frag.append(mapDiv)
+            frag.append(mapDiv)const name = e('span', "species-name span-a", spec.name)s
         }*/
         // add to the html list 
         const core = document.createElement('div')

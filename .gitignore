@@ -7,5 +7,6 @@ out
 *.log*
 build
 squashfs-root
+debug.txt
 #editor
 .vscode

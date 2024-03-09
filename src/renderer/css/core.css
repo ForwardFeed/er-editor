@@ -259,22 +259,10 @@ aside>div {
 
 }
 
-.selectable-wrapper{
-    display: flex;
-    position: relative;
-    font-size: 2vmax;
+span{
+    margin: auto;
 }
-.selectable-input{
-    width: 100%;
-    background: rgba(0, 0, 0, 0);
-    color: var(--font-color);
-    user-select: none;
-    cursor: pointer;
-}
-.selectable-selections{
-    position: absolute;
-    display: none!important;
-}
+
 @media (orientation: landscape) {
     .search-keys-wrapper{
         /* top-left top-righ bot-right bot-left*/

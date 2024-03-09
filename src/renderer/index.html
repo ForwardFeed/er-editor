@@ -207,14 +207,8 @@
                         <div id="builder-edt-save" class="btn" style="display: inherit;">
                             <span>save trainer</span>
                         </div>
-                        <textarea type="text" id="builder-export"></textarea>
-                        <div id="builder-export-bar" class="builder-tools-row" style="display: inherit;">
-                            <div id="builder-copy" class="btn">
-                                <span>Copy to clipboard</span>
-                            </div>
-                            <div id="builder-nothing" class="btn">
-                                <span></span>
-                            </div>
+                        <div id="builder-import" class="btn btn-hover">
+                            <span>Import / Export</span>
                         </div>
                     </div>
                 </div>
@@ -279,6 +273,58 @@
                         <div id="moves-flags"></div>
                     </div>
 
+                </div>
+                <div id="moves-edt-data" class="data-data" style="display: none;">
+                    <div class="moves-top">
+                        <div class="moves-top-sub">
+                            <div class="moves-large">
+                                <span>Power</span>
+                                <input type="number" id="moves-edt-pwr"></input>
+                            </div>
+                            <div class="moves-xlarge">
+                                <div class="xlarge-row">
+                                    <span>acc</span>
+                                    <input type="number" id="moves-edt-acc"></input>
+                                </div>
+                                <div class="xlarge-row">
+                                    <span>pp</span>
+                                    <input type="number" id="moves-edt-pp"></input>
+                                </div>
+                                <div class="xlarge-row">
+                                    <span>Priority</span>
+                                    <input type="number" id="moves-edt-prio"></input>
+                                </div>
+                                <div class="xlarge-row">
+                                    <span>Eff. Chance</span>
+                                    <input type="number" id="moves-edt-chance"></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="moves-top-sub">
+                            <img id="moves-edt-split">
+                            <div id="moves-edt-target">
+                                <div class="target-row">
+                                    <div id="foe1-edt" class="foe">Foe</div>
+                                    <div id="foe2-edt" class="foe">Foe</div>
+                                    <div id="foe3-edt" class="foe">Foe</div>
+                                </div>
+                                <div class="target-row">
+                                    <div id="ally1-edt" class="ally">ally</div>
+                                    <div id="allySelf-edt" class="self">self</div>
+                                    <div id="ally2-edt" class="ally">ally</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="moves-bot">
+                        <div class="moves-bot-info">
+                            <input type="text" id="moves-edt-name"></input>
+                            <input list="type-datalist" type="text" id="moves-edt-types1"> </input>
+                            <input list="type-datalist" type="text" id="moves-edt-types2"> </input>
+                        </div>
+                        <textarea id="moves-edt-desc"></textarea>
+                        <input list="mvflags-datalist" id="moves-edt-flags"></input>
+                    </div>
                 </div>
             </div>
             <div id="panel-locations" class="panel">

@@ -1,13 +1,8 @@
 import { gameData } from "../data_version";
-import { s } from "./utils";
 import { e } from "../utils";
 
-function setToReadMode(){
-    
-}
-
-function setToEditMove(){
-    
+export function setToEditMove(){
+    $('#moves-edt-data, #moves-data').toggle()
 }
 
 // power

@@ -117,9 +117,11 @@
 
 span{
     height: fit-content;
-    margin: auto 0;
 }
 
+.span-a{
+    margin: auto 0;
+}
 .extend {
     background-color: red;
     height: 100%;

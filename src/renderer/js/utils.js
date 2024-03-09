@@ -49,7 +49,7 @@ export function clickOutsideToHide(htmlNodeToHide, htmlNodeClickedOn){
     $(document).on('click', clickToHide)
 }
 
-export function clickOutsideToRemove(node, absorb = false, cbOnClose = null){
+export function clickOutsideToRemove(node, absorb = false, onCloseCb = ()=>{}){
     function hasParent(node, nodeToCompare){
         if (!node) return false
         if (node != nodeToCompare){
@@ -57,13 +57,12 @@ export function clickOutsideToRemove(node, absorb = false, cbOnClose = null){
         }
         return true
     }
-    const clickToHide = (ev)=>{
-        if (hasParent(ev.target, node)) return
+    const clickToHide = (ev, forceClose=false)=>{
+        if (hasParent(ev.target, node) && !forceClose) return
         if (absorb) ev.stopPropagation()
-        if (cbOnClose) cbOnClose()
+        onCloseCb()
         node.remove()
         document.body.removeEventListener('click', clickToHide, absorb)
-        
     }
     // will work as long no future event.stop propagation is written in the code
     document.body.addEventListener('click', clickToHide, absorb)
@@ -101,10 +100,9 @@ export function e(tag = "div", classname = "", innerText = "", events = {}){
 /**
  * Javascript HTML Array Concatenation
  * @param {HTMLDivElement | HTMLDivElement[]} htmlArray
- * @param {HTMLDivElement | null } appendToElement
  * @returns  {DocumentFragment}
  */
-export function JSHAC(htmlArray, appendToElement=null){
+export function JSHAC(htmlArray){
     const frag = document.createDocumentFragment()
     for (let i = 0; i < htmlArray.length; i++){
         const element = htmlArray[i]
@@ -118,34 +116,8 @@ export function JSHAC(htmlArray, appendToElement=null){
             parent.append(JSHAC(element))
         }
     }
-    if (appendToElement) appendToElement.append(frag)
-    return appendToElement ? appendToElement : frag
+    return frag
 }
-
-
-export class Selectable {
-    constructor(list) {
-        this.wrapper = e("div", "selectable-wrapper");
-        this.input = e("input", "selectable-input");
-        this.input.type = "button";
-        this.selections = e("div", "selectable-selections");
-        this.list = list
-        this.nodelist = list && 
-                        list.constructor.name === "Array" &&
-                        list.map(x=> e("div", "", x)) ||
-                        []
-        return JSHAC([
-            this.wrapper, [
-                this.input,
-                this.selections, [
-                    this.nodelist
-                ]
-            ]
-        ])
-
-    }
-}
-
 
 export function setLongClickSelection(node, callback, time = 500, bgColor = "red"){
     const extendableDiv  = e("div", "extend")
@@ -160,6 +132,7 @@ export function setLongClickSelection(node, callback, time = 500, bgColor = "red
     let timeout
     let hasFired = true
     const mouseDown = (ev)=>{
+        if (ev.button == 2) return
         extendableDiv.style.display = "block"
         hasFired = false
         timeout = setTimeout(()=>{
@@ -175,6 +148,7 @@ export function setLongClickSelection(node, callback, time = 500, bgColor = "red
         })
     }
     const mouseUp = (ev)=>{
+        if (ev.button == 2) return
         extendableDiv.style.display = "none"
         //transform the long click into a short click
         sharedEvent.ev = ev
