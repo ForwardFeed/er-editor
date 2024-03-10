@@ -176,12 +176,14 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
         [
             ['+Add Move', (ev_cb)=>{
                 removeInformationWindow(ev_cb)
-                const input = e('input', "builder-overlay-list")
+                const input = e('input', "builder-overlay-list", "MOVE_")
                 input.setAttribute('list', `${moveCatDatalist}-datalist`)
                 input.addEventListener('focusout', ()=>{
                     const moveID = MOVEList.indexOf(input.value)
                     const newMove = gameData.moves[moveID]
                     if (!newMove) return
+                    if (specie.allMoves.indexOf(moveID) != -1) return
+                    specie.allMoves.push(moveID)
                     specie[moveCat].push(moveID)
                     if (moveCat === "eggmoves"){
                         bridge.send('change-eggmoves', specie.NAME, specie.eggmoves.map(x => gameData.moves[x].NAME))
@@ -234,10 +236,11 @@ function showLearnsetEdit(ev_cb, newMove){
     const input = e('input', "builder-overlay-list", gameData.moves[newMove.id].NAME)
     input.setAttribute('list', 'move-datalist')
     input.addEventListener('focus', ()=>{
-        input.value = ""
+        input.value = "MOVE_"
     })
     input.addEventListener('focusout', ()=>{
-        if (MOVEList.indexOf(input.value) == -1) {
+        const moveID = MOVEList.indexOf(input.value)
+        if (moveID == -1 || specie.allMoves.indexOf(moveID) != -1) {
             input.value = gameData.moves[newMove.id].NAME
             return
         }
@@ -278,6 +281,7 @@ export function LearnsetEdit(ev){
             [move?`-Rem ${move?.name}`:null, (ev_cb)=>{
                 removeInformationWindow(ev_cb)
                 const moveID = specie.learnset.splice(rowIndex, 1)[0]
+                specie.allMoves.splice(specie.allMoves.indexOf(moveID), 1)
                 setAllMoves()
                 sendUpdateLearnset()
             }],
