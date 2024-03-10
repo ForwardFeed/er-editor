@@ -321,3 +321,10 @@ span{
         bottom: 0;
     }
 }
+
+.red{
+    color: red;
+    border: solid rgb(255, 60, 0);
+    margin: 0;
+    height: fit-content;
+}

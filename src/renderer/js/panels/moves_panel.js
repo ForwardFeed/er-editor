@@ -6,7 +6,7 @@ import { removeInformationWindow } from "../window.js"
 import { setAllMoves } from "./species_panel.js"
 
 export let matchedMoves
-let currentMoveID = 0
+export let currentMoveID = 0
 export function feedPanelMoves(moveID) {
     currentMoveID = moveID
     const move = gameData.moves[moveID]

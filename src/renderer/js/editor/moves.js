@@ -1,8 +1,23 @@
 import { gameData } from "../data_version";
+import { currentMoveID } from "../panels/moves_panel";
 import { e } from "../utils";
 
 export function setToEditMove(){
     $('#moves-edt-data, #moves-data').toggle()
+    const move = gameData.moves[currentMoveID]
+    $('#moves-edt-name').val(move.name)
+    $('#moves-edt-pwr').val(move.pwr ? move.pwr == 1 ? "?" : move.pwr : "--")
+    $('#moves-edt-acc').val(move.acc)
+    $('#moves-edt-chance').val(move.chance)
+    $('#moves-edt-pp').val(move.pp)
+    $('#moves-edt-prio').val(move.prio)
+    /*setTarget(move.target)
+    $('#moves-edt-split').attr("src", `./icons/${gameData.splitT[move.split]}.png`);
+    $('#moves-edt-split')[0].dataset.split = gameData.splitT[move.split].toLowerCase()
+    //$('#moves-types').text('' + move.types.map((x)=>gameData.typeT[x]).join(' '))
+    setTypes(move.types)
+    $('#moves-desc').text(move.lDesc) //TODO fix the width of this
+    listMoveFlags(move.flags.map((x) => gameData.flagsT[x]), $('#moves-flags'))*/
 }
 
 // power

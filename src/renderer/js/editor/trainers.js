@@ -77,6 +77,7 @@ export function setupEditorBuilder(){
         }
         setTrainerTeam(editedTrainerTeam, toSave)
         bridge.send('mod-trainer-party', getTrainerPartyPtr(editedTrainerTeam), toSend)
+        $('#builder-edt-save').hide()
     })
     $('#trainers-save').on('click', saveTrainerData).hide()
     $('#trainers-rm-insane').on('click', function(){

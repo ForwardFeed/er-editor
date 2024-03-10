@@ -157,6 +157,7 @@ function swapAndRefresh(a, b){
 function save() {
     /*const saveObj = teamData.map(x => x?x.save():"")
     saveToLocalstorage("team-builder", saveObj)*/
+    $('#builder-edt-save').show()
     return
 }
 
