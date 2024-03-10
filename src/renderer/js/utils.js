@@ -99,10 +99,11 @@ export function e(tag = "div", classname = "", innerText = "", events = {}){
 }
 /**
  * Javascript HTML Array Concatenation
- * @param {HTMLDivElement | HTMLDivElement[]} htmlArray
+ * @param {HTMLElement | HTMLElement[]} htmlArray
+ * @param {HTMLElement | null}
  * @returns  {DocumentFragment}
  */
-export function JSHAC(htmlArray){
+export function JSHAC(htmlArray, elToAppend=null){
     const frag = document.createDocumentFragment()
     for (let i = 0; i < htmlArray.length; i++){
         const element = htmlArray[i]
@@ -116,7 +117,8 @@ export function JSHAC(htmlArray){
             parent.append(JSHAC(element))
         }
     }
-    return frag
+    if (elToAppend) elToAppend.append(frag)
+    return elToAppend ? elToAppend : frag
 }
 
 export function setLongClickSelection(node, callback, time = 500, bgColor = "red"){
