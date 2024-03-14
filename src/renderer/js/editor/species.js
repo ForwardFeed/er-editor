@@ -167,15 +167,12 @@ const evoKindList = [
 ]
 
 function setMoveForAllNextEvos(specie, category, moveID, goDownwards=false){
+    if (category === "eggmoves") return // don't add for eggmoves
     if (specie[category].indexOf(moveID) == -1 && specie.allMoves.indexOf(moveID) == -1) {
         const newMove = gameData.moves[moveID]
         specie[category].push(moveID)
         specie.allMoves.push(moveID)
-        if (category === "eggmoves"){
-            bridge.send('change-eggmoves', specie.NAME, specie.eggmoves.map(x => gameData.moves[x].NAME))
-        } else {
-            bridge.send('add-move', category, specie.NAME, newMove.NAME)
-        }
+        bridge.send('add-move', category, specie.NAME, newMove.NAME)
     }
     for (const evo of specie.evolutions){
         if (!goDownwards && evo.from) continue
