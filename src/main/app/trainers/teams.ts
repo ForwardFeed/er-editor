@@ -19,7 +19,7 @@ function initTrainerPokemon(): TrainerPokemon{
     return {
         specie: "",
         ability: -1,
-        ivs: [],
+        ivs: [31,31,31,31,31,31],
         evs: [],
         item: "",
         nature: "",
@@ -72,6 +72,8 @@ const executionMap: {[key: string]: (line: string, context: Context) => void} = 
             context.currentPokemon.item = regexGrabStr(line.replace(/\s/g, ''), /(?<==)\w+/)
         } else if (line.match('.ability')){
             context.currentPokemon.ability = regexGrabNum(line.replace(/\s/g, ''), /(?<==)\d+/, 0)
+        } else if (line.match('.zeroSpeedIvs')){
+            context.currentPokemon.ivs[5] = 0
         } else if (line.match('.ivs')){
             context.currentPokemon.ivs = regexGrabStr(line.replace(/\s/g, ''), /(?<=\{)[^}]+/)
                 .split(',')

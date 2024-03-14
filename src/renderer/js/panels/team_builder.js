@@ -586,4 +586,3 @@ function editionStats(statField, viewID, callback) {
         ]
     ])
 }
-

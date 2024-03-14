@@ -454,14 +454,6 @@ export function compactify(gameData: GameData): CompactGameData{
         })
         trainerT.push(key)
     })
-    compacted.trainers = compacted.trainers.sort((a, b)=>{
-        if (a.map < b.map){
-            return -1
-        } else if (a.map > b.map){
-            return 1
-        }
-        return 0
-    })
     gameData.dataScripted.forEach((val)=>{
         const idMap = compacted.mapsT.push(val.name)
         compacted.MAPST.push(val.id)
@@ -477,6 +469,14 @@ export function compactify(gameData: GameData): CompactGameData{
             compacted.trainers[trainerT.indexOf(value)].map = idMap
         })
         
+    })
+    compacted.trainers = compacted.trainers.sort((a, b)=>{
+        if (a.map < b.map){
+            return -1
+        } else if (a.map > b.map){
+            return 1
+        }
+        return 0
     })
     compacted.tutors = gameData.tutors.map((val) => movesT.indexOf(val))
     compacted.tmhms = gameData.tmhm.map((val) => movesT.indexOf(val))

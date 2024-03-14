@@ -166,6 +166,25 @@ const evoKindList = [
     "EVO_SPECIFIC_MAPSEC" 
 ]
 
+function setMoveForAllNextEvos(specie, category, moveID, goDownwards=false){
+    if (specie[category].indexOf(moveID) == -1 && specie.allMoves.indexOf(moveID) == -1) {
+        const newMove = gameData.moves[moveID]
+        specie[category].push(moveID)
+        specie.allMoves.push(moveID)
+        if (category === "eggmoves"){
+            bridge.send('change-eggmoves', specie.NAME, specie.eggmoves.map(x => gameData.moves[x].NAME))
+        } else {
+            bridge.send('add-move', category, specie.NAME, newMove.NAME)
+        }
+    }
+    for (const evo of specie.evolutions){
+        if (!goDownwards && evo.from) continue
+        if (goDownwards && !evo.from) continue
+        const nextEvo = gameData.species[evo.in]
+        setMoveForAllNextEvos(nextEvo, category, moveID, goDownwards)
+    }
+}
+
 export function MoveEdit(ev, moveCat, moveCatDatalist){
     const row = $(ev.target).closest('.species-move-row')
     const rowIndex = row.parent().children().index(row[0])
@@ -183,14 +202,8 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
                     const newMove = gameData.moves[moveID]
                     if (!newMove) return
                     if (specie.allMoves.indexOf(moveID) != -1) return
-                    specie.allMoves.push(moveID)
-                    specie[moveCat].push(moveID)
-                    if (moveCat === "eggmoves"){
-                        bridge.send('change-eggmoves', specie.NAME, specie.eggmoves.map(x => gameData.moves[x].NAME))
-                    } else {
-                        bridge.send('add-move', moveCat, specie.NAME, newMove.NAME)
-                    }
-                    
+                    //setMoveForAllNextEvos(specie, moveCat, moveID)
+                    setMoveForAllNextEvos(specie, moveCat, moveID, true)
                     setAllMoves()
                 })
                 createInformationWindow(input, ev_cb, "focus", true, false)

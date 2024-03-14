@@ -81,3 +81,22 @@ input.mod-stat-num{
 .edt-desc-save > span{
     margin: auto;
 }
+
+#moves-edt-data input{
+    flex-grow: 1;
+    width: 0;
+    min-width: 3em;
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+    outline: 0;
+}
+#moves-edt-flags{
+    flex-grow:unset!important;
+    width: 100%!important;
+    height: fit-content;
+}
+.moves-top{
+    height: fit-content;
+}
+

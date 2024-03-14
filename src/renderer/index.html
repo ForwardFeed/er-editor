@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!--Maybe i'd set this iOS fix again and this time it will work-->
-    <meta http-equiv="Content-Security-Policy" content="img-src * 'self' data:; default-src * 'self' gap: ; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; ">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'">
     <title>ER NextDex</title>
     <link rel="stylesheet" href="./css/core.css">
     <!--load css themes-->
@@ -279,42 +278,37 @@
                         <div class="moves-top-sub">
                             <div class="moves-large">
                                 <span>Power</span>
-                                <input type="number" id="moves-edt-pwr"></input>
+                                <input type="text" id="moves-edt-pwr"></input>
                             </div>
                             <div class="moves-xlarge">
                                 <div class="xlarge-row">
                                     <span>acc</span>
-                                    <input type="number" id="moves-edt-acc"></input>
+                                    <input type="text" id="moves-edt-acc"></input>
                                 </div>
                                 <div class="xlarge-row">
                                     <span>pp</span>
-                                    <input type="number" id="moves-edt-pp"></input>
+                                    <input type="text" id="moves-edt-pp"></input>
                                 </div>
                                 <div class="xlarge-row">
                                     <span>Priority</span>
-                                    <input type="number" id="moves-edt-prio"></input>
+                                    <input type="text" id="moves-edt-prio"></input>
                                 </div>
                                 <div class="xlarge-row">
                                     <span>Eff. Chance</span>
-                                    <input type="number" id="moves-edt-chance"></input>
+                                    <input type="text" id="moves-edt-chance"></input>
                                 </div>
                             </div>
                         </div>
                         <h1 class="red">NOT FUNCTIONNAL</h1>
                         <div class="moves-top-sub">
-                            <img id="moves-edt-split">
-                            <div id="moves-edt-target">
-                                <div class="target-row">
-                                    <div id="foe1-edt" class="foe">Foe</div>
-                                    <div id="foe2-edt" class="foe">Foe</div>
-                                    <div id="foe3-edt" class="foe">Foe</div>
-                                </div>
-                                <div class="target-row">
-                                    <div id="ally1-edt" class="ally">ally</div>
-                                    <div id="allySelf-edt" class="self">self</div>
-                                    <div id="ally2-edt" class="ally">ally</div>
-                                </div>
-                            </div>
+                            <select name="" id="moves-edt-split">
+                                <option value="PHYSICAL">Physical</option>
+                                <option value="SPECIAL">Special</option>
+                                <option value="STATUS">Status</option>
+                            </select>
+                            <select id="moves-edt-target">
+                                
+                            </select>
                         </div>
                     </div>
                     <div class="moves-bot">
@@ -324,7 +318,7 @@
                             <input list="type-datalist" type="text" id="moves-edt-types2"> </input>
                         </div>
                         <textarea id="moves-edt-desc"></textarea>
-                        <input list="mvflags-datalist" id="moves-edt-flags"></input>
+                        <input type="text" list="mvflags-datalist" id="moves-edt-flags"></input>
                     </div>
                 </div>
             </div>
