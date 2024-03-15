@@ -167,18 +167,20 @@ const evoKindList = [
 ]
 
 function setMoveForAllNextEvos(specie, category, moveID, goDownwards=false){
-    if (category === "eggmoves") return // don't add for eggmoves
+    let canAddEggmove = true //only add eggmove to the lowest specie
+    for (const evo of specie.evolutions){
+        if (evo.from) canAddEggmove = false
+        if (!goDownwards && evo.from) continue
+        if (goDownwards && !evo.from) continue
+        const nextEvo = gameData.species[evo.in]
+        setMoveForAllNextEvos(nextEvo, category, moveID, goDownwards)
+    }
+    if (category === "eggmoves" && !canAddEggmove) return
     if (specie[category].indexOf(moveID) == -1 && specie.allMoves.indexOf(moveID) == -1) {
         const newMove = gameData.moves[moveID]
         specie[category].push(moveID)
         specie.allMoves.push(moveID)
         bridge.send('add-move', category, specie.NAME, newMove.NAME)
-    }
-    for (const evo of specie.evolutions){
-        if (!goDownwards && evo.from) continue
-        if (goDownwards && !evo.from) continue
-        const nextEvo = gameData.species[evo.in]
-        setMoveForAllNextEvos(nextEvo, category, moveID, goDownwards)
     }
 }
 
