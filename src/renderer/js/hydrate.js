@@ -145,7 +145,7 @@ function hydrateNextEvolutionWithMoves(previousSpecieID, currentEvo, megaEvoKind
     if (currentEvo.in == -1 || currentEvo.from) return
     const previousSpecie = gameData.species[previousSpecieID]
     const currentSpecie = gameData.species[currentEvo.in]
-    if (!currentSpecie.eggmoves.length) currentSpecie.eggmoves = previousSpecie.eggmoves
+    currentSpecie.eggmoves = previousSpecie.eggmoves
     if (!currentSpecie.tmhm.length) currentSpecie.tmhm = previousSpecie.tmhm
     if (!currentSpecie.tutor.length) currentSpecie.tutor = previousSpecie.tutor
     //import evolution

@@ -69,11 +69,14 @@ export function replaceEggMoves(specie: string, moves: string[]){
     specie = specie.replace('SPECIES_', '')
     let begin = 0
     const execArray: ExecArray = [
-        (line, ctx, i, _lines)=>{
+        (line, ctx, i, lines)=>{
             if (line.match(`\\(${specie},`)) {
                 ctx.next()
                 ctx.loopOnce()
                 begin = i
+            }
+            if (i == lines.length - 1){
+                ctx.badReadMsg = `couldn't find find specie ${specie}`
             }
         },
         (line, ctx, i, lines)=>{
@@ -84,6 +87,6 @@ export function replaceEggMoves(specie: string, moves: string[]){
             }
         }
     ]
-    const gedit = new GEdit("src/data/pokemon/egg_moves.h", EggMoveCQ, "add egg move", execArray, {cf: true})
+    const gedit = new GEdit("src/data/pokemon/egg_moves.h", EggMoveCQ, "change egg move", execArray, {cf: true})
     gedit.go() 
 }

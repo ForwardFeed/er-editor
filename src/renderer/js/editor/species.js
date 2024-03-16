@@ -180,7 +180,13 @@ function setMoveForAllNextEvos(specie, category, moveID, goDownwards=false){
         const newMove = gameData.moves[moveID]
         specie[category].push(moveID)
         specie.allMoves.push(moveID)
-        bridge.send('add-move', category, specie.NAME, newMove.NAME)
+        if (category === "eggmoves"){
+            bridge.send('change-eggmoves', specie.NAME, specie.eggmoves.map(x => gameData.moves[x].NAME))
+            console.log(specie[category])
+        } else {
+            bridge.send('add-move', category, specie.NAME, newMove.NAME)
+        }
+        
     }
 }
 
@@ -211,7 +217,17 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
                 removeInformationWindow(ev_cb)
                 specie[moveCat].splice(rowIndex, 1)
                 if (moveCat === "eggmoves"){
-                    bridge.send('change-eggmoves', specie.NAME, specie.eggmoves.map(x => gameData.moves[x].NAME))
+                    function findEggSpecie(specieID){
+                        const specie = gameData.species[specieID]
+                        for (const evo of specie.evolutions){
+                            if (evo.from) {
+                                return findEggSpecie(evo.in)
+                            }
+                        }
+                        return specieID
+                    }
+                    let eggSpecie = gameData.species[findEggSpecie(currentSpecieID)]
+                    bridge.send('change-eggmoves', eggSpecie.NAME, eggSpecie.eggmoves.map(x => gameData.moves[x].NAME))
                 } else {
                     bridge.send('remove-move', moveCat, specie.NAME, move.NAME)
                 }
