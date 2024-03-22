@@ -2,7 +2,7 @@ import { cubicRadial } from "../radial.js"
 import { createInformationWindow, removeInformationWindow } from "../window.js"
 import { setEvos, currentSpecieID , getSpritesURL, setAllMoves, updateBaseStats, setAbilities, setInnates, setTypes, abilitiesExtraType} from "../panels/species_panel.js"
 import { gameData } from "../data_version.js"
-import { MOVEList, moveList, pokeList, ABIList, TYPEList } from "./editor.js"
+import { MOVEList, moveList, pokeList, ABIList, TYPEList, TMHMList, TutorList } from "./editor.js"
 import { JSHAC, e } from "../utils.js"
 import { bridge } from '../context_bridge.js'
 
@@ -182,7 +182,6 @@ function setMoveForAllNextEvos(specie, category, moveID, goDownwards=false){
         specie.allMoves.push(moveID)
         if (category === "eggmoves"){
             bridge.send('change-eggmoves', specie.NAME, specie.eggmoves.map(x => gameData.moves[x].NAME))
-            console.log(specie[category])
         } else {
             bridge.send('add-move', category, specie.NAME, newMove.NAME)
         }
@@ -207,6 +206,13 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
                     const newMove = gameData.moves[moveID]
                     if (!newMove) return
                     if (specie.allMoves.indexOf(moveID) != -1) return
+                    //if it's a move from tmhm, send it to tmhm
+                    if (moveCat !== "tmhm" && TMHMList.indexOf(newMove.NAME) != -1){
+                        moveCat = "tmhm"
+                    }
+                    if (moveCat !== "tutor" && TutorList.indexOf(newMove.NAME) != -1){
+                        moveCat = "tutor"
+                    }
                     //setMoveForAllNextEvos(specie, moveCat, moveID)
                     setMoveForAllNextEvos(specie, moveCat, moveID, true)
                     setAllMoves()
@@ -215,7 +221,8 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
             }],
             [isRow?`-Rem ${move?.name}`:null, (ev_cb)=>{
                 removeInformationWindow(ev_cb)
-                specie[moveCat].splice(rowIndex, 1)
+                const moveID = specie[moveCat].splice(rowIndex, 1)[0]
+                specie.allMoves.splice(specie.allMoves.indexOf(moveID), 1)
                 if (moveCat === "eggmoves"){
                     function findEggSpecie(specieID){
                         const specie = gameData.species[specieID]
@@ -273,7 +280,15 @@ function showLearnsetEdit(ev_cb, newMove){
             return
         }
         newMove.id = MOVEList.indexOf(input.value)
-        specie.learnset = specie.learnset.sort (sortByLevel)
+        if (TMHMList.indexOf(gameData.moves[newMove.id].NAME) != -1){
+            setMoveForAllNextEvos(specie, "tmhm", newMove.id, true)
+            newMove.id = 0
+        } else if (TutorList.indexOf(gameData.moves[newMove.id].NAME) != -1){
+            setMoveForAllNextEvos(specie, "tutor", newMove.id, true)
+            newMove.id = 0
+        } else {
+            specie.learnset = specie.learnset.sort (sortByLevel)
+        }
         setAllMoves()
         
     })
