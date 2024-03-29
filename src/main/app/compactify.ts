@@ -88,7 +88,9 @@ export interface compactMove {
     split: number,
     arg: string,
     desc: string,
+    descPtr: string,
     lDesc: string,
+    lDescPtr: string,
     id: number,
 }
 export interface CompactSpecie{
@@ -251,7 +253,9 @@ export function compactify(gameData: GameData): CompactGameData{
             }),
             arg: move.argument,
             desc: move.desc,
+            descPtr: move.descPtr,
             lDesc: move.longDesc,
+            lDescPtr: move.longDescPtr,
             id: gameData.movesInternalID.get(key) || 0
         })
     })
@@ -454,21 +458,28 @@ export function compactify(gameData: GameData): CompactGameData{
         })
         trainerT.push(key)
     })
-    gameData.dataScripted.forEach((val)=>{
-        const idMap = compacted.mapsT.push(val.name)
-        compacted.MAPST.push(val.id)
-        val.species.forEach((value)=>{
+    gameData.dataScripted.forEach((val) => {
+        const mapName = val.name.replace(/_/g, ' ')
+            .replace(/(?<=[a-z])(?=[A-Z])/g, ' ')
+            .replace(/(?<=[a-z])(?=[0-9])/g, ' ')
+        if (compacted.mapsT.indexOf(mapName) == -1){
+            compacted.mapsT.push(mapName)
+            compacted.MAPST.push(val.id)
+        }
+        if (!val.species.length && !val.trainers.length) return
+        const idMap = compacted.mapsT.indexOf(mapName) 
+        //compacted.MAPST.push(val.id)
+        val.species.forEach((value) => {
             if (!compacted.species[NAMET.indexOf(value.spc)]) return
             compacted.species[NAMET.indexOf(value.spc)].SEnc.push({
                 map: idMap,
                 how: tablize(value.how, compacted.scriptedEncoutersHowT),
             })
         })
-        val.trainers.forEach((value)=>{
+        val.trainers.forEach((value) => {
             if (!compacted.trainers[trainerT.indexOf(value)] || compacted.trainers[trainerT.indexOf(value)].map == undefined) return
             compacted.trainers[trainerT.indexOf(value)].map = idMap
         })
-        
     })
     compacted.trainers = compacted.trainers.sort((a, b)=>{
         if (a.map < b.map){

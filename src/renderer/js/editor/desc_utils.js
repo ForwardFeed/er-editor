@@ -176,12 +176,21 @@ const latinFont = {
 const latinFontSmall = {
     widths: {"0":5,"1":5,"2":5,"3":5,"4":5,"5":5,"6":5,"7":5,"8":5,"9":5," ":3,"À":5,"Á":5,"Â":5,"Ç":5,"È":5,"É":5,"Ê":5,"Ë":5,"Ì":4,"Î":4,"Ï":4,"Ò":5,"Ó":5,"Ô":5,"Œ":8,"Ù":5,"Ú":5,"Û":5,"Ñ":5,"ß":6,"à":5,"á":5,"ç":5,"è":5,"é":5,"ê":5,"ë":5,"ì":4,"î":4,"ï":4,"ò":5,"ó":5,"ô":5,"œ":8,"ù":5,"ú":5,"û":5,"ñ":5,"º":5,"ª":6,"{SUPER_ER}":9,"&":6,"+":6,"LV":8,"=":8,";":3,"¿":5,"¡":4,"Í":4,"%":6,"(":4,")":4,"â":5,"í":4,"{UP_ARROW}":7,"{DOWN_ARROW}":7,"{LEFT_ARROW}":7,"{RIGHT_ARROW}":7,"{SUPER_E}":5,"<":6,">":6,"{SUPER_RE}":8,"!":4,"?":5,".":3,"-":5,"·":3,"…":5,"“":5,"”":5,"‘":3,"'":3,"♂":5,"♀":5,"¥":6,",":3,"×":6,"/":6,"A":5,"B":5,"C":5,"D":5,"E":5,"F":5,"G":5,"H":5,"I":4,"J":5,"K":5,"L":5,"M":5,"N":5,"O":5,"P":5,"Q":5,"R":5,"S":5,"T":5,"U":5,"V":5,"W":5,"X":5,"Y":4,"Z":5,"a":5,"b":5,"c":5,"d":5,"e":5,"f":5,"g":5,"h":5,"i":4,"j":5,"k":5,"l":4,"m":5,"n":5,"o":5,"p":5,"q":5,"r":5,"s":5,"t":5,"u":5,"v":5,"w":5,"x":5,"y":5,"z":5,"▶":8,":":3,"Ä":5,"Ö":5,"Ü":5,"ä":5,"ö":5,"ü":5}
 }
+
+export function create2LinesMoveDesc(text, ptr){
+    const lines = createCFontedText(text, 2, 129)
+    return `static const u8 ${ptr}[] = _(\n${lines.map((x,i) => `    "${x}${i==0?'\\n"':''}`).join('\n')});`
+}
+export function create4LinesMoveDesc(text, ptr){
+    const lines = createCFontedText(text, 4, 106)
+    return `static const u8 ${ptr}[] = _("${lines.map(x => `${x}`).join('\\n')}");`
+}
 /**
  * 
  *So 2-line appears to be 129 pixels wide
     4-line appears to be 106 pixels wide
  */
-export function createCFontedText(text, nLines, nPixels, smallfont = false){
+function createCFontedText(text, nLines, nPixels, smallfont = false){
     const font = smallfont ? latinFontSmall : latinFont
     const chars = text.split('')
     let charsLen = chars.length
@@ -246,7 +255,7 @@ export function createCFontedText(text, nLines, nPixels, smallfont = false){
     const SPACE_PIXEL = font.widths[" "]
     for (const word of words){
         if (linePixels + word.length > nPixels){
-            lines.push(line + "\\n")
+            lines.push(line)
             line = word.word
             linePixels = word.length
         } else {
@@ -262,7 +271,7 @@ export function createCFontedText(text, nLines, nPixels, smallfont = false){
         }
     }
     if (line){
-        lines.push(line + "\\n")
+        lines.push(line)
     }
     
     return lines.splice(0, nLines)

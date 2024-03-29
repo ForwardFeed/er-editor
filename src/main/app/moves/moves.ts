@@ -31,7 +31,9 @@ export interface Move {
     split: string,
     argument: string,
     desc: string,
+    descPtr: string,
     longDesc: string,
+    longDescPtr: string,
 }
 
 function initMove(): Move{
@@ -51,7 +53,9 @@ function initMove(): Move{
         split: "",
         argument: "",
         desc: "",
+        descPtr: "",
         longDesc: "",
+        longDescPtr: "",
     }
 }
 
@@ -150,12 +154,12 @@ const stageDescriptionExecutionMap: {[key: string]: (line: string, context: Cont
         line = line.replace(/\s/g, '')
         if (line.match(/^\[/)){
             const moveName = regexGrabStr(line, /(?<=\[)\w+/)
-            const descPtr = regexGrabStr(line, /(?<==)\w+/)
             if (!context.moves.has(moveName)) return
             const move = context.moves.get(moveName)
             if (!move) return
-            if (!context.Descs.has(descPtr)) return
-            move.desc = context.Descs.get(descPtr)?.desc || ""
+            move.descPtr = regexGrabStr(line, /(?<==)\w+/)
+            if (!context.Descs.has(move.descPtr)) return
+            move.desc = context.Descs.get(move.descPtr)?.desc || ""
             context.moves.set(moveName, move)
         } else if (line.match(/};/)) {
             context.execFlag = "descFourLine"
@@ -178,11 +182,12 @@ const stageDescriptionExecutionMap: {[key: string]: (line: string, context: Cont
         line = line.replace(/\s/g, '')
         if (line.match(/^\[/)){
             const moveName = regexGrabStr(line, /(?<=\[)\w+/)
-            const descPtr = regexGrabStr(line, /(?<==)\w+/)
             if (!context.moves.has(moveName)) return
             const move = context.moves.get(moveName)
-            if (!move || !context.LongDesc.has(descPtr)) return
-            move.longDesc = context.LongDesc.get(descPtr)?.desc || ""
+            if (!move) return
+            move.longDescPtr = regexGrabStr(line, /(?<==)\w+/)
+            if (!context.LongDesc.has(move.longDescPtr)) return
+            move.longDesc = context.LongDesc.get(move.longDescPtr)?.desc || ""
             context.moves.set(moveName, move)
         } else if (line.match(/};/)) {
             context.stage = stageNameExecutionMap

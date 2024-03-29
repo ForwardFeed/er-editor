@@ -125,12 +125,25 @@ export function evosEdit(ev){
                 removeInformationWindow(ev_cb)
                 const rowIndex = row.closest('#species-evos').find('.evo-parent').index(row)
                 const poke = gameData.species[currentSpecieID]
-                poke.evolutions.splice(rowIndex, 1)
+                const evoRemoved =  poke.evolutions.splice(rowIndex, 1)[0]
+                console.log(evoRemoved)
+                if (!evoRemoved.from){
+                    const intoSpecie = gameData.species[evoRemoved.in]
+                    console.log(intoSpecie)
+                    for (const evoID in intoSpecie.evolutions){
+                        const evo = intoSpecie.evolutions[evoID]
+                        if (evo.from && evo.in == currentSpecieID &&
+                            evo.kd == evoRemoved.kd && evo.rs == evoRemoved.rs){
+                                intoSpecie.evolutions.splice(evoID, 1)
+                                break
+                            }
+                    }
+                }
                 setEvos(poke.evolutions)
                 bridge.send(
                     'change-evolution',
                     poke.NAME,
-                    evoCompactToEvo(poke.evolutions)
+                    evoCompactToEvo(poke.evolutions.filter(x => !x.from))
                 )
                 
             }]

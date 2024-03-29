@@ -158,9 +158,7 @@ function hydrateNextEvolutionWithMoves(previousSpecieID, currentEvo, megaEvoKind
     }
     //do not add if it was already added
     for (const evo of currentSpecie.evolutions){
-        if (evo.kd === currentEvo.kd) return
-        if (evo.rs === currentEvo.rs) return
-        if (evo.in === currentEvo.in) return
+        if (evo.kd === currentEvo.kd && evo.rs === currentEvo.rs && evo.in === currentEvo.in) return
     }
     //import evolution
     currentSpecie.evolutions.push({

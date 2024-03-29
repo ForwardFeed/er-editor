@@ -2,7 +2,7 @@ import { gameData } from "../data_version";
 import { currentMoveID } from "../panels/moves_panel";
 import { e } from "../utils";
 import { TYPEList } from "./editor";
-import { createCFontedText } from "./desc_utils.js"
+import { create2LinesMoveDesc, create4LinesMoveDesc} from "./desc_utils.js"
 
 export function setToEditMove(){
     $('#moves-edt-data, #moves-data').toggle()
@@ -17,9 +17,9 @@ export function setToEditMove(){
     $('#moves-edt-types1').val(TYPEList[move.types[0]])
     $('#moves-edt-types2').val(TYPEList[move.types[1]])
     $('#moves-edt-big-desc').val(move.lDesc)
-    $('#moves-edt-big-display').text(createCFontedText(move.lDesc, 4, 106))
+    $('#moves-edt-big-display').text(create4LinesMoveDesc(move.lDesc, move.lDescPtr))
     $('#moves-edt-small-desc').val(move.desc)
-    $('#moves-edt-small-display').text(createCFontedText(move.desc, 2, 129))
+    $('#moves-edt-small-display').text(create2LinesMoveDesc(move.desc, move.descPtr))
     /*setTarget(move.target)
     $('#moves-edt-split').attr("src", `./icons/${gameData.splitT[move.split]}.png`);
     $('#moves-edt-split')[0].dataset.split = gameData.splitT[move.split].toLowerCase()
@@ -146,12 +146,18 @@ export function setupEditMove(){
         hasBeenModified()
     })
     $('#moves-edt-big-desc').on('keyup', function(ev){
+        const move = gameData.moves[currentMoveID]
         const val = $(this).val()
-        console.log(createCFontedText(val, 4, 103))
+        const text = create4LinesMoveDesc(val, move.lDescPtr)
+        move.lDesc = text
+        $('#moves-edt-big-display').text(text)
     })
     $('#moves-edt-small-desc').on('keyup', function(ev){
+        const move = gameData.moves[currentMoveID]
         const val = $(this).val()
-        console.log(createCFontedText(val, 2, 139))
+        const text = create2LinesMoveDesc(val, move.descPtr)
+        move.desc = text
+        $('#moves-edt-small-display').text(text)
     })
     setupTarget()
 }
