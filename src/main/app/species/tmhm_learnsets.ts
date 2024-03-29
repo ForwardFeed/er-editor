@@ -66,35 +66,42 @@ export function parse(lines: string[], fileIterator: number): Result{
     }
 }
 
-export function addTMHM(specie: string, move: string){
-    const execArray: ExecArray = [
-        (line, ctx, _i, _lines)=>{
-            if (line.match('\\[' + specie + '\\]')) ctx.next()
-        },
-        (line, ctx, i, lines)=>{
-            if (line.match('TMHM_LEARNSET_END')){
-                lines.splice(i, 0, `        TM(${move})`)
-                ctx.stop()
-            }
-        }
-    ]
-    const gedit =  new GEdit("src/data/pokemon/tmhm_learnsets.h",TMHMCQ, "add TMHM", execArray, {cf: true})
-    gedit.go()
+function createTMHMText(specie: string, moves: string[]){
+    return `    [${specie}] = TMHM_LEARNSET
+${moves.map(x => `        TM(${x})`).join('\n')}
+        TMHM_LEARNSET_END`
 }
 
-export function removeTMHM(specie: string, move: string){
+export function modTMHM(specie: string, moves: string[]){
+    const tmhmText = moves.length ? createTMHMText(specie, moves) : undefined
+    let start = 0
     const execArray: ExecArray = [
-        (line, ctx, _i, _lines)=>{
-            if (line.match('\\[' + specie + '\\]')) ctx.next()
+        (line, ctx, i, lines)=>{
+            if (line.match('\\[' + specie + '\\]')) {
+                start = i
+                ctx.next()
+            }
+            else if (line.match(';')){
+                if (!tmhmText){
+                    ctx.next()
+                    return
+                }
+                lines.splice(i, 0, tmhmText)
+                ctx.next()
+            }
         },
         (line, ctx, i, lines)=>{
-            if (line.match('TM\(.*' + move + '\)')){
-                lines.splice(i, 1)
+            if (line.match('TMHM_LEARNSET_END')) {
+                if (!tmhmText){
+                    lines.splice(start, i - start + 1)
+                    ctx.next()
+                    return
+                }
+                lines.splice(start, i - start + 1, tmhmText)
                 ctx.stop()
             }
-            if (line.match(/\[SPECIES_/)) ctx.stop()
         }
     ]
-    const gedit =  new GEdit("src/data/pokemon/tmhm_learnsets.h", TMHMCQ, "remove TMHM", execArray, {cf: true})
+    const gedit =  new GEdit("src/data/pokemon/tmhm_learnsets.h", TMHMCQ, "modify TMHM poke moves", execArray, {cf: true})
     gedit.go()
 }

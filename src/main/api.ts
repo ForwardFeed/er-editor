@@ -6,8 +6,8 @@ import { replaceEvolution, evoCQ, Evolution } from './app/species/evolutions'
 import { modTrainerParty , trainerEditCQ, modTrainer, rmInsane, addInsane, removeTrainer, addTrainer, renameTrainer} from './app/trainers/edit'
 import { TrainerPokemon } from './app/trainers/teams'
 import { Trainer } from './app/trainers/trainers'
-import { addTMHM, removeTMHM, TMHMCQ} from './app/species/tmhm_learnsets'
-import { TutorCQ, addTutor, removeTutor } from './app/species/tutor_learnsets'
+import { modTMHM, TMHMCQ} from './app/species/tmhm_learnsets'
+import { TutorCQ, modTutor } from './app/species/tutor_learnsets'
 import { EggMoveCQ, replaceEggMoves } from './app/species/egg_moves'
 import { LevelUPLearnsetCQ, LevelUpMove, replaceLearnset} from './app/species/level_up_learnsets'
 import { BSCQ, changeAbis, changeBaseStats, changeTypes } from './app/species/base_stats'
@@ -66,46 +66,30 @@ export function setupApi(window: Electron.BrowserWindow){
             renameTrainer(previous, next)
         }).poll()
     })
-    const targetRemoveMove = {
-        "tmhm": (specie: string, move:string)=>{
+    const targetChangeMove = {
+        "tmhm": (specie: string, moves:string[])=>{
             TMHMCQ.feed(()=>{
-                removeTMHM(specie, move)
+                modTMHM(specie, moves)
             }).poll()
         },
-        "tutor": (specie: string, move:string)=>{
+        "tutor": (specie: string, moves:string[])=>{
             TutorCQ.feed(()=>{
-                removeTutor(specie, move)
+                modTutor(specie, moves)
             }).poll()
         },
+        "eggmoves": (specie: string, moves:string[])=>{
+            EggMoveCQ.feed(()=>{
+                replaceEggMoves(specie, moves)
+            }).poll()
+        }
     }
-    ipcMain.on('remove-move', (_event, target: string, specie: string, move:string)  => {
-        const targetCall = targetRemoveMove[target]
-        if (targetCall) targetCall(specie, move)
-    })
-    const targetAddMove = {
-        "tmhm": (specie: string, move:string)=>{
-            TMHMCQ.feed(()=>{
-                addTMHM(specie, move)
-            }).poll()
-        },
-        "tutor": (specie: string, move:string)=>{
-            TutorCQ.feed(()=>{
-                addTutor(specie, move)
-            }).poll()
-        },
-    }
-    ipcMain.on('add-move', (_event, target: string, specie: string, move:string)  => {
-        const targetCall = targetAddMove[target]
+    ipcMain.on('change-moves', (_event, target: string, specie: string, move:string)  => {
+        const targetCall = targetChangeMove[target]
         if (targetCall) targetCall(specie, move)
     })
     ipcMain.on('change-learnset', (_event, ptr: string, moves: LevelUpMove[])  => {
         LevelUPLearnsetCQ.feed(()=>{
             replaceLearnset(ptr, moves)
-        }).poll()
-    })
-    ipcMain.on('change-eggmoves', (_event, specie: string, moves: string[])  => {
-        EggMoveCQ.feed(()=>{
-            replaceEggMoves(specie, moves)
         }).poll()
     })
     ipcMain.on('change-abis', (_event, specie: string, field: string, abis: string[])  => {

@@ -11,7 +11,6 @@ export let gameData, compareData;
 export function setupGameDataRetrieving(){
     bridge.receive('game-data', function(data){
         gameData = data
-        console.log(gameData)
         hydrate()
     })
     bridge.receive('no-game-data', function(){
@@ -20,8 +19,8 @@ export function setupGameDataRetrieving(){
     bridge.receive('ok-folder', function(path){
         bridge.send('get-game-data')
     })
-    bridge.send('get-game-data')
-    //fetchFromJSONFile()
+    //bridge.send('get-game-data')
+    fetchFromJSONFile()
 }
 
 function fetchFromJSONFile(){
@@ -32,12 +31,5 @@ function fetchFromJSONFile(){
         console.warn('THIS MEANT NOT READY FOR PROD')
         gameData = data
         hydrate()
-        try{
-            saveToLocalstorage("data"+version, gameData)
-            saveToLocalstorage("dataversion"+version, LATEST_DATA_VERSION)
-        }catch(_e){
-            // bruh
-            console.log(gameData)
-        }
 })
 }

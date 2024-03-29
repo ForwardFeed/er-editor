@@ -68,39 +68,43 @@ export function parse(lines: string[], fileIterator: number): Result{
     }
 }
 
+function getTutorText(specie: string, moves: string[]){
+    return `    [${specie}] = TUTOR_LEARNSET
+${moves.map(x => `        TUTOR(${x})`).join('\n')}  
+        TUTOR_LEARNSET_END`
+}
 
-export function addTutor(specie: string, move: string){
+export function modTutor(specie: string, moves: string[]){
+    const tutorText = moves.length ? getTutorText(specie, moves) : undefined
+    let start = 0
     const execArray: ExecArray = [
-        (line, ctx, _i, _lines)=>{
-            if (line.match('\\[' + specie + '\\]')) ctx.next()
+        (line, ctx, i, lines)=>{
+            if (line.match('\\[' + specie + '\\]')) {
+                start = i
+                ctx.next()
+            }
+            if (line.match(';')){
+                if (!tutorText) {
+                    ctx.next()
+                    return
+                }
+                lines.splice(i,0,tutorText)
+                ctx.next()
+            }
         },
         (line, ctx, i, lines)=>{
             if (line.match('TUTOR_LEARNSET_END')){
-                lines.splice(i, 0, `        TUTOR(${move})`)
+                if (!tutorText) {
+                    lines.splice(start, i - start + 1)
+                    ctx.stop()
+                    return 
+                }
+                lines.splice(start, i - start + 1, tutorText)
                 ctx.stop()
             }
         }
     ]
-    const gedit = new GEdit("src/data/pokemon/tutor_learnsets.h", TutorCQ, "add Tutor", execArray, {cf: true})
+    const gedit =  new GEdit("src/data/pokemon/tutor_learnsets.h", TutorCQ, "modify Tutor poke moves", execArray, {cf: true})
     gedit.go()
 }
 
-export function removeTutor(specie: string, move: string){
-    const execArray: ExecArray = [
-        (line, ctx, _i, _lines)=>{
-            if (line.match('\\[' + specie + '\\]')) ctx.next()
-        },
-        (line, ctx, i, lines)=>{
-            if (line.match('TUTOR\(.*' + move + '\)')){
-                lines.splice(i, 1)
-                ctx.stop()
-            }
-            if (line.match(/\[SPECIES_/)) {
-                ctx.badReadMsg = `couldn't find move ${move} in tutor`
-                ctx.stop()
-            }
-        }
-    ]
-    const gedit =  new GEdit("src/data/pokemon/tutor_learnsets.h", TutorCQ, "remove Tutor", execArray, {cf: true})
-    gedit.go()
-}

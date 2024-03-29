@@ -22,6 +22,7 @@ export function hydrate(firstLoad=false) {
     if (!gameData) {
         return console.warn("couldn't find gameData")
     }
+    window.gameData = gameData
     // add some reconstitution data for ease of use here
     gameData.minMaxBaseStats = new Array(6).fill(0)
     gameData.speciesStats = {
@@ -135,6 +136,7 @@ function hydrateMoves(moves = gameData.moves) {
     $("#moves-list").empty().append(fragment);
     feedPanelMoves(1)
 }
+
 /**
  * Not a fully functionnally recursive way to add specie evolution
  * @param {number} currentSpecieID - species into what the pokemon is evolving
@@ -145,9 +147,21 @@ function hydrateNextEvolutionWithMoves(previousSpecieID, currentEvo, megaEvoKind
     if (currentEvo.in == -1 || currentEvo.from) return
     const previousSpecie = gameData.species[previousSpecieID]
     const currentSpecie = gameData.species[currentEvo.in]
-    currentSpecie.eggmoves = previousSpecie.eggmoves
+    if (!currentSpecie.eggmoves.length) currentSpecie.eggmoves = previousSpecie.eggmoves
     if (!currentSpecie.tmhm.length) currentSpecie.tmhm = previousSpecie.tmhm
     if (!currentSpecie.tutor.length) currentSpecie.tutor = previousSpecie.tutor
+    if (!currentSpecie.dex.hw) currentSpecie.dex.hw = previousSpecie.dex.hw
+
+    if (previousSpecie.typeEvosSet && !currentSpecie.typeEvosSet) {
+        currentSpecie.stats.types.forEach(x => previousSpecie.typeEvosSet.add(x))
+        currentSpecie.typeEvosSet = previousSpecie.typeEvosSet
+    }
+    //do not add if it was already added
+    for (const evo of currentSpecie.evolutions){
+        if (evo.kd === currentEvo.kd) return
+        if (evo.rs === currentEvo.rs) return
+        if (evo.in === currentEvo.in) return
+    }
     //import evolution
     currentSpecie.evolutions.push({
         kd: currentEvo.kd,
@@ -155,12 +169,12 @@ function hydrateNextEvolutionWithMoves(previousSpecieID, currentEvo, megaEvoKind
         in: previousSpecieID,
         from: true// its a added flag so we can know if into into but from
     })
-    //track if the evo is a mega
-    if (megaEvoKindIndexes.indexOf(currentEvo.kd) != -1) {
-        currentSpecie.isMega = previousSpecieID
-    }
     //import region for megas
     if (!currentSpecie.region) currentSpecie.region = previousSpecie.region
+        //track if the evo is a mega
+        if (megaEvoKindIndexes.indexOf(currentEvo.kd) != -1) {
+            currentSpecie.isMega = previousSpecieID
+        }
 }
 
 function hydrateSpecies() {

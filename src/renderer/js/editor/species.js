@@ -177,15 +177,9 @@ function setMoveForAllNextEvos(specie, category, moveID, goDownwards=false){
     }
     if (category === "eggmoves" && !canAddEggmove) return
     if (specie[category].indexOf(moveID) == -1 && specie.allMoves.indexOf(moveID) == -1) {
-        const newMove = gameData.moves[moveID]
         specie[category].push(moveID)
         specie.allMoves.push(moveID)
-        if (category === "eggmoves"){
-            bridge.send('change-eggmoves', specie.NAME, specie.eggmoves.map(x => gameData.moves[x].NAME))
-        } else {
-            bridge.send('add-move', category, specie.NAME, newMove.NAME)
-        }
-        
+        bridge.send('change-moves', category, specie.NAME, specie[category].map(x => gameData.moves[x].NAME))
     }
 }
 
@@ -234,9 +228,9 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
                         return specieID
                     }
                     let eggSpecie = gameData.species[findEggSpecie(currentSpecieID)]
-                    bridge.send('change-eggmoves', eggSpecie.NAME, eggSpecie.eggmoves.map(x => gameData.moves[x].NAME))
+                    bridge.send('change-moves', eggSpecie.NAME, eggSpecie.eggmoves.map(x => gameData.moves[x].NAME))
                 } else {
-                    bridge.send('remove-move', moveCat, specie.NAME, move.NAME)
+                    bridge.send('change-moves', moveCat, specie.NAME, specie[moveCat].map(x => gameData.moves[x].NAME))
                 }
                 
                 setAllMoves()
@@ -490,4 +484,40 @@ export function modDescription(ev){
         display,
         saveRow, [save]
     ], panel), ev, "focus", true, true)
+}
+
+export function fixIllegalLevelLearnSet(ev){
+    createInformationWindow(cubicRadial(
+        [
+            ['!force to TM/TUTOR', (ev_cb)=>{
+                removeInformationWindow(ev_cb)
+                const specie = gameData.species[currentSpecieID]
+                let lvlupLen = specie.learnset.length
+                for(let i=0; i < lvlupLen; i++){
+                    const moveID = specie.learnset[i].id
+                    const move = gameData.moves[moveID]
+                    let shouldDelete = false
+                    if (TMHMList.indexOf(move.NAME) != -1){
+                        if (specie.tmhm.indexOf(moveID) != -1) continue
+                        specie.tmhm.push(moveID)
+                        shouldDelete = true
+                    }
+                    if (!shouldDelete && TutorList.indexOf(move.NAME) != -1){
+                        if (specie.tutor.indexOf(moveID) != -1) continue
+                        specie.tutor.push(moveID)
+                        shouldDelete = true
+                    }
+                    if (shouldDelete){
+                        specie.learnset.splice(i,1)[0]
+                        i -= 1
+                        lvlupLen -= 1
+                    }
+                }
+                bridge.send('change-moves', 'tmhm', specie.NAME, specie.tmhm.map(x => gameData.moves[x].NAME))
+                bridge.send('change-learnset', specie.lrnPtr, specie.learnset.map(x => learnsetCompactToLearnset(x)))
+                bridge.send('change-moves', 'tutor', specie.NAME, specie.tutor.map(x => gameData.moves[x].NAME))
+                setAllMoves()
+            }],
+        ], "6em", "1em"
+    ), ev, "mid", true, false)
 }

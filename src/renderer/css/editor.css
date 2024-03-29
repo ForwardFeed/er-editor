@@ -96,6 +96,14 @@ input.mod-stat-num{
     width: 100%!important;
     height: fit-content;
 }
+#moves-edt-big-desc{
+    background-color: var(--colorD);
+    resize: none;
+}
+#moves-edt-small-desc{
+    resize: none;
+    background-color: var(--colorC);
+}
 .moves-top{
     height: fit-content;
 }

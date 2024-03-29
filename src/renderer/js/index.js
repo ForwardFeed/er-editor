@@ -11,7 +11,6 @@ import { setupMoves} from "./panels/moves_panel.js"
 import { setupEditor } from "./editor/editor.js"
 import { load } from "./loading.js"
 import { setupFormatShowdown } from "./format_showdown.js"
-
 document.addEventListener("DOMContentLoaded", loadApplication);
 
 function loadApplication() {

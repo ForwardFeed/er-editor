@@ -2,6 +2,7 @@ import { gameData } from "../data_version";
 import { currentMoveID } from "../panels/moves_panel";
 import { e } from "../utils";
 import { TYPEList } from "./editor";
+import { createCFontedText } from "./desc_utils.js"
 
 export function setToEditMove(){
     $('#moves-edt-data, #moves-data').toggle()
@@ -15,6 +16,10 @@ export function setToEditMove(){
     $('#moves-edt-prio').val(move.prio)
     $('#moves-edt-types1').val(TYPEList[move.types[0]])
     $('#moves-edt-types2').val(TYPEList[move.types[1]])
+    $('#moves-edt-big-desc').val(move.lDesc)
+    $('#moves-edt-big-display').text(createCFontedText(move.lDesc, 4, 106))
+    $('#moves-edt-small-desc').val(move.desc)
+    $('#moves-edt-small-display').text(createCFontedText(move.desc, 2, 129))
     /*setTarget(move.target)
     $('#moves-edt-split').attr("src", `./icons/${gameData.splitT[move.split]}.png`);
     $('#moves-edt-split')[0].dataset.split = gameData.splitT[move.split].toLowerCase()
@@ -139,6 +144,14 @@ export function setupEditMove(){
         let name = $(this).val().replace(/["]/g, '')
         $(this).val( move.name = name)
         hasBeenModified()
+    })
+    $('#moves-edt-big-desc').on('keyup', function(ev){
+        const val = $(this).val()
+        console.log(createCFontedText(val, 4, 103))
+    })
+    $('#moves-edt-small-desc').on('keyup', function(ev){
+        const val = $(this).val()
+        console.log(createCFontedText(val, 2, 139))
     })
     setupTarget()
 }
