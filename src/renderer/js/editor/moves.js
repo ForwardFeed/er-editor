@@ -1,8 +1,9 @@
 import { gameData } from "../data_version";
 import { currentMoveID } from "../panels/moves_panel";
-import { e } from "../utils";
+import { JSHAC, e } from "../utils";
 import { TYPEList } from "./editor";
 import { create2LinesMoveDesc, create4LinesMoveDesc} from "./desc_utils.js"
+import { createInformationWindow } from "../window.js";
 
 export function setToEditMove(){
     $('#moves-edt-data, #moves-data').toggle()
@@ -16,10 +17,8 @@ export function setToEditMove(){
     $('#moves-edt-prio').val(move.prio)
     $('#moves-edt-types1').val(TYPEList[move.types[0]])
     $('#moves-edt-types2').val(TYPEList[move.types[1]])
-    $('#moves-edt-big-desc').val(move.lDesc)
-    $('#moves-edt-big-display').text(create4LinesMoveDesc(move.lDesc, move.lDescPtr).text)
-    $('#moves-edt-small-desc').val(move.desc)
-    $('#moves-edt-small-display').text(create2LinesMoveDesc(move.desc, move.descPtr).text)
+    $('#moves-edt-big-desc').text(move.lDesc)
+    $('#moves-edt-small-desc').text(move.desc)
     /*setTarget(move.target)
     $('#moves-edt-split').attr("src", `./icons/${gameData.splitT[move.split]}.png`);
     $('#moves-edt-split')[0].dataset.split = gameData.splitT[move.split].toLowerCase()
@@ -177,6 +176,65 @@ export function setupEditMove(){
     })
     
     setupTarget()
+}
+
+export function mod4LinesDesc(ev){
+    const move = gameData.moves[currentMoveID]
+    const descObj = create4LinesMoveDesc(move.lDesc, move.lDescPtr)
+    console.log(descObj)
+
+    const panel = e('div', 'edt-panel-desc')
+    const input = e('textarea', 'edt-desc-textarea', move.lDesc, {
+        onkeyup: ()=>{
+            $('#moves-edt-big-display').text(descObj.text)
+            move.lDesc = descObj.lines.join(' ')
+        }
+    })
+    const display = e('pre', 'edt-desc-display', descObj.text)
+    const saveRow = e('div', 'edt-desc-save btn', null, {
+        onclick: ()=>{
+            console.log('mod-move-4LineDesc', move.lDesc, move.lDescPtr)
+            saveRow.style.display = "none"
+        }
+    })
+    const save = e('span', null, 'save !')
+    saveRow.style.display = "none"
+    input.setAttribute('spellcheck', 'false')
+
+    createInformationWindow(JSHAC([
+        input,
+        display,
+        saveRow, [save]
+    ], panel), ev, "focus", true, true)
+}
+
+export function mod2LinesDesc(ev){
+    const move = gameData.moves[currentMoveID]
+    const descObj = create4LinesMoveDesc(move.desc, move.descPtr)
+
+    const panel = e('div', 'edt-panel-desc')
+    const input = e('textarea', 'edt-desc-textarea', move.desc, {
+        onkeyup: ()=>{
+            $('#moves-edt-big-display').text(descObj.text)
+            move.desc = descObj.lines.join('').replace('\\n', ' ')
+        }
+    })
+    const display = e('pre', 'edt-desc-display', descObj.text)
+    const saveRow = e('div', 'edt-desc-save btn', null, {
+        onclick: ()=>{
+            console.log('mod-move-2LineDesc', move.desc, move.descPtr)
+            saveRow.style.display = "none"
+        }
+    })
+    const save = e('span', null, 'save !')
+    saveRow.style.display = "none"
+    input.setAttribute('spellcheck', 'false')
+
+    createInformationWindow(JSHAC([
+        input,
+        display,
+        saveRow, [save]
+    ], panel), ev, "focus", true, true)
 }
 
 // power

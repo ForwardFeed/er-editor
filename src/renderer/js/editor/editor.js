@@ -5,7 +5,7 @@ import { setupEditorBuilder } from "./trainers.js"
 import { e } from "../utils.js"
 import { setTrainerToEditMode } from "./trainers.js"
 import { bridge } from '../context_bridge.js'
-import { setToEditMove, setupEditMove } from "./moves.js"
+import { mod2LinesDesc, mod4LinesDesc, setToEditMove, setupEditMove } from "./moves.js"
 
 export let dataList = [], pokeList = [], itemList = [], moveList = [], MOVEList = [], SPECIESList = [], 
 trainerNAMEList = [], trainerClassList = [], trainerMusicList = [], teamPtrList = [], trainerPicList = [],
@@ -82,9 +82,16 @@ const targetibleMap = [
     ["#moves-data", ()=>{
         setToEditMove()
     }],
+    ["#moves-edt-big-desc", (ev)=>{
+        mod4LinesDesc(ev)
+    }],
+    ["#moves-edt-small-desc", (ev)=>{
+        mod2LinesDesc(ev)
+    }],
     ["#moves-edt-data", ()=>{
         setToEditMove()
     }],
+    
 
 ]
 /**
@@ -100,6 +107,7 @@ function onRightClick(ev){
         const closest = $(node).closest(target[0])
         if (!closest.length) continue
         target[1](ev)
+        return // priority on the first one declared but one at a time
     }
 }
 

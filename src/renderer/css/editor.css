@@ -62,8 +62,10 @@ input.mod-stat-num{
 .edt-panel-desc{
     height: 50vh;
     width: 50vw;
+    max-width: 50vw;
     min-width: fit-content;
     background-color: var(--colorA);
+    
 }
 .edt-desc-textarea{
     width: 100%;
@@ -74,6 +76,9 @@ input.mod-stat-num{
 .edt-desc-display{
     user-select:text;
     font-size: 0.6em;
+    max-width: 50vw;
+    display: inline-block;
+    white-space: pre-wrap; /* Chrome; W3C standard */
 }
 .edt-desc-save {
     display: flex;
@@ -100,14 +105,14 @@ input.mod-stat-num{
     background-color: var(--colorD);
     resize: none;
 }
-#moves-edt-big-display, #moves-edt-small-display{
-    background-color: var(--colorC);
-    }
 main{
     max-width: calc(100vw - 12vmax);
 }
 .moves-top{
     height: fit-content;
+}
+.moves-bot{
+    background-color: var(--colorC);
 }
 
 
