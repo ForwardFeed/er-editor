@@ -178,19 +178,25 @@ const latinFontSmall = {
 }
 
 export function create2LinesMoveDesc(text, ptr){
-    const lines = createCFontedText(text, 2, 129)
-    return `static const u8 ${ptr}[] = _(\n${lines.map((x,i) => `    "${x}${i==0?'\\n"':''}`).join('\n')});`
+    const lines = createCFontedLines(text, 2, 129)
+    return {
+        lines: lines,
+        text: `static const u8 ${ptr}[] = _(\n${lines.map((x,i) => `    "${x}${i==0?'\\n"':''}`).join('\n')}");`
+    }
 }
 export function create4LinesMoveDesc(text, ptr){
-    const lines = createCFontedText(text, 4, 106)
-    return `static const u8 ${ptr}[] = _("${lines.map(x => `${x}`).join('\\n')}");`
+    const lines = createCFontedLines(text, 4, 106)
+    return {
+        lines: lines,
+        text: `static const u8 ${ptr}[] = _("${lines.map(x => `${x}`).join('\\n')}");`
+    }
 }
 /**
  * 
  *So 2-line appears to be 129 pixels wide
     4-line appears to be 106 pixels wide
  */
-function createCFontedText(text, nLines, nPixels, smallfont = false){
+function createCFontedLines(text, nLines, nPixels, smallfont = false){
     const font = smallfont ? latinFontSmall : latinFont
     const chars = text.split('')
     let charsLen = chars.length
@@ -276,4 +282,4 @@ function createCFontedText(text, nLines, nPixels, smallfont = false){
     
     return lines.splice(0, nLines)
 }
-window.createCText = createCFontedText
+window.createCText = createCFontedLines

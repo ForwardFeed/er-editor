@@ -3,7 +3,7 @@ import { ExecArray, GEdit } from "../../gedit"
 
 export const MoveDescCQ = new CallQueue("descriptions of moves")
 
-export function changeBigDesc(ptr: string, lines: string[]){
+export function change4LinesDesc(ptr: string, lines: string[]){
     const newText = `static const u8 ${ptr}[] = _(\n${lines.map(x => `"${x}"`).join('\\n')});`
     let begin = 0
     const execArray: ExecArray = [
@@ -36,7 +36,7 @@ export function changeBigDesc(ptr: string, lines: string[]){
     gedit.go()
 }
 
-export function changeSmallDesc(ptr: string, lines: string[]){
+export function change2LinesDesc(ptr: string, lines: string[]){
     const newText = `static const u8 ${ptr}[] = _(\n${lines.map(x => `"${x}"`).join('\\n')});`
     let begin = 0
     const execArray: ExecArray = [

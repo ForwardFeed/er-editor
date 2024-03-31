@@ -96,15 +96,18 @@ input.mod-stat-num{
     width: 100%!important;
     height: fit-content;
 }
-#moves-edt-big-desc{
+#moves-edt-big-desc, #moves-edt-small-desc{
     background-color: var(--colorD);
     resize: none;
 }
-#moves-edt-small-desc{
-    resize: none;
+#moves-edt-big-display, #moves-edt-small-display{
     background-color: var(--colorC);
+    }
+main{
+    max-width: calc(100vw - 12vmax);
 }
 .moves-top{
     height: fit-content;
 }
+
 

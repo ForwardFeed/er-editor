@@ -17,9 +17,9 @@ export function setToEditMove(){
     $('#moves-edt-types1').val(TYPEList[move.types[0]])
     $('#moves-edt-types2').val(TYPEList[move.types[1]])
     $('#moves-edt-big-desc').val(move.lDesc)
-    $('#moves-edt-big-display').text(create4LinesMoveDesc(move.lDesc, move.lDescPtr))
+    $('#moves-edt-big-display').text(create4LinesMoveDesc(move.lDesc, move.lDescPtr).text)
     $('#moves-edt-small-desc').val(move.desc)
-    $('#moves-edt-small-display').text(create2LinesMoveDesc(move.desc, move.descPtr))
+    $('#moves-edt-small-display').text(create2LinesMoveDesc(move.desc, move.descPtr).text)
     /*setTarget(move.target)
     $('#moves-edt-split').attr("src", `./icons/${gameData.splitT[move.split]}.png`);
     $('#moves-edt-split')[0].dataset.split = gameData.splitT[move.split].toLowerCase()
@@ -33,6 +33,7 @@ export function setToEditMove(){
 function hasBeenModified(){
     return
 }
+
 
 function setupTarget(){
     $('#moves-edt-target').append(gameData.targetT.map(x => e('option', null, x)))
@@ -147,18 +148,34 @@ export function setupEditMove(){
     })
     $('#moves-edt-big-desc').on('keyup', function(ev){
         const move = gameData.moves[currentMoveID]
-        const val = $(this).val()
-        const text = create4LinesMoveDesc(val, move.lDescPtr)
-        move.lDesc = text
-        $('#moves-edt-big-display').text(text)
+        const descObj = create4LinesMoveDesc($(this).val(), move.lDescPtr)
+        $('#moves-edt-big-display').text(descObj.text)
+        move.lDesc = descObj.lines.join(' ')
+        move.lDescHasBeenModified = true
+        hasBeenModified()
+        
+    })
+    $('#moves-edt-big-desc').on('focusout', function(){
+        const move = gameData.moves[currentMoveID]
+        if (!move.lDescHasBeenModified) return
+        move.lDescHasBeenModified = false
+        console.log('mod-move-4LineDesc', move.lDesc, move.lDescPtr)
     })
     $('#moves-edt-small-desc').on('keyup', function(ev){
         const move = gameData.moves[currentMoveID]
-        const val = $(this).val()
-        const text = create2LinesMoveDesc(val, move.descPtr)
-        move.desc = text
-        $('#moves-edt-small-display').text(text)
+        const descObj = create2LinesMoveDesc($(this).val(), move.descPtr)
+        $('#moves-edt-small-display').text(descObj.text)
+        move.desc = descObj.lines.join('').replace('\\n', ' ')
+        move.descHasBeenModified = true
+        
     })
+    $('#moves-edt-small-desc').on('focusout', function(){
+        const move = gameData.moves[currentMoveID]
+        if (!move.descHasBeenModified) return
+        move.descHasBeenModified = false
+        console.log('mod-move-2LineDesc', move.desc, move.desc)
+    })
+    
     setupTarget()
 }
 
