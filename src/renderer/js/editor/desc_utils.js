@@ -233,7 +233,7 @@ function createCFontedLines(text, nLines, nPixels, smallfont = false){
         const charPxSize = font.widths[char]
         acc += charPxSize
         if (charPxSize === undefined){
-            console.warn('char size unknow', char)
+            console.warn(`char size unknow : "${char}"`)
             continue
         }
         if (char === " "){

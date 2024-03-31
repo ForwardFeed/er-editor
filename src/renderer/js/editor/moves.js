@@ -145,36 +145,7 @@ export function setupEditMove(){
         $(this).val( move.name = name)
         hasBeenModified()
     })
-    $('#moves-edt-big-desc').on('keyup', function(ev){
-        const move = gameData.moves[currentMoveID]
-        const descObj = create4LinesMoveDesc($(this).val(), move.lDescPtr)
-        $('#moves-edt-big-display').text(descObj.text)
-        move.lDesc = descObj.lines.join(' ')
-        move.lDescHasBeenModified = true
-        hasBeenModified()
-        
-    })
-    $('#moves-edt-big-desc').on('focusout', function(){
-        const move = gameData.moves[currentMoveID]
-        if (!move.lDescHasBeenModified) return
-        move.lDescHasBeenModified = false
-        console.log('mod-move-4LineDesc', move.lDesc, move.lDescPtr)
-    })
-    $('#moves-edt-small-desc').on('keyup', function(ev){
-        const move = gameData.moves[currentMoveID]
-        const descObj = create2LinesMoveDesc($(this).val(), move.descPtr)
-        $('#moves-edt-small-display').text(descObj.text)
-        move.desc = descObj.lines.join('').replace('\\n', ' ')
-        move.descHasBeenModified = true
-        
-    })
-    $('#moves-edt-small-desc').on('focusout', function(){
-        const move = gameData.moves[currentMoveID]
-        if (!move.descHasBeenModified) return
-        move.descHasBeenModified = false
-        console.log('mod-move-2LineDesc', move.desc, move.desc)
-    })
-    
+
     setupTarget()
 }
 
@@ -186,14 +157,16 @@ export function mod4LinesDesc(ev){
     const panel = e('div', 'edt-panel-desc')
     const input = e('textarea', 'edt-desc-textarea', move.lDesc, {
         onkeyup: ()=>{
-            $('#moves-edt-big-display').text(descObj.text)
-            move.lDesc = descObj.lines.join(' ')
+            const descObj = create4LinesMoveDesc(input.value, move.lDescPtr)
+            display.innerText =  descObj.text
+            saveRow.style.display = "flex"
         }
     })
     const display = e('pre', 'edt-desc-display', descObj.text)
     const saveRow = e('div', 'edt-desc-save btn', null, {
         onclick: ()=>{
-            console.log('mod-move-4LineDesc', move.lDesc, move.lDescPtr)
+            move.lDesc = descObj.lines.join(' ')
+            console.log('mod-move-4LinesDesc', move.lDesc, move.lDescPtr)
             saveRow.style.display = "none"
         }
     })
@@ -215,14 +188,16 @@ export function mod2LinesDesc(ev){
     const panel = e('div', 'edt-panel-desc')
     const input = e('textarea', 'edt-desc-textarea', move.desc, {
         onkeyup: ()=>{
-            $('#moves-edt-big-display').text(descObj.text)
-            move.desc = descObj.lines.join('').replace('\\n', ' ')
+            const descObj = create4LinesMoveDesc(input.value, move.descPtr)
+            display.innerText =  descObj.text
+            saveRow.style.display = "flex"
         }
     })
     const display = e('pre', 'edt-desc-display', descObj.text)
     const saveRow = e('div', 'edt-desc-save btn', null, {
         onclick: ()=>{
-            console.log('mod-move-2LineDesc', move.desc, move.descPtr)
+            move.desc = descObj.lines.join('').replace('\\n', ' ')
+            console.log('mod-move-2LinesDesc', move.desc, move.descPtr)
             saveRow.style.display = "none"
         }
     })
