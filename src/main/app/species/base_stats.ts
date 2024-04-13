@@ -165,9 +165,9 @@ export function changeBaseStats(specie: string, values: number[]){
         'baseHP',
         'baseAttack',
         'baseDefense',
-        'baseSpeed',
-        'baseSpAttack',
         'baseSpDefense',
+        'baseSpAttack',
+        'baseSpeed',
     ]
     const foundFields: number[] = []
     const execArray: ExecArray = [
