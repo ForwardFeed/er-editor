@@ -543,6 +543,8 @@ span{
 }
 .species-bot-row{
     text-align: center;
+    display: flex;
+    flex-direction: column;
 }
 .species-moves-title{
     text-align: center;
@@ -564,6 +566,7 @@ span{
     display: flex;
     cursor: pointer;
     align-items: center;
+    min-width: 11em;
 }
 
 #species-evos{

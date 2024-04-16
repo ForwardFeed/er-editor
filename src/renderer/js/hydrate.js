@@ -8,6 +8,7 @@ import { e, JSHAC } from "./utils.js"
 import { load } from "./loading.js"
 import { initFormatShowdown } from "./format_showdown.js"
 import { getCommunitySetsFromStorage, setUpComSets } from "./panels/species/community_sets.js"
+import { hydrateEditor } from "./editor/editor.js"
 
 export const nodeLists = {
     species: [],
@@ -58,6 +59,7 @@ export function hydrate(firstLoad=false) {
         [setLists, "init some lists"],
         [takeMovesFromPreEvolution, "take moves from evo"],
         [addAllOtherEveeMoves, "adding ER eevees moves"],
+        [hydrateEditor, "editor"]
     ]
     const stepLen = steps.length
     for (let i = 0; i < stepLen; i++){
