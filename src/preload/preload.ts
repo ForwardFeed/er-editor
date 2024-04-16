@@ -26,9 +26,16 @@ const api: CustomAPI = {
         if (validChannels.includes(channel)) {
             // Deliberately strip event as it includes `sender`
             try{
-              ipcRenderer.on(channel, (_event, ...args) => func(...args));
+              console.log(channel)
+              ipcRenderer.on(channel, (_event, ...args) => {
+                try{
+                  func(...args)
+                }catch(e){
+                  console.log('fuck in: ' + channel, ' with args: ' + args, 'reason:', e)
+                }
+              });
             } catch(e){
-              console.error(e)
+              console.error('Error receiving : ' + channel, e)
             }
             
         } else {

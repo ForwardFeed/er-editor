@@ -195,19 +195,26 @@
                         <div class="builder-mon"></div>
                         <div class="builder-mon"></div>
                         <div class="builder-mon"></div>
-                    </div>
-                    <div class="builder-tools">
-                        <div id="builder-weaknesses">
-                            
-                        </div>
-                        <div id="builder-screenshot" class="btn">
-                            <span>Team as a screenshot</span>
-                        </div>
-                        <div id="builder-edt-save" class="btn" style="display: none;">
-                            <span>save trainer</span>
-                        </div>
-                        <div id="builder-import" class="btn btn-hover">
-                            <span>Import / Export</span>
+                        <div class="builder-tools">
+                            <div class="bi-btn-row">
+                                <div id="defensive-cov" class="sel-active"><span>Defensive Coverage</span></div>
+                                <div id="offensive-cov" class="sel-n-active"><span>Offensive Coverage</span></div>
+                            </div>
+                            <div id="builder-def-cov">
+                                
+                            </div>
+                            <div id="builder-off-cov" style="display: none;">
+                                <span>click to see which pokemon has a super effective move against</span>
+                                <div id="builder-off-types" class="builder-type-row">
+
+                                </div>
+                            </div>
+                            <div id="builder-screenshot" class="btn btn-hover">
+                                <span>Team as a screenshot</span>
+                            </div>
+                            <div id="builder-import" class="btn btn-hover">
+                                <span>Import / Export</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -471,9 +478,50 @@
         </div>
     </div>
     <div id="settings-frame" style="display: none;">
-        <button id="change-folder">Change Folder</button>
+        <div class="versionning">
+            <label for="versions">Game Version</label>
+            <select name="versions" id="versions"></select>
+            <span id="ugly-error-span" style="color: red;"></span>
+        </div>
+        
+        <div class="settings-row">
+            <button id="open-team-savefile">Import Team from savefile</button>
+        </div>
+        <div class="settings-row">
+            <button id="import-comsets">Import community sets from file</button>
+            <button id="export-comsets">Export community sets to file</button>
+        </div>
+        <hr id="settings-main">
+        <div class="settings-row">
+            <span>Store gamedata locally: </span>
+            <label for="disable-storage">Disable</label>
+            <input type="radio" name="settings-storage" id="disable-storage">
+            <label for="enable-storage">Enable</label>
+            <input type="radio" name="settings-storage" id="enable-storage" checked>
+        </div>
+        <div class="settings-row">
+            <span>Mode monotype: </span>
+            <label for="disable-monotype">Disable</label>
+            <input type="radio" name="settings-monotype" id="disable-monotype" checked>
+            <label for="enable-monotype">Enable</label>
+            <input type="radio" name="settings-monotype" id="enable-monotype">
+        </div>
+        <div class="settings-row">
+            <span>Export team format: </span>
+            <label for="disable-export-discord">Raw</label>
+            <input type="radio" name="settings-export-discord" id="disable-export-discord" checked>
+            <label for="enable-export-discord">Discord embed</label>
+            <input type="radio" name="settings-export-discord" id="enable-export-discord">
+        </div>
         <hr>
         <button id="insanity">ACTIVATE INSANITY WARNING EPILEPSY</button>
+        <hr>
+        <div class="settings-bottom">
+            <a target="_blank" href="https://github.com/ForwardFeed/er-editor">Original git repository</a> 
+            and original concept from ${<a target="_blank" href="https://github.com/ForwardFeed">This person</a>}
+            <div class="thanks"> This was my biggest project so far, gratitude upon James Lyons for its sponsorship and
+            thanks for the people helping me (code contribution, support on the game structure and the game's community)</div>
+        </div>
     </div>
     <script type="module" src="./vendor/fastdom.js"></script>
     <link rel="stylesheet" href="./css/main.css">

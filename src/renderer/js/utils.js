@@ -86,12 +86,18 @@ export function e(tag = "div", classname = "", innerText = "", events = {}){
     const htmlElement = document.createElement(tag)
     if (id) htmlElement.id = id
     if (classname) htmlElement.className = classname
-    if (tag === "input"){
-        htmlElement.value = innerText
-    } else {
-        htmlElement.innerText = innerText
+    if (innerText && typeof innerText === "object"){
+        // useful if you like to embed span for text
+        for (const subElement of innerText){
+            htmlElement.append(subElement)
+        }
+    } else { 
+        if (tag === "input" || tag === "textarea"){
+            htmlElement.value = innerText
+        } else {
+            htmlElement.innerText = innerText
+        }
     }
-    
     for (const event in events){
         htmlElement[event] = events[event]
     }
@@ -99,14 +105,14 @@ export function e(tag = "div", classname = "", innerText = "", events = {}){
 }
 /**
  * Javascript HTML Array Concatenation
- * @param {HTMLElement | HTMLElement[]} htmlArray
- * @param {HTMLElement | null}
+ * @param {HTMLDivElement | HTMLDivElement[]} htmlArray
  * @returns  {DocumentFragment}
  */
-export function JSHAC(htmlArray, elToAppend=null){
+export function JSHAC(htmlArray){
     const frag = document.createDocumentFragment()
     for (let i = 0; i < htmlArray.length; i++){
         const element = htmlArray[i]
+        if (!element) continue
         if (element.constructor.name !== "Array"){
             // It means it is a children
             frag.append(element)
@@ -117,8 +123,7 @@ export function JSHAC(htmlArray, elToAppend=null){
             parent.append(JSHAC(element))
         }
     }
-    if (elToAppend) elToAppend.append(frag)
-    return elToAppend ? elToAppend : frag
+    return frag
 }
 
 export function setLongClickSelection(node, callback, time = 500, bgColor = "red"){
@@ -184,4 +189,13 @@ export function reorderNodeList(list, sortFn, direction = "<"){
             list.append(nodeLists.species[mon.nodeID])
         }
     })
+}
+
+/**
+ * shamelessly lazy wrapper
+ * @param {HTMLElement} node
+ * @param {string} text 
+ */
+export function t(node, text){
+    node.innerText = text
 }

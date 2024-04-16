@@ -1,5 +1,18 @@
 /* GENERAL */
 
+.left{
+    margin: auto;
+    margin-left: 0;
+}
+.right{
+    margin: auto;
+    margin-right: 0;
+}
+.row{
+    margin: auto;
+    width: 100%;
+}
+/* Pokmns*/
 .normal{background-color: #aa9; color:rgb(44, 44, 39);}
 .fire{background-color: #f42; color:rgb(73, 23, 14);}
 .water{background-color: #39f; color:rgb(14, 32, 49);}
@@ -59,7 +72,19 @@
 .sta{
     color: rgb(71, 71, 73);
 }
-
+input[type='radio'] {
+    box-sizing: border-box;
+    appearance: none;
+    background: var(--colorB);
+    outline: 2px solid var(--colorA);
+    border: 2px solid var(--shadow);
+    width: 1em;
+    height: 1em;
+}
+  
+input[type='radio']:checked {
+    background: var(--font-color);
+}
 .colorA{
     background-color: var(--colorA);
 }
@@ -92,6 +117,7 @@
     background-color: var(--selHover);
 }
 
+
 .data-list{
     text-align: center;
     width: 9em;
@@ -122,6 +148,7 @@ span{
 .span-a{
     margin: auto 0;
 }
+
 .extend {
     background-color: red;
     height: 100%;
@@ -199,10 +226,15 @@ span{
     display: flex;
     flex-direction: row;
     flex-grow: 1;
+    
+}
+.xlarge-row > *, .moves-large > *, #moves-internal-id, #moves-name, .move-overlay-stats > *, .move-overlay-fill{
+    user-select: text;
 }
 .xlarge-row > span{
     padding-right: 0.5em;
 }
+
 #moves-split, #species-front, .pixelated, .trainer-poke-sprite {
     image-rendering:optimizeSpeed;             /* Legal fallback */
     image-rendering:-moz-crisp-edges;          /* Firefox        */
@@ -241,7 +273,9 @@ span{
 .moves-bot-info > *{
     margin-left: 2%;
 }
-/*#moves-desc{}*/
+#moves-desc{
+    user-select: text;
+}
 #moves-flags{
     display: flex;
     flex-direction: column;
@@ -325,7 +359,10 @@ span{
 .species-name{
     width: min-content;
 }
-
+#species-name{
+    user-select: text;
+    padding-right: 1em;
+}
 .species-mid-stats{
     display: flex;
 }
@@ -341,7 +378,7 @@ span{
     min-height: 64px;
     margin: auto;
 }
-#species-front:hover, #species-coverage:hover, #species-basestats:hover{
+#species-front:hover, #species-coverage:hover, #species-basestats:hover, #moves-name:hover{
     box-shadow: inset 2px 0px 10px var(--font-color);
 }
 .species-abi-inn{
@@ -400,6 +437,7 @@ span{
     font-size: 1.9vmax;
     text-align: center;
     align-items: center;
+    margin: auto 0;
 }
 .stat-name{
     width: 1.5em;
@@ -417,7 +455,6 @@ span{
     background: linear-gradient(to right, green 100%, white 0%);
     height: 50%;
     flex-grow: 1;
-    margin-top: 0.2em;
 }
 
 .species-coverage-row{
@@ -452,14 +489,16 @@ span{
     flex-direction: column;
     flex-grow: 1;
     background-color: var(--colorD);
-    overflow-y: scroll;
 }
 
 .species-mid{
     display: flex;
     position: relative;
+    flex-direction: column;
 }
-
+.species-mid > div{
+    margin: auto;
+}
 #specie-name{
     padding-left: 2%;
 }
@@ -513,7 +552,6 @@ span{
 .species-move-list{
     flex-grow: 1;
     overflow-y: scroll;
-    min-height: 50%;
 }
 .species-move-list > *{
     border-bottom: var(--shadow);
@@ -521,7 +559,8 @@ span{
     border-bottom-width: 1px;
 }
 .species-move-row{
-    width: 11em;
+    width: 100%;
+    min-height: 15px;
     display: flex;
     cursor: pointer;
     align-items: center;
@@ -530,6 +569,9 @@ span{
 #species-evos{
     display: flex;
     flex-direction: column;
+}
+.evo-parent{
+    border-bottom: solid 1px;
 }
 .evo-into{
     display: flex;
@@ -543,13 +585,18 @@ span{
 }
 
 .species-levelup-lvl{
-    width: 1.5em;
-    background-color: var(--colorC);
+    display: flex;
+    height: 100%;
+    min-width: 1.5em;
+    background-color: var(--colorE);
 }
 .species-move-name{
     width: 100%;
 }
-
+.species-move-pwr{
+    font-size: 0.8em;
+    min-width: 1.8em;
+}
 
 .specie-locs, .specie-locs-scripted{
     cursor: pointer;
@@ -575,13 +622,16 @@ span{
 #eggmoves{
     background-color: var(--colorD);
 }
-
+#preevomoves{
+    background-color: var(--colorE);
+}
 .sprite{
     height: 30px;
 }
 
 .species-move-sprite{
-    height: 15px;
+    min-height: 15px;
+    max-height: 1em;
 }
 
 @media (orientation: landscape) {
@@ -603,13 +653,6 @@ span{
     #species-front{
         height: 15vw;
         width: 15vw;
-    }
-    .species-mid{
-        flex-direction: row;
-    }
-    .species-mid > :last-child{
-        margin: auto;
-        margin-right: 0;
     }
 }
 
@@ -688,6 +731,10 @@ span{
 /* Trainers */
 .trainers-infobar{
     display: flex;
+    
+}
+.trainers-infobar > * {
+    user-select: text;
 }
 #trainers-rematch{
     margin-left: auto;
@@ -716,7 +763,7 @@ span{
     border-bottom-width: 1px;
     cursor: pointer;
     width: calc(50% - 1vw);
-    height: 11em;
+    height: 10em;
 }
 .trainers-pokemon-left, .trainers-pokemon-right, .trainers-poke-nature, .trainers-poke-moves{
     box-sizing: border-box;
@@ -767,12 +814,11 @@ span{
     display: flex;
     flex-wrap: wrap;
     flex-grow: 1;
-    height: 100%;
-    width: 100%;
     border-left: 0;
     border-right: 0;
 }
 .trainers-poke-move{
+    display: flex;
     width: 50%;
     text-align: center;
     font-size: 0.9em;
@@ -806,18 +852,24 @@ span{
     z-index: 100;
     width: 80vw;
     height: 80%;
-    margin: 10% 10% 10vw 10vw;
+    top: 10vh;
+    left: 10vw;
     background-color: var(--colorA);
     position: absolute;
-    top: 0;
     border: 5px ridge var(--colorB);
     font-size: 2em;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
 }
 .versionning > select{
     margin-top: -1px;
     vertical-align: middle;
 }
-/*.settings-row{}*/
+.settings-row{
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
 .settings-row > input[type='radio'] { 
     transform: scale(2); 
     margin-top: -1px;
@@ -825,11 +877,30 @@ span{
 }
 .settings-row > * {
     margin-right: 2%;
-    height: 100%;
 }
-
-
+.settings-bottom{
+    margin-top: auto;
+}
+a{
+    color: var(--font-color);
+    margin: 0;
+    padding: 0;
+}
+a:hover{
+    text-decoration-style:  dotted;
+}
+.thanks{
+    font-size: 0.7em;
+}
 /* SEARCH */
+.filter-nothing-found{
+    background: rgb(230, 229, 243);
+    background: linear-gradient(90deg, rgb(230, 229, 243) 0%, rgba(190,35,26,1) 100%);
+}
+.filter-something-found{
+    background: rgb(230, 229, 243);
+    background: linear-gradient(90deg, rgb(230, 229, 243) 0%, rgba(22,85,10,1) 100%); 
+}
 #filter-frame{
     position: absolute;
     z-index: 11; /* 10 would be reserved to a invisible click to close filer with 100% height and with */
@@ -992,3 +1063,16 @@ span{
         width: 100vw;
     }
 }
+
+
+#drop-savefile-frame{
+    width: 50%;
+    height: 50%;
+    position: absolute;
+    top: 25%;
+    left: 25%;
+    background-color: var(--colorA);
+    z-index: 20;
+}
+
+

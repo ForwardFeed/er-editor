@@ -1,14 +1,13 @@
-import { feedPanelSpecies, getSpritesURL, setupReorderBtn } from "./panels/species_panel.js"
+import { abilitiesExtraType, buildSpeciesPrefixTrees, feedPanelSpecies, getSpritesURL, matchedSpecies, setupReorderBtn } from "./panels/species/species_panel.js"
 import { feedPanelMoves } from "./panels/moves_panel.js"
-import { feedPanelLocations } from "./panels/locations_panel.js"
-import { feedPanelTrainers, setTrainerClassName} from "./panels/trainers_panel.js"
+import { buildlocationPrefixTrees, feedPanelLocations } from "./panels/locations_panel.js"
+import { feedPanelTrainers, buildTrainerPrefixTrees, setTrainerClassName} from "./panels/trainers_panel.js"
 import { gameData } from "./data_version.js"
-import { restoreSave } from "./panels/team_builder.js"
+import { restoreSave, setupOffensiveTeam } from "./panels/team_builder.js"
 import { e, JSHAC } from "./utils.js"
-import { load, endLoad} from "./loading.js"
-import { hydrateEditor } from "./editor/editor.js"
-import { addTrainer } from "./editor/trainers.js"
+import { load } from "./loading.js"
 import { initFormatShowdown } from "./format_showdown.js"
+import { getCommunitySetsFromStorage, setUpComSets } from "./panels/species/community_sets.js"
 
 export const nodeLists = {
     species: [],
@@ -22,7 +21,6 @@ export function hydrate(firstLoad=false) {
     if (!gameData) {
         return console.warn("couldn't find gameData")
     }
-    window.gameData = gameData
     // add some reconstitution data for ease of use here
     gameData.minMaxBaseStats = new Array(6).fill(0)
     gameData.speciesStats = {
@@ -47,24 +45,35 @@ export function hydrate(firstLoad=false) {
 
     // hydrate the UI with the data
     const steps = [
+        [getCommunitySetsFromStorage, "community sets"],
+        [setupOffensiveTeam, "builder panel"],
         [initFormatShowdown, "showdown data"],
+        [setUpComSets, "Import Community sets"],
         [hydrateAbilities, "abilities data"],
         [hydrateMoves, "moves data"],
         [hydrateSpecies, "species  data"],
-        [hydrateLocation, "locations  data"],
+        [hydrateLocation, "locations data"],
         [hydrateTrainers, "trainers data"],
-        [hydrateItems, "items data"],
-        [hydrateEditor, "editor data"],
         [restoreSave, "save"], // also restore the save of the team builder
+        [setLists, "init some lists"],
+        [takeMovesFromPreEvolution, "take moves from evo"],
+        [addAllOtherEveeMoves, "adding ER eevees moves"],
     ]
-    for (const step of steps){
+    const stepLen = steps.length
+    for (let i = 0; i < stepLen; i++){
+        const step = steps[i]
         if (firstLoad){
-            load(step[0], step[1])
+            load(step[0], step[1], i == stepLen - 1)
         } else {
             step[0]()
         }
-    }
-    if (firstLoad) endLoad()
+    } 
+}
+
+export let itemList = []
+function setLists(){
+    itemList = gameData.items.map(x => x.name)
+    
 }
 
 function feedBaseStatsStats(statID, value) {
@@ -113,12 +122,32 @@ function hydrateAbilities(abilities = gameData.abilities) {
         })
     })*/
 }
-
+let HPMoveID = 0
+let HPsMovesID = []
 function hydrateMoves(moves = gameData.moves) {
+    HPsMovesID = []
+    gameData.flagsT.push('Technician', 'Perfectionnist')
     const fragment = document.createDocumentFragment();
-    for (const i in moves) {
+    let movesLen = moves.length
+    for (let i = 0; i < movesLen; i++) {
         if (i == 0) continue
         const mv = moves[i]
+        if (mv.name === "Hidden Power"){
+            mv.name = "H.P. Normal"
+            HPMoveID = i
+            for (const typeI in gameData.typeT){
+                const typeName = gameData.typeT[typeI]
+                if (typeName === "Normal") continue
+                const newHP = structuredClone(mv)
+                newHP.types[0] = typeI
+                newHP.name = "H.P. " + typeName
+                movesLen++
+                
+                HPsMovesID.push(moves.push(newHP) - 1)
+            }
+        }
+        if (mv.pwr > 0 && mv.pwr <= 60) mv.flags.push(gameData.flagsT.indexOf('Technician'))
+        if (mv.pwr > 0 && mv.pwr < 50) mv.flags.push(gameData.flagsT.indexOf('Perfectionnist'))
         const core = document.createElement('div')
         core.className = "btn data-list-row sel-n-active"
         const name = document.createElement('span')
@@ -132,6 +161,8 @@ function hydrateMoves(moves = gameData.moves) {
             });
         });
         fragment.append(core)
+
+        
     }
     $("#moves-list").empty().append(fragment);
     feedPanelMoves(1)
@@ -140,22 +171,22 @@ function hydrateMoves(moves = gameData.moves) {
 /**
  * Not a fully functionnally recursive way to add specie evolution
  * @param {number} currentSpecieID - species into what the pokemon is evolving
- * @param {import("../../main/app/compactify.js").CompactEvolution} currentEvo - the how this pokemon is getting evolved (first degree)
- * @param {number[]}
+ * @param {import("./compactify.js").CompactEvolution} currentEvo - the how this pokemon is getting evolved (first degree)
  */
-function hydrateNextEvolutionWithMoves(previousSpecieID, currentEvo, megaEvoKindIndexes) {
+function hydrateNextEvolutionWithMoves(previousSpecieID, currentEvo) {
     if (currentEvo.in == -1 || currentEvo.from) return
     const previousSpecie = gameData.species[previousSpecieID]
     const currentSpecie = gameData.species[currentEvo.in]
+    
     if (!currentSpecie.eggmoves.length) currentSpecie.eggmoves = previousSpecie.eggmoves
     if (!currentSpecie.tmhm.length) currentSpecie.tmhm = previousSpecie.tmhm
     if (!currentSpecie.tutor.length) currentSpecie.tutor = previousSpecie.tutor
     if (!currentSpecie.dex.hw) currentSpecie.dex.hw = previousSpecie.dex.hw
-
     if (previousSpecie.typeEvosSet && !currentSpecie.typeEvosSet) {
         currentSpecie.stats.types.forEach(x => previousSpecie.typeEvosSet.add(x))
         currentSpecie.typeEvosSet = previousSpecie.typeEvosSet
     }
+    
     //do not add if it was already added
     for (const evo of currentSpecie.evolutions){
         if (evo.kd === currentEvo.kd && evo.rs === currentEvo.rs && evo.in === currentEvo.in) return
@@ -169,37 +200,83 @@ function hydrateNextEvolutionWithMoves(previousSpecieID, currentEvo, megaEvoKind
     })
     //import region for megas
     if (!currentSpecie.region) currentSpecie.region = previousSpecie.region
-        //track if the evo is a mega
-        if (megaEvoKindIndexes.indexOf(currentEvo.kd) != -1) {
-            currentSpecie.isMega = previousSpecieID
+}
+function takeMovesFromPreEvolution(){
+    const speciesLen = gameData.species.length
+    for(let i=0; i < speciesLen; i++){
+        const specie = gameData.species[i]
+        for(const evo of specie.evolutions){
+            if (!evo.from) continue
+            const previousSpecie = gameData.species[evo.in]
+            specie.preevomoves = previousSpecie.allMoves.filter(
+                x => specie.allMoves.indexOf(x) == -1
+            )
+            specie.allMoves =  [... new Set(specie.allMoves.concat(...specie.preevomoves))]
         }
+    }
+}
+
+// a weird mechanic from ER that makes any evee evo line learn any other move from any other evo line
+// it is so weird that i'm using a pointer for that
+function addAllOtherEveeMoves(){
+    const Eevee = gameData.species.find(x => x.name === "Eevee")
+    if (!Eevee) return
+    let moveListPointer = Eevee.allMoves
+    if (!moveListPointer) {
+        console.warn('unexplainable problem in addAllOtherEveeMoves')
+        return
+    }
+    let allMoves = []
+    // add all moves uniquely into a shared object 
+    for (const evo of Eevee.evolutions){
+        const nextEvo = gameData.species[evo.in]
+        allMoves = [... new Set(allMoves.concat(nextEvo.allMoves))]
+        nextEvo.allMoves = moveListPointer
+    }
+    // show it shows into pree evo moves too
+    for (const evo of Eevee.evolutions){
+        const nextEvo = gameData.species[evo.in]
+        nextEvo.preevomoves = nextEvo.preevomoves.concat(allMoves.filter(
+            x => nextEvo.allMoves.indexOf(x) == -1
+        ))
+    }
+    moveListPointer.splice(0) // i delete everything inside to keep the pointer alive
+    moveListPointer.push(...allMoves)
 }
 
 function hydrateSpecies() {
+    //matchedSpecies.splice(0, matchedSpecies.length, ...gameData.species)
     nodeLists.species = [] // reset
     const fragment = document.createDocumentFragment();
     const species = gameData.species
     fragment.append(setupReorderBtn())
     for (const i in species) {
         if (i == 0) continue
-        const spec = species[i]
-        spec.stats.base[6] = 0
-        for (const statID in spec.stats.base) {
-            const value = spec.stats.base[statID]
+        const specie = species[i]
+        specie.stats.base[6] = 0
+        for (const statID in specie.stats.base) {
+            const value = specie.stats.base[statID]
             feedBaseStatsStats(statID, value)
-            if (statID < 6) spec.stats.base[6] += + value
+            if (statID < 6) specie.stats.base[6] += + value
         }
+        // set third types for innates
+        specie.thirdType = abilitiesExtraType(false, specie)
         // prepare to be appended a list of location where this pokemon appear
-        spec.locations = new Map();
+        specie.locations = new Map();
         // concatenate all moves into a new variable
         // also remove all duplicates
-        spec.allMoves = [...new Set(spec.eggmoves.concat(
-            spec.learnset.map(x => x.id).concat(
-                spec.tmhm.concat(
-                    spec.tutor
+        // also adding move none to it, so it's selectable
+        specie.allMoves = [...new Set(specie.eggmoves.concat(
+            specie.learnset.map(x => x.id).concat(
+                specie.tmhm.concat(
+                    specie.tutor
                 )
             )
-        ))]
+        )), 0]
+        //if it has Hidden power, set all others non-normal typed HPs
+        if (specie.allMoves.indexOf(HPMoveID) != -1){
+            specie.allMoves.push(...HPsMovesID)
+        }
         // add the region
         for (const regionsMapped of [
             [0, "Kanto"],
@@ -221,17 +298,37 @@ function hydrateSpecies() {
             [2300, "Redux"], 
         ]) {
 
-            if (spec.id <= regionsMapped[0]) break
-            spec.region = regionsMapped[1]
+            if (specie.id <= regionsMapped[0]) break
+            specie.region = regionsMapped[1]
         }
-        //share the eggmoves to the evolutions !TODO recursively
-        const megaEvoKind = [
-            gameData.evoKindT.indexOf("EVO_MEGA_EVOLUTION"),
-            gameData.evoKindT.indexOf("EVO_MOVE_MEGA_EVOLUTION"),
-            gameData.evoKindT.indexOf("EVO_PRIMAL_REVERSION"),
-        ]
-        for (const evo of spec.evolutions) {
-            hydrateNextEvolutionWithMoves(i, evo, megaEvoKind)
+        // track all types on all evolutions lines
+        if (!specie.typeEvosSet || specie.typeEvosSet.constructor.name === "Object"){
+            specie.typeEvosSet = new Set(specie.stats.types)
+        }
+        // share the eggmoves to the evolutions !TODO recursively
+        for (const evo of specie.evolutions) {
+            hydrateNextEvolutionWithMoves(i, evo)
+        }
+        // list all pokemon if they are given
+        for (const enc of specie.SEnc){
+            if (gameData.scriptedEncoutersHowT[enc.how] === "given"){
+                const maps = gameData.locations.maps
+                const mapLen = maps.length
+                let locaObj
+                for (let i=0; i<mapLen; i++){
+                    const map = maps[i]
+                    if (map.id == enc.map){
+                        enc.locaId = i
+                        locaObj = gameData.locations.maps[i]
+                        break
+                    }
+                }
+                if (!locaObj) continue
+                if (!locaObj.given) locaObj.given = []
+                if (!locaObj.speciesSet || locaObj.speciesSet.constructor.name === "Object") locaObj.speciesSet = new Set()
+                locaObj.speciesSet.add(gameData.species[i])
+                locaObj.given.push(['??','??',i])
+            }
         }
         // add to the html list 
         const row = e('div', "btn data-list-row sel-n-active")
@@ -240,16 +337,16 @@ function hydrateSpecies() {
             ev.dataTransfer.setData("id", i)
         }
         //Node id because for correlation with nodelist in sorting
-        spec.nodeID = nodeLists.species.length
+        specie.nodeID = nodeLists.species.length
         nodeLists.species.push(row)
 
         const image = e('img', 'species-list-sprite')
-        image.src = getSpritesURL(spec.sprite)
-        image.alt = spec.name
+        image.src = getSpritesURL(specie.NAME)
+        image.alt = specie.name
         image.loading = "lazy"
         row.appendChild(image)
 
-        const name = e('span', "species-name span-a", spec.name)
+        const name = e('span', "species-name span-a", specie.name)
         row.append(name)
         row.dataset.id = i
         $(row).on('click', function () {
@@ -263,6 +360,7 @@ function hydrateSpecies() {
     setMeanBaseStats()
     $("#species-list").empty().append(fragment);
     feedPanelSpecies(1)
+    buildSpeciesPrefixTrees()
 }
 
 function hydrateLocation() {
@@ -274,11 +372,12 @@ function hydrateLocation() {
         "rock",
         "hidden",
     ]
+    gameData.locations.given = []
     const fragmentList = document.createDocumentFragment();
     const maps = gameData.locations.maps
     for (const mapID in maps) {
         const map = maps[mapID]
-        map.speciesSet = new Set() // new variable that store pokemon names
+        if (!map.speciesSet || map.speciesSet.constructor.name === "Object") map.speciesSet = new Set() // new variable that store pokemon names
         // FEED the pokemons location
         for (const locName of xmapTable) {
             const mons = map[locName]
@@ -286,7 +385,8 @@ function hydrateLocation() {
             for (const monID of mons) {
                 const specieID = monID[2]
                 if (specieID < 1) continue
-                map.speciesSet.add(gameData.species[specieID].name.toLowerCase())
+                if (gameData.species[specieID].locations === undefined) continue //what?
+                map.speciesSet.add(gameData.species[specieID])
                 if (!gameData.species[specieID].locations.get(mapID))
                     gameData.species[specieID].locations.set(mapID, new Set())
                 gameData.species[specieID].locations.get(mapID).add(locName)
@@ -326,6 +426,7 @@ function hydrateLocation() {
         $('#locations-' + rateName).empty().append(fragmentRate)
     }
     feedPanelLocations(0)
+    buildlocationPrefixTrees()
 }
 
 function addFishingTable(rates) {
@@ -376,16 +477,11 @@ export function hydrateTrainers() {
     // still missing in the data the alternative like for the rivals
     // and it's not ordered (it requires to have an order set manually)
     const frag = document.createDocumentFragment();
-    frag.append(e('div', 'edt-new-btn data-list-row', 'Add Trainer', {
-        onclick: function(){
-            addTrainer()
-        }
-    }))
     const trainers = gameData.trainers
     //let lastMap = -1
     for (const i in trainers) {
         const trainer = trainers[i]
-        trainer.searchName = `${setTrainerClassName(trainer.tclass)} ${trainer.name}`
+        trainer.fullName = `${setTrainerClassName(trainer.tclass)} ${trainer.name}`
         //check if it's a new map to add it as a header
         /*if (lastMap != trainer.map){
             lastMap = trainer.map
@@ -394,13 +490,13 @@ export function hydrateTrainers() {
             const mapName = document.createElement('span')
             mapName.innerText = gameData.mapsT[trainer.map] || "unknown"
             mapDiv.append(mapName)
-            frag.append(mapDiv)const name = e('span', "species-name span-a", spec.name)s
+            frag.append(mapDiv)
         }*/
         // add to the html list 
         const core = document.createElement('div')
         core.className = "btn data-list-row sel-n-active"
         const name = document.createElement('span')
-        name.innerText = trainer.searchName || "unknown"
+        name.innerText = trainer.fullName || "unknown"
         core.append(name)
         core.dataset.id = i
         $(core).on('click', function () {
@@ -412,13 +508,7 @@ export function hydrateTrainers() {
     }
     $('#trainers-list').empty().append(frag)
     feedPanelTrainers(1)
-}
-
-function hydrateItems() {
-    gameData.itemT = []
-    gameData.items.forEach((val) => {
-        gameData.itemT.push(val.name)
-    })
+    buildTrainerPrefixTrees()
 }
 
 export default hydrate

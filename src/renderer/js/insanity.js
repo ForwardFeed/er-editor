@@ -1,3 +1,4 @@
+
 const insanity = {
     interval: 0,
     audio: false

@@ -1,4 +1,4 @@
-import { updateSpecies,queryMapSpecies } from "./panels/species_panel.js"
+import { updateSpecies,queryMapSpecies } from "./panels/species/species_panel.js"
 import { filterAbilities, queryMapAbilities} from "./panels/abilities_panel.js"
 import { updateMoves, queryMapMoves} from "./panels/moves_panel.js"
 import { updateLocations, queryMapLocations } from "./panels/locations_panel.js"
@@ -48,9 +48,12 @@ export const search = {
         "Name",
         "Type",
         "Ability",
+        "resist",
         "Move",
         "Move-effect",
         "category",
+        "prio",
+        "acc",
         "specie",
         "map",
         "region",
@@ -73,7 +76,6 @@ export const search = {
     addSuggestion : function(suggestion){
         if (this.suggestions.length == this.maxSuggestion) return
         if (this.suggestions.includes(suggestion)) return
-        if (this.suggestionInput.value === suggestion) return
         this.suggestions.push(suggestion)
     },
     clearSuggestion: function(){
@@ -81,7 +83,7 @@ export const search = {
             $(this.suggestionNode).empty()
         }
         this.suggestions = []
-        if( this.suggestionNode) this.suggestionNode.dataset.suggestion = null
+        if(this.suggestionNode) this.suggestionNode.dataset.suggestion = null
     },
     showSuggestion: function(){
         if (!this.suggestionNode) return
@@ -90,8 +92,18 @@ export const search = {
             this.suggestionInput.blur()
             return
         }
+        this.suggestions = this.suggestions.filter(x => x)
         if(this.suggestions.length == 1){
-            this.clearSuggestion()
+            $(this.suggestionNode).empty()
+            this.suggestionInput.classList.add('filter-something-found')
+            this.suggestionInput.classList.remove('filter-nothing-found')
+            return
+        } else if(this.suggestions.length == 0 && this.suggestionInput.value){
+            this.suggestionInput.classList.remove('filter-something-found')
+            this.suggestionInput.classList.add('filter-nothing-found')
+        } else {
+            this.suggestionInput.classList.remove('filter-something-found')
+            this.suggestionInput.classList.remove('filter-nothing-found')
         }
         this.suggestionNode.innerText = "" //remove all previous suggestions
         for (const suggestion of this.suggestions){
@@ -112,7 +124,6 @@ export const search = {
             return search.panelUpdatesIndex != index
         })
     }
-
 }
 
 export function onkeySearchFilter(ev, divSuggestions, inputSearch, callback){
@@ -189,6 +200,9 @@ const evKeymap = {
 export function setupSearch(){
     $('#search-keys').on('change', activateSearch)
     $('#search-bar').on('keyup search', (ev)=>{
+        if (ev.originalEvent.key === "Tab"){
+            return
+        }
         onkeySearchFilter(ev, $('#search-suggestion')[0], $('#search-bar')[0],
         ()=>{
             const callback = ()=>{
@@ -197,6 +211,15 @@ export function setupSearch(){
             }
             activateSearch(callback)
         })
+    })
+    $('#search-bar').on('keydown', (ev)=>{
+        if (ev.originalEvent.key === "Tab"){
+            ev.originalEvent.stopPropagation()
+            ev.originalEvent.preventDefault()
+            if (search.suggestions[0]){
+                search.suggestionInput.value = search.suggestions[0]
+            }
+        }
     })
     $('#filter-icon').on('click', function(){
         $('#filter-frame').toggle()

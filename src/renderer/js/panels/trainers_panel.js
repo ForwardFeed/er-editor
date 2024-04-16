@@ -1,5 +1,5 @@
 import { getSpritesURL, redirectSpecie, getSpritesShinyURL } from "./species_panel.js"
-import { queryFilter2} from "../filters.js"
+import { queryFilter3} from "../filters.js"
 import { gameData } from "../data_version.js"
 import { AisInB, e, JSHAC, capitalizeFirstLetter} from "../utils.js"
 import { setFullTeam} from "./team_builder.js"
@@ -127,6 +127,15 @@ function setPartyPanel(party){
     $('#trainers-team').empty().append(frag).append(getNodeRedirectToEditorPokemon(party))
 }
 
+export const statsOrder = [
+    "HP",
+    "Atk",
+    "Def",
+    "SpA",
+    "SpD",
+    "Spe",
+]
+
 export function createPokemon(poke){
     const specie = gameData.species[poke.spc]
     const ability = gameData.abilities[specie.stats.abis[poke.abi]]
@@ -158,14 +167,7 @@ export function createPokemon(poke){
     const pokeItem = e('div', "trainers-poke-item", item)
     const textNature = getTextNature(nature)
     const pokeNature = e('div', "trainers-poke-nature", textNature)
-    const statsOrder = [
-        "HP",
-        "Atk",
-        "Def",
-        "SpA",
-        "SpD",
-        "Spe",
-    ]
+    
     const pokeStats = e('div', "trainers-stats-row")
     const statBuffed = textNature.match(/(?<=\+)\w+/)?.[0]
     const statNerfed = textNature.match(/(?<=\-)\w+/)?.[0]
@@ -261,10 +263,39 @@ function getNodeRedirectToEditorPokemon(party){
     ])
 }
 
+const prefixTree = {
+    treeId: "trainer"
+}
+
+export function buildTrainerPrefixTrees(){
+    prefixTree.name = {}
+    gameData.trainers.forEach((x, i, arr)=>{
+        //by the way i'm building the word array so i can match more widely *l*eader *w*inonna
+        x.splicedName = x.fullName.split(' ').map(x => x.toLowerCase())
+        for (const splice of x.splicedName){
+            const prefix = splice.charAt(0)
+            if (!prefixTree.name[prefix]) prefixTree.name[prefix] = []
+            prefixTree.name[prefix].push({data: i, suggestions: x.name})
+        }
+        
+    })
+}
+
+
 export const queryMapTrainers = {
     "name": (queryData, trainer) => {
-        if (AisInB(queryData, trainer.searchName.toLowerCase())) return trainer.searchName
-        return false
+        if (trainer.fullName.toLowerCase() === queryData) return [true, trainer.fullName, true]
+        queryData = queryData.split(' ')
+        if (!queryData.length) return false
+        for (const subQueryData of queryData){
+            let hasSlicedMatched = false
+            for (const splice of trainer.splicedName){
+                hasSlicedMatched = AisInB(subQueryData, splice) || hasSlicedMatched
+            }
+            if (!hasSlicedMatched) return false
+        }
+        return trainer.fullName
+        
     },
     "map": (queryData, trainer) => {
         const map = gameData.mapsT[trainer.map]?.toLowerCase()
@@ -274,33 +305,32 @@ export const queryMapTrainers = {
     "specie": (queryData, trainer) => {
         const trainerMons = [].concat.apply(
             [], [
-                    trainer.party,
-                    [].concat.apply([], trainer.rem.map(x => x.party)),
-                    trainer.insane
-                ]
-            )
-        for (const mon of trainerMons){
-            const pokemon = gameData.species[mon.spc].name.toLowerCase() 
-            if (AisInB(queryData, pokemon))  return pokemon
+            trainer.party,
+            [].concat.apply([], trainer.rem.map(x => x.party)),
+            trainer.insane
+        ]
+        )
+        for (const mon of trainerMons) {
+            const pokemon = gameData.species[mon.spc].name.toLowerCase()
+            if (AisInB(queryData, pokemon)) return pokemon
         }
-        
+
         return false
     },
 }
-export function updateTrainers(searchQuery){
+export function updateTrainers(searchQuery) {
     const trainers = gameData.trainers
     const nodeList = $('#trainers-list > .btn')
     let validID;
-    const matched = queryFilter2(searchQuery, trainers, queryMapTrainers)
+    const matched = queryFilter3(searchQuery, trainers, queryMapTrainers, prefixTree)
     const trainersLen = trainers.length
-    for (let i  = 0; i < trainersLen; i++) {
+    for (let i = 0; i < trainersLen; i++) {
         const node = nodeList.eq(i)
-        if (!matched || matched.indexOf(i) != -1)
-        {
-                if (!validID) validID = i
-                node.show()
+        if (!matched || matched.indexOf(i) != -1) {
+            if (!validID) validID = i
+            node.show()
         } else {
-                node.hide()
+            node.hide()
         }
     }
     //if the current selection isn't in the list then change

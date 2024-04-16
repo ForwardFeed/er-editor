@@ -1,14 +1,5 @@
 import { gameData } from "./data_version.js"
 
-/**
- * {
- * "Type": [
- *      string[] => types No effect
- *      string[] => types resist
- *      string[] => types vulnerability
- * ]
- * }
- */
 const IMMUNE = 0
 const RESIST = 1
 const WEAK = 2
@@ -97,7 +88,7 @@ export function getTypeEffectiveness(attackerT, defT){
     return 1
 }
 
-export function checkTypos(types){
+function checkTypos(types){
     const keys = Object.keys(typeChart)
     for (const key of keys){
         for (const weaknesses of typeChart[key]){
@@ -134,8 +125,16 @@ export function abilitiesToAddedType(abis){
  * @param {string[]} defTypes 
  * @param {string[]} abilities 
  */
-export function getDefensiveCoverage(defTypes, abis){
-    const modifiers = abilityModifiesTypeChart(abis)
+export function getDefensiveCoverage(specie, abiID){
+    const abisID = [specie.stats.abis[abiID], ...specie.stats.inns].filter(x => x)
+    const abiNames = abisID.map(x => gameData.abilities[x].name)
+    const defTypes = [...new Set(specie.stats.types), abilitiesToAddedType(abisID)]
+        .filter(x => x != undefined)
+        .map(x => gameData.typeT[x])
+        .filter(x => x)
+    const isWonderGuard = abiNames.indexOf('Wonder Guard') != -1
+
+    const modifiers = abilityModifiesTypeChart(abiNames, specie)
     const defensiveCoverage = []
     for (const AtkT of gameData.typeT){
         let typeEffectiveness = 1
@@ -145,7 +144,7 @@ export function getDefensiveCoverage(defTypes, abis){
             continue
         }
         if (modifiers[1].indexOf(AtkT) != -1) {
-            typeEffectiveness = 1
+            typeEffectiveness = 1 
         }
         if (modifiers[2].indexOf(AtkT) != -1) {
             typeEffectiveness = 0.5
@@ -156,6 +155,7 @@ export function getDefensiveCoverage(defTypes, abis){
         for (const defT of defTypes){
             typeEffectiveness *= getTypeEffectiveness(AtkT, defT)
         }
+        if (isWonderGuard && typeEffectiveness <= 1) typeEffectiveness = 0 
         defensiveCoverage.push(typeEffectiveness)
     }
     
@@ -172,8 +172,7 @@ export function getDefensiveCoverage(defTypes, abis){
     })
     return defensiveCoverageSorted
 }
-// misses things like Magma Armor or others that reduce by 35% like Filter
-// or Ice Scales or Fluffy for Physical or other damage
+
 const abilityThatAddsImmunity = {
     "Flash Fire": ["Fire"],
     "Sap Sipper": ["Grass"],
@@ -184,11 +183,11 @@ const abilityThatAddsImmunity = {
     "Dry Skin": ["Water"],
     "Storm Drain": ["Water"],
     "Evaporate": ["Water"],
-    "Wonder Guard": [], //Find a way to put it
     "Levitate": ["Ground"],
     "Dragonfly": ["Ground"],
     "Mountaineer": ["Rock"],
     "Poison Absorb": ["Poison"],
+    "Aerodynamics": ["Flying"],
 }
 
 const abilityThatAddsNormal = {
@@ -198,7 +197,7 @@ const abilityThatAddsNormal = {
 const abilityThatAddsResist = {
     "Well Baked Body": ["Fire"],
     "Water Bubble": ["Fire"],
-    "Sea Weed": ["Fire"],
+    "Seaweed": ["Fire"],
     "Heatproof": ["Fire"],
     "Thick Fat": ["Fire", "Ice"],
     "Immunity": ["Poison"],
@@ -210,9 +209,10 @@ const abilityThatAddsWeakness = {
     "Fluffy": ["Fire"],
     "Liquified": ["Water"],
 }
+// misses things like Magma Armor or others that reduce by 35% like Filter
+// or Ice Scales or Fluffy for Physical or other damage
 
 function abilityModifiesTypeChart(abis){
-    abis = abis.map(x => gameData.abilities[x].name)
     const modifiers = [
         [],
         [],
@@ -235,6 +235,34 @@ function abilityModifiesTypeChart(abis){
 /**
  * 
  */
-export function getOffensiveCoverage(){
+export function getOffensiveCoverage(moves, abis){
+    const typesLen = gameData.typeT.length
+    const offensiveCoverage = new Array(typesLen).fill(0)
+    for (let i = 0; i < typesLen; i++){
+        const defT = gameData.typeT[i]
+        moves.forEach((moveTypes)=>{
+            moveTypes.forEach((atkT)=>{
+                const typeEffectiveness = getTypeEffectiveness(atkT, defT)
+                if (typeEffectiveness >= 1) offensiveCoverage[i]++
+            })
+        })
+    }
+    return offensiveCoverage
+}
 
+/**
+ * 
+ * @param {string[]} defTs 
+ * @param {string[]} offTs 
+ * @returns {number}
+ */
+export function getMoveEffectiveness(defTs, offTs){
+    let typeEff = 1
+    for (const defT of defTs){
+        for (const offT of offTs){
+            
+            typeEff *= getTypeEffectiveness(offT, defT)
+        }
+    }
+    return typeEff
 }

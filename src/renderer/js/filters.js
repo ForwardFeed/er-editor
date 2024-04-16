@@ -1,6 +1,6 @@
 import { search, onkeySearchFilter } from "./search.js"
 import { e, JSHAC, clickOutsideToHide, setLongClickSelection } from "./utils.js"
-import { setAllMoves } from "./panels/species_panel.js"
+import { setAllMoves } from "./panels/species/species_panel.js"
 import { capitalizeFirstLetter } from "./utils.js"
 // Sync it with search.js => panelUpdatesTable
 export const filterDatas = [
@@ -59,7 +59,7 @@ export function getQueries(){
         op:"AND",
         not: false, //not yet implemented
         k: $('#search-keys').val().toLowerCase(),
-        data: $('#search-bar').val().toLowerCase(),
+        data: $('#search-bar').val().toLowerCase().trim(),
         suggestion: $('#search-bar')[0] === search.suggestionInput
     }]
     $('.filter-row').map(function(index, row){
@@ -74,7 +74,7 @@ export function getQueries(){
                 //if you use data('state') jquery util here you're fucked for no acceptable reason
                 not: field.querySelector('.filter-not').dataset.state === "on" ? true : false,
                 k: field.querySelector('.filter-key').value.toLowerCase(),
-                data: field.querySelector('.filter-search').value.toLowerCase(),
+                data: field.querySelector('.filter-search').value.toLowerCase().trim(),
                 suggestion: field.querySelector('.filter-search') === search.suggestionInput
             }
             filterDatas[index].filters.push(toAddQuery)
@@ -242,6 +242,7 @@ export function appendFilter(panelID, initKey = "", initData = ""){
 }
 
 /**
+ * 
  * @callback searchAssertion - compare the data from the query and the data from the data
  * @param {unknow} data -- data from the data
  * @param {string} queryData -- data from the query
@@ -253,7 +254,7 @@ export function appendFilter(panelID, initKey = "", initData = ""){
  * @typedef {Object} Query - a query
  * @property {string} op - Operation to do to all direct sub element
  * @property {keyof SearchMap} k - a key for the searchmap
- * @property {Query} queryData - data of the query
+ * @property {string | Query[]} data - data of the query
  * @property {boolean} suggestion - should it add to suggestions?
  * @property {boolean} [not=false] - should it not match
  * 
@@ -309,6 +310,9 @@ export function queryFilter(query, data, keymap){
         else return true // true i suppose?
     }
 }
+function isValidWithMaybeNot (notFlag, value){
+    return notFlag ? !value : value
+}
 /**
  * 
  * @param {*} query 
@@ -317,9 +321,6 @@ export function queryFilter(query, data, keymap){
  * @returns {number[]}the list of element that matched by index
  */
 export function queryFilter2(query, datas, keymap){
-    const queryNot = (notFlag, value) => {
-        return notFlag ? !value : value
-    }
     if (query.data.constructor === Array){
         // break it down until it is no longer an array
         // resolve all using the parent operator
@@ -400,7 +401,7 @@ export function queryFilter2(query, datas, keymap){
             } else {
                 suggestion = answer
             }
-            if (queryNot(query.not, suggestion)){
+            if (isValidWithMaybeNot(query.not, suggestion)){
                 allElementsIndexesThatMatched.push(i)
                 if (query.suggestion){
                     search.addSuggestion(suggestion)
@@ -411,6 +412,221 @@ export function queryFilter2(query, datas, keymap){
     }
 }
 
+const cacheFilters = []
+let cacheIndex = 0
+let prevTreeId = ""
+
+function clearUnusedCache(isEntryPoint){
+    //only the parent of all queries may ask for it (don't clear while in use)
+    if (!isEntryPoint) return
+    cacheFilters.splice(cacheIndex)
+}
+
+function retrieveFromCache(query, prefixedTree){
+    if (prefixedTree.treeId != prevTreeId){
+        prevTreeId = prefixedTree.treeId
+        clearCache()
+        cacheIndex += 1
+        return
+    }
+    const cached = cacheFilters[cacheIndex]
+    cacheIndex += 1
+    if (!cached || !cached.data.length) return
+    if (cached.k != query.k) return
+    if (cached.not != query.not) return
+    if (cached.data.length > query.data.length){
+        // since data is always expected to be a string here and the
+        // the data request has shrunk (probably hit the backspace)
+        // it means that the cach is no longer relevant
+        return
+    }
+    if (cached.data.length < query.data.length){
+        // since data is always expected to be a string here, and the 
+        // result is always funneling IN and not out, we can expect that
+        // the next result is always a sub part of the cached part, however
+        // we need to indicate that it's just **partially** recovered
+        // i've chosen to do that by wraping it in an object with a prop specific
+        return {
+            result: cached.result,
+            partial: true,
+            suggestions: cached.suggestions,
+        }
+    }
+    return {
+        result: cached.result,
+        suggestions: cached.suggestions,
+    }
+}
+
+function putToCache(query, result, suggestions){
+    cacheFilters[cacheIndex] = {
+        k         : query.k,
+        not       : query.not,
+        data      : query.data,
+        result    : result,
+        suggestions: suggestions,
+    }
+    cacheIndex += 1
+    return result
+}
+
+function clearCache(){
+    cacheFilters.splice(0)
+    cacheIndex = 0
+}
+
+/**
+ * query filter 2 but introduce cache to speed up
+ * @param {Query | Query[]} query content of the query, might be an array of query
+ * @param {data} datas what to query on 
+ * @param {SearchMap} keymap functions to compare the data and the query data 
+ * @param {boolean} entrypoint is this call the entrypoint
+ * @returns {number[]}the list of element that matched by index
+ */
+export function queryFilter3(query, datas, keymap, prefixedTree = {} , entrypoint = true){
+    if (entrypoint) cacheIndex = 0
+    
+    if (query.data.constructor === Array){
+        // break it down until it is no longer an array
+        // resolve all using the parent operator
+        const subQueriesAnswers = query.data.map((subQuery)=>{
+            return queryFilter3(subQuery, datas, keymap, {} ,false)
+        }).filter(x => x)
+        // if the is nothing to compare to, then just shrug
+
+        if (subQueriesAnswers.length < 1) {
+            clearCache()
+            return undefined
+        }
+        // just one?
+        if (subQueriesAnswers.length == 1) return subQueriesAnswers[0]
+        // okay now it's we get to use our operators
+        let allIndexes = subQueriesAnswers.splice(0,1)[0]
+        const subQlen = subQueriesAnswers.length
+        for (let i = 0; i < subQlen; i++){
+            const answers = subQueriesAnswers[i]
+            allIndexes.push(...answers)
+            if (query.op === "OR"){
+                // or is basically a concatenation + a unique values
+                allIndexes = [...new Set(allIndexes)]
+            } else if (query.op === "XOR"){
+                const onlyUniq = []
+                const len = allIndexes.length
+                for (let i = 0; i < len; i++){
+                    const checkUniq = allIndexes.splice(0,1)[0]
+                    if (allIndexes.indexOf(checkUniq) == -1) onlyUniq.push(checkUniq)
+                    allIndexes.push(checkUniq)
+                }
+                allIndexes = onlyUniq
+            } else { //Default AND
+                // concatenation + only duplicate
+                const duplicates = []
+                const len = allIndexes.length
+                for (let i = 0; i < len; i++){
+                    const checkDupli = allIndexes.splice(0,1)[0]
+                    if (allIndexes.indexOf(checkDupli) != -1) duplicates.push(checkDupli)
+                }
+                allIndexes = duplicates
+            }
+        }
+        return allIndexes
+    } else {
+        // data relative to the full data, but it's a collection of indexes
+        let relDataIndex
+        const cached = retrieveFromCache(query, prefixedTree)
+        //retrive from cached
+        if (cached) {
+            if (cached.partial){
+                datas = cached.result.map(x => datas[x]) 
+                relDataIndex = cached.result.map(x => x) 
+            } else {
+                if (query.suggestion){
+                    for(let i=0; i < 5; i++){
+                        search.addSuggestion(cached.suggestions[i])
+                    }
+                }
+                return cached.result
+            }
+        } else {
+            //prefixed tree (trie) makes the whole algo going at least 5 times faster for common uses
+            const prefixedData = prefixedTree[query.k]?.[query.data.charAt(0)]
+            if (prefixedData && !query.not) {
+                if (query.data.length == 1){
+                    if (query.suggestion){ 
+                        for(let i=0; i < 5; i++){
+                            search.addSuggestion(prefixedData[i]?.suggestions)
+                        }
+                    }
+                    return putToCache(query, prefixedData.map(x => x.data), prefixedData.map(x => x.suggestions))
+                } else {
+                    datas = prefixedData.map(x => datas[x.data])
+                    relDataIndex = prefixedData.map(x => x.data)
+                }
+            }
+        }
+        const execFn = keymap[query.k]
+        // if the is nothing to compare to, then just shrug
+        if (!execFn) return undefined
+        const allElementsIndexesThatMatched = []
+        const perfectMatches = [] //for not unique properties like abilities or move that can be shared by multiple pokemons
+        const dataLen = datas.length
+        for (let i = 0; i < dataLen; i++){            
+            const data = datas[i]
+            const answer = execFn(query.data, data)
+            let suggestion
+            // when asking for object it's because the function may support perfect matching
+            // Which means that ignore any other, this is to fix this case:
+            // powder and powder poison, if the string is "pow" both may trigger
+            // but if it's "powder" then no, only powder may show
+            // in the case of generator or generator as abilities, it's the ability that should be uniq
+            // not the first pokemon to hit it, that's why there is isNotUnique
+            if (typeof answer === "object"){
+                if (answer.multiSuggestions){
+                    for (const suggestion of answer.multiSuggestions){
+                        if (query.suggestion){
+                            search.addSuggestion(suggestion)
+                        }
+                    }
+                    allElementsIndexesThatMatched.push(relDataIndex ? relDataIndex[i] : i)
+                } else {
+                    const perfectMatch = answer[0]
+                    suggestion = answer[1]
+                    if (perfectMatch) {
+                        const isUnique = answer[2]
+                        // a name is unique
+                        if (isUnique) {
+                            // invert the unique search
+                            if (query.not){
+                                const inverted = [...Array(dataLen).keys()]
+                                inverted.splice(i, 1)
+                                return inverted
+                            }
+                            if (query.suggestion){
+                                search.addSuggestion(suggestion)
+                            }
+                            return [relDataIndex ? relDataIndex[i] : i]
+                        }
+                        // an ability or a move isn't
+                        perfectMatches.push(relDataIndex ? relDataIndex[i] : i)
+
+                    }
+                }
+                
+            } else {
+                suggestion = answer
+            }
+            if (isValidWithMaybeNot(query.not, suggestion)){
+                allElementsIndexesThatMatched.push(relDataIndex ? relDataIndex[i] : i)
+                if (query.suggestion){
+                    search.addSuggestion(suggestion)
+                }
+            }
+        }
+        // clearUnusedCache(entrypoint) // maybe not useful?
+        const returnData = perfectMatches.length ? perfectMatches : allElementsIndexesThatMatched
+        return putToCache(query, returnData, search.suggestions)
+    }
+}
 function removeAllFilters(){
     $('#filter-frame').find('.filter-field').remove()
     spinOnRemoveFilter()
