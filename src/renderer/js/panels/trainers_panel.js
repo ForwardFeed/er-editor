@@ -1,4 +1,4 @@
-import { getSpritesURL, redirectSpecie, getSpritesShinyURL } from "./species_panel.js"
+import { getSpritesURL, redirectSpecie, getSpritesShinyURL } from "./species/species_panel.js"
 import { queryFilter3} from "../filters.js"
 import { gameData } from "../data_version.js"
 import { AisInB, e, JSHAC, capitalizeFirstLetter} from "../utils.js"
@@ -19,6 +19,7 @@ export function feedPanelTrainers(trainerID){
     $('#trainers-list > .btn').eq(trainerID).addClass("sel-active").removeClass("sel-n-active")
 
     const trainer = gameData.trainers[trainerID]
+    console.log(trainer.map)
     $('#trainers-map').text(gameData.mapsT[trainer.map] || "Unknown")
     $('#trainers-tclass').text(setTrainerClassName(trainer.tclass))
     $('#trainers-name').text(trainer.name)

@@ -15,6 +15,7 @@ import * as InternalID from './internal_id'
 import { compactify } from './compactify';
 import * as Configuration from './configuration';
 import { getTutorTMHMList } from './moves/list_tutor_tmhm';
+import { getTrainerOrder } from './trainers/trainer_ordering';
 //import { comparify } from './comparify';
 
 
@@ -32,6 +33,7 @@ export interface GameData {
     trainerInternalID: Map<string, number>,
     tutors: string[],
     tmhm: string[],
+    trainerOrder: string[]
 }
 
 const gameData: GameData = {
@@ -48,6 +50,7 @@ const gameData: GameData = {
     trainerInternalID: new Map(),
     tutors: [],
     tmhm: [],
+    trainerOrder: [],
 }
 
 export function getGameData(window: Electron.BrowserWindow){
@@ -88,6 +91,7 @@ function getGameDataData(webContents: Electron.WebContents){
         promiseArray.push(InternalID.getMovesInternalID(ROOT_PRJ, gameData))
         promiseArray.push(InternalID.getTrainersInternalID(ROOT_PRJ, gameData))
         promiseArray.push(getTutorTMHMList(ROOT_PRJ, gameData))
+        promiseArray.push(getTrainerOrder(gameData))
         //promiseArray.push()
         Promise.allSettled(promiseArray)
             .then((values)=>{

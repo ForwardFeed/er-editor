@@ -481,13 +481,13 @@ export function compactify(gameData: GameData): CompactGameData{
             compacted.trainers[trainerT.indexOf(value)].map = idMap
         })
     })
-    compacted.trainers = compacted.trainers.sort((a, b)=>{
-        if (a.map < b.map){
-            return -1
-        } else if (a.map > b.map){
-            return 1
-        }
-        return 0
+    compacted.trainers = compacted.trainers.sort(function(a, b){
+        const aOrder = gameData.trainerOrder.indexOf(`${Xtox('TRAINER_CLASS_', compacted.tclassT[a.tclass])} ${a.name}`)
+        const bOrder = gameData.trainerOrder.indexOf(`${Xtox('TRAINER_CLASS_', compacted.tclassT[b.tclass])} ${b.name}`)
+        if (aOrder == -1 && bOrder == -1) return 0
+        if (aOrder == -1) return 1
+        if (bOrder == -1) return -1
+        return aOrder - bOrder
     })
     compacted.tutors = gameData.tutors.map((val) => movesT.indexOf(val))
     compacted.tmhms = gameData.tmhm.map((val) => movesT.indexOf(val))

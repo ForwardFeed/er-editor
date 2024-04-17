@@ -1,7 +1,7 @@
 import { gameData } from "../data_version.js"
 import { JSHAC, e } from "../utils.js"
 import { currentLocID } from "../panels/locations_panel.js"
-import { getSpritesURL } from "../panels/species_panel.js"
+import { getSpritesURL } from "../panels/species/species_panel.js"
 import { pokeList } from "./editor.js"
 import { bridge } from '../context_bridge.js'
 

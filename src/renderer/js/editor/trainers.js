@@ -156,7 +156,7 @@ export function setupEditorBuilder(){
 
 /**
  * !!ignore rematches so far
- * @returns {@type import('../../../main/app/trainers/names').Trainer }
+ * @returns {@type import('../../../main/app/trainers/base_trainer.js').Trainer }
  */
 function transformCompactToBaseTrainer(/** @type import('../../../main/app/compactify').CompactTrainers */ trainer){
     return {

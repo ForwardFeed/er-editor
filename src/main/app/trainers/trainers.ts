@@ -1,6 +1,6 @@
 import { GameData } from "../main";
 import { autojoinFilePath, getMulFilesData } from "../utils";
-import * as TrainerNames from './names'
+import * as TrainerNames from './base_trainer'
 import * as Rematches from './rematches'
 import * as TrainersTeam from './teams'
 

@@ -92,7 +92,7 @@ function setDefensiveCoverage(coverage) {
     core.append(frag)
 }
 
-function setTypes(types, specie) {
+export function setTypes(types, specie) {
     types = types.filter(x => x != undefined)
     const core = $('#species-types')
     for (let i = 0; i < 3; i++) {
@@ -224,7 +224,7 @@ function setLevelUpMoves(core, moves, title) {
     core.append(frag)
 }
 
-function updateBaseStats(stats) {
+export function updateBaseStats(stats) {
     const baseStatsTable = [
         '#BHP',
         '#BAT',
@@ -283,7 +283,7 @@ function changeBaseStat(node, value, statID, cmp) {
     })
 }
 
-function setAbilities(abilities, specie) {
+export function setAbilities(abilities, specie) {
     $('#species-abilities').empty().append(
         JSHAC(abilities.map((val, i) => {
             if (abilities[i] == abilities[i - 1] || abilities[i] === 0) {
@@ -305,7 +305,7 @@ function setAbilities(abilities, specie) {
     )
 }
 
-function setInnates(innates) {
+export function setInnates(innates) {
     $('#species-innates').empty().append(
         JSHAC(innates.map((val, i) => {
             if (innates[i] == innates[i - 1] || innates[i] === 0) {

@@ -1,6 +1,6 @@
 import { cubicRadial } from "../radial.js"
 import { createInformationWindow, removeInformationWindow } from "../window.js"
-import { setEvos, currentSpecieID , getSpritesURL, setAllMoves, updateBaseStats, setAbilities, setInnates, setTypes, abilitiesExtraType} from "../panels/species_panel.js"
+import { setEvos, currentSpecieID , getSpritesURL, setAllMoves, updateBaseStats, setAbilities, setInnates, setTypes, abilitiesExtraType} from "../panels/species/species_panel.js"
 import { gameData } from "../data_version.js"
 import { MOVEList, moveList, pokeList, ABIList, TYPEList, TMHMList, TutorList } from "./editor.js"
 import { JSHAC, e } from "../utils.js"
@@ -241,7 +241,7 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
                         return specieID
                     }
                     let eggSpecie = gameData.species[findEggSpecie(currentSpecieID)]
-                    bridge.send('change-moves', eggSpecie.NAME, eggSpecie.eggmoves.map(x => gameData.moves[x].NAME))
+                    bridge.send('change-moves', moveCat, eggSpecie.NAME, eggSpecie.eggmoves.map(x => gameData.moves[x].NAME))
                 } else {
                     bridge.send('change-moves', moveCat, specie.NAME, specie[moveCat].map(x => gameData.moves[x].NAME))
                 }
