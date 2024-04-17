@@ -19,7 +19,6 @@ export function feedPanelTrainers(trainerID){
     $('#trainers-list > .btn').eq(trainerID).addClass("sel-active").removeClass("sel-n-active")
 
     const trainer = gameData.trainers[trainerID]
-    console.log(trainer.map)
     $('#trainers-map').text(gameData.mapsT[trainer.map] || "Unknown")
     $('#trainers-tclass').text(setTrainerClassName(trainer.tclass))
     $('#trainers-name').text(trainer.name)

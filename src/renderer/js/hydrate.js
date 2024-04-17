@@ -188,7 +188,17 @@ function hydrateNextEvolutionWithMoves(previousSpecieID, currentEvo) {
         currentSpecie.stats.types.forEach(x => previousSpecie.typeEvosSet.add(x))
         currentSpecie.typeEvosSet = previousSpecie.typeEvosSet
     }
-    
+    //share the eggmoves to the evolutions !TODO recursively
+    const megaEvoKindIndexes = [
+        gameData.evoKindT.indexOf("EVO_MEGA_EVOLUTION"),
+        gameData.evoKindT.indexOf("EVO_MOVE_MEGA_EVOLUTION"),
+        gameData.evoKindT.indexOf("EVO_PRIMAL_REVERSION"),
+    ]
+    //track if the evo is a mega
+    if (megaEvoKindIndexes.indexOf(currentEvo.kd) != -1) {
+        currentSpecie.isMega = previousSpecieID
+    }
+
     //do not add if it was already added
     for (const evo of currentSpecie.evolutions){
         if (evo.kd === currentEvo.kd && evo.rs === currentEvo.rs && evo.in === currentEvo.in) return
@@ -210,6 +220,10 @@ function takeMovesFromPreEvolution(){
         for(const evo of specie.evolutions){
             if (!evo.from) continue
             const previousSpecie = gameData.species[evo.in]
+            if (!previousSpecie.allMoves || !specie.allMoves) {
+                console.log('species none is ignored: ', previousSpecie)
+                continue
+            }
             specie.preevomoves = previousSpecie.allMoves.filter(
                 x => specie.allMoves.indexOf(x) == -1
             )
@@ -307,7 +321,6 @@ function hydrateSpecies() {
         if (!specie.typeEvosSet || specie.typeEvosSet.constructor.name === "Object"){
             specie.typeEvosSet = new Set(specie.stats.types)
         }
-        // share the eggmoves to the evolutions !TODO recursively
         for (const evo of specie.evolutions) {
             hydrateNextEvolutionWithMoves(i, evo)
         }

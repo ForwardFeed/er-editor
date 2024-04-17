@@ -22,14 +22,13 @@ function evoCompactToEvo(/**@type {import('../../../main/app/compactify').Compac
 
 function callbackModifyEvo(row, ev_cb){
     removeInformationWindow(ev_cb)
-    const rowIndex = row.closest('#species-evos').find('.evo-parent').index(row)
-    // CALL TO SAVE
+    const rowIndex = row.closest('#species-evos-locs').find('.evo-parent').index(row)
+    console.log(row, rowIndex)
     const saveBtn = row.find('.edt-save-evo')
     if (!saveBtn[0].onclick) {
         saveBtn[0].onclick = ()=>{
             saveBtn.hide()
             const poke = gameData.species[currentSpecieID]
-            const evo = poke.evolutions[rowIndex]
             bridge.send(
                 'change-evolution',
                 poke.NAME,
@@ -428,7 +427,7 @@ export function modAbi(ev, abiCat, target){
 }
 
 export function modSpcType(ev){
-    const rowIndex = $('.spc-type').index(ev.target)
+    const rowIndex = $('.spc-type').index($(ev.target).closest('.spc-type'))
     const specie = gameData.species[currentSpecieID]
     const spcType = specie.stats.types[rowIndex]
     const input = e('input', 'builder-overlay-list', spcType)
