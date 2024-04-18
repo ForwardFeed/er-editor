@@ -79,6 +79,7 @@ export function setupEditorBuilder(){
         bridge.send('mod-trainer-party', getTrainerPartyPtr(editedTrainerTeam), toSend)
         $('#builder-edt-save').hide()
     })
+    $('#builder-edt-save').hide()
     $('#trainers-save').on('click', saveTrainerData).hide()
     $('#trainers-rm-insane').on('click', function(){
         const trainer = gameData.trainers[currentTrainerID]
