@@ -165,8 +165,8 @@ function swapAndRefresh(a, b){
 }
 
 function save() {
-    const saveObj = teamData.map(x => x.save())
-    saveToLocalstorage("team-builder", saveObj)
+    $('#builder-edt-save').show()
+    return
 }
 
 export function setupTeamBuilder() {
@@ -422,9 +422,10 @@ function feedPokemonEdition(jNode, viewID) {
                         const moveCallback = (moveID) => {
                             poke.moves[index] = poke.allMoves[moveID]
                             const moveName = poke.allMovesName[moveID]
-                            view.moves.eq(index).children().eq(0).text(moveName)
+                            view.moves[index].innerText = moveName
+                            console.log(view.moves.eq(index), view.moves[index])
                             const moveType = gameData.typeT[gameData.moves[poke.moves[index]].types[0]].toLowerCase()
-                            view.moves.eq(index)[0].className = `trainers-poke-move ${moveType}-t`
+                            view.moves[index].className = `trainers-poke-move ${moveType}-t`
                             save()
                             updateOffensiveTypes()
                         }
@@ -532,9 +533,9 @@ export function enterToClose(ev){
 export function overlayList(callback, list) {
     let artificialClickToClose = false // if set to true you can click to close
     const input = e("input", "builder-overlay-list")
-    input.setAttribute('list', "item-datalist")
+    input.setAttribute('list', "list-datalist")
     const dataList = e("datalist")
-    dataList.id = "item-datalist"
+    dataList.id = "list-datalist"
     const options = list.map((x) => {
         const option = e("option",)
         option.value = x
