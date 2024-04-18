@@ -12,7 +12,7 @@ function pokeToCData(poke: TrainerPokemon){
     .heldItem = ${poke.item || "ITEM_NONE"},
     .ability = ${poke.ability},\
 ${poke.ivs[5]?"":"\n    .zeroSpeedIvs = TRUE,"}
-    .evs = {${poke.evs.splice(6).join(', ')}},
+    .evs = {${poke.evs.splice(0,6).join(', ')}},
     .nature = ${poke.nature},
     .moves = ${[0,1,2,3].map((_x,i) => poke.moves[i] || "MOVE_NONE").join(', ')}
     }`
