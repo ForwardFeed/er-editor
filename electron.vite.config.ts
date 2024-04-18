@@ -21,8 +21,16 @@ export default defineConfig({
         targets: [
           {
             src: path.resolve(__dirname, './src/renderer/icons') + '/[!.]*', //
-            dest: './icons/', //
-          }
+            dest: './icons/', 
+          },
+          {
+            src: path.resolve(__dirname, './src/renderer/font') + '/[!.]*', //
+            dest: './font/', 
+          },
+          {
+            src: path.resolve(__dirname, './src/renderer/css/') + '/[!.]*', //
+            dest: './css/', 
+          },
         ]
       })
     ]

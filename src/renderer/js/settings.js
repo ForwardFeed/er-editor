@@ -97,7 +97,21 @@ function changeTheme(){
     let settingsTheme = settings.theme
     if (themeList.indexOf(settingsTheme) == -1) settingsTheme = themeList[0]
     for (const theme of themeList){
-        document.getElementById(`styles-${theme}`).disabled = theme !== settingsTheme
+        const themeTag = document.getElementById(`styles-${theme}`)
+        if (themeTag){
+            themeTag.disabled = theme !== settingsTheme
+        } else {
+            var head  = document.getElementsByTagName('head')[0];
+            var link  = document.createElement('link');
+            link.id   = `styles-${theme}`;
+            link.rel  = 'stylesheet';
+            link.type = 'text/css';
+            link.href = `./css/themes/${theme}.css`;
+            link.media = 'all';
+            link.disabled = theme !== settingsTheme
+            head.appendChild(link);
+        }
+        
     }
     
 }

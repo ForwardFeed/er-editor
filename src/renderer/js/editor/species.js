@@ -354,14 +354,6 @@ export function modSpecieBS(ev){
         'Spe',
         'BST',
     ]
-    const baseStatsFieldTable = [
-        'baseHP',
-        'baseAttack',
-        'baseDefense',
-        'baseSpeed',
-        'baseSpAttack',
-        'baseSpDefense',
-    ]
     const specie = gameData.species[currentSpecieID]
     specie.stats.modBase = structuredClone(specie.stats.base)
     let hasChanged = false
