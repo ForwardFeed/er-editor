@@ -119,3 +119,23 @@ input.mod-stat-num{
 }
 
 
+.overlay-row-stuff{
+    display: flex;
+    flex-direction: column;
+}
+
+.overlay-margin{
+    display: flex;
+    border: solid 15px var(--colorA);
+    background-color: var(--colorD);
+}
+
+.edt-overlay-save-btn{
+    height: 2em;
+    font-size: 1.5em;
+}
+
+.flex-col{
+    display: flex;
+    flex-direction: column;
+}

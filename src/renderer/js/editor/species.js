@@ -2,9 +2,10 @@ import { cubicRadial } from "../radial.js"
 import { createInformationWindow, removeInformationWindow } from "../window.js"
 import { setEvos, currentSpecieID , getSpritesURL, setAllMoves, updateBaseStats, setAbilities, setInnates, setTypes, abilitiesExtraType} from "../panels/species/species_panel.js"
 import { gameData } from "../data_version.js"
-import { MOVEList, moveList, pokeList, ABIList, TYPEList, TMHMList, TutorList } from "./editor.js"
+import { MOVEList, pokeList, ABIList, TYPEList, TMHMList, TutorList } from "./editor.js"
 import { JSHAC, e } from "../utils.js"
 import { bridge } from '../context_bridge.js'
+import { movePicker } from "../pickers.js"
 
 /**
  * @returns {@type {import('../../../main/app/species/evolutions').Evolution}}}
@@ -23,7 +24,6 @@ function evoCompactToEvo(/**@type {import('../../../main/app/compactify').Compac
 function callbackModifyEvo(row, ev_cb){
     removeInformationWindow(ev_cb)
     const rowIndex = row.closest('#species-evos-locs').find('.evo-parent').index(row)
-    console.log(row, rowIndex)
     const saveBtn = row.find('.edt-save-evo')
     if (!saveBtn[0].onclick) {
         saveBtn[0].onclick = ()=>{
@@ -125,10 +125,8 @@ export function evosEdit(ev){
                 const rowIndex = row.closest('#species-evos').find('.evo-parent').index(row)
                 const poke = gameData.species[currentSpecieID]
                 const evoRemoved =  poke.evolutions.splice(rowIndex, 1)[0]
-                console.log(evoRemoved)
                 if (!evoRemoved.from){
                     const intoSpecie = gameData.species[evoRemoved.in]
-                    console.log(intoSpecie)
                     for (const evoID in intoSpecie.evolutions){
                         const evo = intoSpecie.evolutions[evoID]
                         if (evo.from && evo.in == currentSpecieID &&
@@ -264,6 +262,8 @@ function learnsetCompactToLearnset(lrn){
 
 function sendUpdateLearnset(){
     const specie = gameData.species[currentSpecieID]
+    specie.learnset = specie.learnset.filter(x => x.id)
+    setAllMoves()
     bridge.send('change-learnset', specie.lrnPtr, specie.learnset.map(x => learnsetCompactToLearnset(x)))
     
 }
@@ -273,45 +273,54 @@ function showLearnsetEdit(ev_cb, newMove){
     function sortByLevel(a, b){
         return a.lv - b.lv
     }
+    const learnableMoves = gameData.moves.map((_x,i)=>{
+        if (specie.allMoves.indexOf(i) != -1) return undefined
+        return i
+    }).filter(x => x)
+    let lastPickedMoveID = newMove.id
+    const picker = movePicker(learnableMoves, (id)=>{
+        lastPickedMoveID = id
+    })
     const lvlInput = e('input', "overlay-stats-edit", newMove.lv)
-    const input = e('input', "builder-overlay-list", gameData.moves[newMove.id].NAME)
-    input.setAttribute('list', 'move-datalist')
-    input.addEventListener('focus', ()=>{
-        input.value = "MOVE_"
-    })
-    input.addEventListener('focusout', ()=>{
-        const moveID = MOVEList.indexOf(input.value)
-        if (moveID == -1 || specie.allMoves.indexOf(moveID) != -1) {
-            input.value = gameData.moves[newMove.id].NAME
-            return
-        }
-        newMove.id = MOVEList.indexOf(input.value)
-        if (TMHMList.indexOf(gameData.moves[newMove.id].NAME) != -1){
-            setMoveForAllNextEvos(specie, "tmhm", newMove.id, true)
-            newMove.id = 0
-        } else if (TutorList.indexOf(gameData.moves[newMove.id].NAME) != -1){
-            setMoveForAllNextEvos(specie, "tutor", newMove.id, true)
-            newMove.id = 0
-        } else {
-            specie.learnset = specie.learnset.sort (sortByLevel)
-        }
-        setAllMoves()
-        
-    })
     lvlInput.setAttribute('type', 'number')
     lvlInput.onkeyup = function(ev){
         ev.target.value = Math.min(ev.target.value.replace(/[^0-9]/g, "").replace(/^0(?=\d)/,''), 100)
     }
-    lvlInput.addEventListener('focusout', ()=>{
-        newMove.lv = lvlInput.value = +lvlInput.value
-        specie.learnset = specie.learnset.sort (sortByLevel)
-        setAllMoves()
+    const saveDiv = e('div', "btn edt-overlay-save-btn", [e('span', null, 'Save')], {
+        onclick: ()=>{
+            newMove.lv = lvlInput.value = +lvlInput.value
+            const absoluteID = learnableMoves[lastPickedMoveID]
+            if (absoluteID == -1 || specie.allMoves.indexOf(absoluteID) != -1) {
+                return
+            }
+            specie.allMoves.push(absoluteID)
+            learnableMoves.splice(learnableMoves.indexOf(lastPickedMoveID), 1)
+
+            newMove.id = absoluteID
+            if (TMHMList.indexOf(gameData.moves[newMove.id].NAME) != -1){
+                setMoveForAllNextEvos(specie, "tmhm", newMove.id, true)
+                specie.tmhm.push(absoluteID)
+                newMove.id = 0
+            } else if (TutorList.indexOf(gameData.moves[newMove.id].NAME) != -1){
+                specie.tutor.push(absoluteID)
+                setMoveForAllNextEvos(specie, "tutor", newMove.id, true)
+                newMove.id = 0
+            } else {
+                specie.learnset = specie.learnset.sort(sortByLevel)
+            }
+            setAllMoves()
+        }
     })
-    
-    let row = e('div', 'species-move-row')
-    row.append(lvlInput, input)
-    createInformationWindow(row, ev_cb, "focus", true, true, sendUpdateLearnset)
+    createInformationWindow(JSHAC([
+        e('div', 'overlay-margin flex-col'), [
+            lvlInput,
+            picker,
+            saveDiv
+        ]
+        
+    ]), ev_cb, "focus", true, true, sendUpdateLearnset)
 }
+
 
 export function LearnsetEdit(ev){
     const row = $(ev.target).closest('.species-move-row')
