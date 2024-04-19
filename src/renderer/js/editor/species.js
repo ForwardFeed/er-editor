@@ -297,13 +297,10 @@ function showLearnsetEdit(ev_cb, newMove){
         onclick: ()=>{
             newMove.lv = lvlInput.value = +lvlInput.value
             const absoluteID = learnableMoves[lastPickedMoveID]
-            console.log(gameData.moves[absoluteID].name)
-            if (absoluteID == -1 || specie.allMoves.indexOf(absoluteID) != -1) {
+            if (absoluteID == -1) {
                 return
             }
-            specie.allMoves.push(absoluteID)
             learnableMoves.splice(learnableMoves.indexOf(lastPickedMoveID), 1)
-
             newMove.id = absoluteID
             if (TMHMList.indexOf(gameData.moves[newMove.id].NAME) != -1){
                 setMoveForAllNextEvos(specie, "tmhm", newMove.id, true)
