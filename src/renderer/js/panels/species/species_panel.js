@@ -116,12 +116,6 @@ export function setAllMoves(specie = gameData.species[currentSpecieID]){
     setMoves($('#tutor'), specie.tutor, $('#tutor-title'))
     setMoves($('#eggmoves'), specie.eggmoves,$('#eggmoves-title'))
     setMoves($('#preevomoves'), specie.preevomoves || [], $('#preevomoves-title'))
-    
-    if ($('#eggmoves-title').css('display') === 'none' && $('#preevomoves-title').css('display') === 'none') {
-        $('#eggpreevo-title').hide()
-    } else {
-        $('#eggpreevo-title').show()
-    }
 }
 
 function filterMoves(moveIDlist) {
@@ -170,14 +164,6 @@ export function setMoveRow(moveID) {
 
 function setMoves(core, moves, title) {
     core.empty()
-    if (!moves.length){
-        core.hide()
-        title.hide()
-        return
-    } else {
-        core.show()
-        title.show()
-    }
     const frag = document.createDocumentFragment()
     moves = filterMoves(moves)
     for (const moveID of moves) {

@@ -221,7 +221,7 @@ function takeMovesFromPreEvolution(){
             if (!evo.from) continue
             const previousSpecie = gameData.species[evo.in]
             if (!previousSpecie.allMoves || !specie.allMoves) {
-                console.log('species none is ignored: ', previousSpecie)
+                console.warn('species none is ignored: ', evo, specie.name)
                 continue
             }
             specie.preevomoves = previousSpecie.allMoves.filter(
@@ -321,8 +321,20 @@ function hydrateSpecies() {
         if (!specie.typeEvosSet || specie.typeEvosSet.constructor.name === "Object"){
             specie.typeEvosSet = new Set(specie.stats.types)
         }
-        for (const evo of specie.evolutions) {
-            hydrateNextEvolutionWithMoves(i, evo)
+        let shouldFixEvos = false
+        for (let j = 0; j < specie.evolutions.length; j++){
+            const evo = specie.evolutions[j]
+            if (!gameData.species[evo.in]) {
+                //console.warn(`specie ${specie.name} has bad evo n° ${i} : ${JSON.stringify(evo)}`)
+                shouldFixEvos = true
+                specie.evolutions[j] = undefined
+            } else {
+                hydrateNextEvolutionWithMoves(i, evo)
+            }
+        }
+        //fix bad evos
+        if (shouldFixEvos){
+            specie.evolutions = specie.evolutions.filter(x => x)
         }
         // list all pokemon if they are given
         for (const enc of specie.SEnc){

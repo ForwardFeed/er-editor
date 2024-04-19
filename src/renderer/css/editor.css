@@ -105,8 +105,11 @@ input.mod-stat-num{
     background-color: var(--colorD);
     resize: none;
 }
-main{
-    max-width: calc(100vw - 12vmax);
+
+@media (orientation: landscape) {
+    main{
+        max-width: calc(100vw - 12vmax);
+    }
 }
 .moves-top{
     height: fit-content;
