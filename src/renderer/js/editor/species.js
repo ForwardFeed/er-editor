@@ -186,9 +186,8 @@ function setMoveForAllNextEvos(specie, category, moveID, goDownwards=false){
         setMoveForAllNextEvos(nextEvo, category, moveID, goDownwards)
     }
     if (category === "eggmoves" && !canAddEggmove) return
-    if (specie[category].indexOf(moveID) == -1 && specie.allMoves.indexOf(moveID) == -1) {
+    if (specie[category].indexOf(moveID) == -1) {
         specie[category].push(moveID)
-        specie.allMoves.push(moveID)
         bridge.send('change-moves', category, specie.NAME, specie[category].map(x => gameData.moves[x].NAME))
     }
 }
@@ -209,7 +208,6 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
                     const moveID = MOVEList.indexOf(input.value)
                     const newMove = gameData.moves[moveID]
                     if (!newMove) return
-                    if (specie.allMoves.indexOf(moveID) != -1) return
                     //if it's a move from tmhm, send it to tmhm
                     //except if it's to be send in eggmoves
                     if (moveCat !== "eggmoves"){
@@ -228,8 +226,7 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
             }],
             [isRow?`-Rem ${move?.name}`:null, (ev_cb)=>{
                 removeInformationWindow(ev_cb)
-                const moveID = specie[moveCat].splice(rowIndex, 1)[0]
-                specie.allMoves.splice(specie.allMoves.indexOf(moveID), 1)
+                [moveCat].splice(rowIndex, 1)[0]
                 if (moveCat === "eggmoves"){
                     function findEggSpecie(specieID){
                         const specie = gameData.species[specieID]
@@ -276,7 +273,6 @@ function showLearnsetEdit(ev_cb, newMove){
     function sortByLevel(a, b){
         return a.lv - b.lv
     }
-    console.log(specie.allMoves)
     const learnableMoves = gameData.moves.map((_x,i)=>{
         if (specie.learnset.find(x => x.id === i)) return undefined
         if (specie.tmhm.indexOf(i) != -1) return undefined
@@ -343,8 +339,7 @@ export function LearnsetEdit(ev){
             }],
             [move?`-Rem ${move?.name}`:null, (ev_cb)=>{
                 removeInformationWindow(ev_cb)
-                const moveID = specie.learnset.splice(rowIndex, 1)[0]
-                specie.allMoves.splice(specie.allMoves.indexOf(moveID), 1)
+                specie.learnset.splice(rowIndex, 1)[0]
                 setAllMoves()
                 sendUpdateLearnset()
             }],
