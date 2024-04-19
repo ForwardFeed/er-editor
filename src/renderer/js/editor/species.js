@@ -226,7 +226,7 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
             }],
             [isRow?`-Rem ${move?.name}`:null, (ev_cb)=>{
                 removeInformationWindow(ev_cb)
-                [moveCat].splice(rowIndex, 1)[0]
+                specie[moveCat].splice(rowIndex, 1)[0]
                 if (moveCat === "eggmoves"){
                     function findEggSpecie(specieID){
                         const specie = gameData.species[specieID]
