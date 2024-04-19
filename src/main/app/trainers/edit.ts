@@ -41,7 +41,7 @@ export function modTrainerParty(ptr: string, party: TrainerPokemon[]){
     let begin = 0
     const execArray: ExecArray = [
         (line, ctx, i, lines)=>{
-            if (line.match(ptr)){
+            if (line.match(`${ptr}\\[\\]`)){
                 begin = i + 1
                 ctx.next()
             }
