@@ -295,12 +295,12 @@ function showLearnsetEdit(ev_cb, newMove){
     }
     const saveDiv = e('div', "btn edt-overlay-save-btn", [e('span', null, 'Save')], {
         onclick: ()=>{
+            if (!newMove) return
             newMove.lv = lvlInput.value = +lvlInput.value
             const absoluteID = learnableMoves[lastPickedMoveID]
             if (absoluteID == -1) {
                 return
             }
-            learnableMoves.splice(learnableMoves.indexOf(lastPickedMoveID), 1)
             newMove.id = absoluteID
             if (TMHMList.indexOf(gameData.moves[newMove.id].NAME) != -1){
                 setMoveForAllNextEvos(specie, "tmhm", newMove.id, true)
