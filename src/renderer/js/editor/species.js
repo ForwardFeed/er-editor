@@ -211,11 +211,14 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
                     if (!newMove) return
                     if (specie.allMoves.indexOf(moveID) != -1) return
                     //if it's a move from tmhm, send it to tmhm
-                    if (moveCat !== "tmhm" && TMHMList.indexOf(newMove.NAME) != -1){
-                        moveCat = "tmhm"
-                    }
-                    if (moveCat !== "tutor" && TutorList.indexOf(newMove.NAME) != -1){
-                        moveCat = "tutor"
+                    //except if it's to be send in eggmoves
+                    if (moveCat !== "eggmoves"){
+                        if (moveCat !== "tmhm" && TMHMList.indexOf(newMove.NAME) != -1){
+                            moveCat = "tmhm"
+                        }
+                        if (moveCat !== "tutor" && TutorList.indexOf(newMove.NAME) != -1){
+                            moveCat = "tutor"
+                        }
                     }
                     //setMoveForAllNextEvos(specie, moveCat, moveID)
                     setMoveForAllNextEvos(specie, moveCat, moveID, true)
@@ -273,8 +276,12 @@ function showLearnsetEdit(ev_cb, newMove){
     function sortByLevel(a, b){
         return a.lv - b.lv
     }
+    console.log(specie.allMoves)
     const learnableMoves = gameData.moves.map((_x,i)=>{
-        if (specie.allMoves.indexOf(i) != -1) return undefined
+        if (specie.learnset.find(x => x.id === i)) return undefined
+        if (specie.tmhm.indexOf(i) != -1) return undefined
+        if (specie.tutor.indexOf(i) != -1) return undefined
+        if (specie.eggmoves.indexOf(i) != -1) return undefined
         return i
     }).filter(x => x)
     let lastPickedMoveID = newMove.id
@@ -290,6 +297,7 @@ function showLearnsetEdit(ev_cb, newMove){
         onclick: ()=>{
             newMove.lv = lvlInput.value = +lvlInput.value
             const absoluteID = learnableMoves[lastPickedMoveID]
+            console.log(gameData.moves[absoluteID].name)
             if (absoluteID == -1 || specie.allMoves.indexOf(absoluteID) != -1) {
                 return
             }
