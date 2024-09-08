@@ -177,7 +177,6 @@ const evoKindList = [
 ]
 
 function onceOverShareMovesToNextEvo(){
-    let j = 0
     for (const specie of gameData.species){
         for (const evo of specie.evolutions){
             if (evo.from) continue
@@ -197,8 +196,6 @@ function onceOverShareMovesToNextEvo(){
         }
     
         if (specie.modifyMoves){
-            if (j++ > 5)
-                return
             bridge.send('change-moves', "tmhm", specie.NAME, specie["tmhm"].map(x => gameData.moves[x].NAME))
             bridge.send('change-moves', "tutor", specie.NAME, specie["tutor"].map(x => gameData.moves[x].NAME))
         }
