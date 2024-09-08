@@ -176,6 +176,24 @@ const evoKindList = [
     "EVO_SPECIFIC_MAPSEC" 
 ]
 
+function onceOverShareMovesToNextEvo(){
+    for (const specie of gameData.species){
+        for (const evo of specie.evolutions){
+            if (evo.from) continue
+            const nextSpecie = gameData.species[evo.in]
+            nextSpecie.modifyMoves = true
+            nextSpecie.tutor = specie.tutor
+            nextSpecie.tmhm  = specie.tmhm
+        }
+        if (specie.modifyMoves){
+            console.log(specie.NAME)
+            bridge.send('change-moves', "tmhm", specie.NAME, specie["tmhm"].map(x => gameData.moves[x].NAME))
+            bridge.send('change-moves', "tutor", specie.NAME, specie["tutor"].map(x => gameData.moves[x].NAME))
+        }
+    }
+    
+}
+window.onceOverShareMovesToNextEvo = onceOverShareMovesToNextEvo
 function setMoveForAllNextEvos(specie, category, moveID, goDownwards=false){
     let canAddEggmove = true //only add eggmove to the lowest specie
     for (const evo of specie.evolutions){
