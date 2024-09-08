@@ -185,19 +185,29 @@ function onceOverShareMovesToNextEvo(){
                 if (nextSpecie.tutor.includes(move))
                     continue
                 nextSpecie.tutor.push(move)
-                nextSpecie.modifyMoves = true
+                nextSpecie.modifyMovesTutor = true
             }
             for (const move of specie.tmhm){
                 if (nextSpecie.tmhm.includes(move))
                     continue
                 nextSpecie.tmhm.push(move)
-                nextSpecie.modifyMoves = true
+                nextSpecie.modifyMovesTMHM = true
+            }
+            for (const move of specie.learnset){
+                if (nextSpecie.learnset.find(x => x.id == move.id))
+                    continue
+                nextSpecie.learnset.push(move)
+                nextSpecie.modifyMovesLearnset = true
             }
         }
-    
-        if (specie.modifyMoves){
-            bridge.send('change-moves', "tmhm", specie.NAME, specie["tmhm"].map(x => gameData.moves[x].NAME))
+        if (specie.modifyMovesTutor){
             bridge.send('change-moves', "tutor", specie.NAME, specie["tutor"].map(x => gameData.moves[x].NAME))
+        }
+        if (specie.modifyMovesTMHM){
+            bridge.send('change-moves', "tmhm", specie.NAME, specie["tmhm"].map(x => gameData.moves[x].NAME))
+        }
+        if (specie.modifyMovesLearnset){
+            bridge.send('change-learnset', specie.lrnPtr, specie.learnset.map(x => learnsetCompactToLearnset(x)))
         }
     }
     
