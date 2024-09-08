@@ -177,16 +177,28 @@ const evoKindList = [
 ]
 
 function onceOverShareMovesToNextEvo(){
+    let j = 0
     for (const specie of gameData.species){
         for (const evo of specie.evolutions){
             if (evo.from) continue
             const nextSpecie = gameData.species[evo.in]
-            nextSpecie.modifyMoves = true
-            nextSpecie.tutor = specie.tutor
-            nextSpecie.tmhm  = specie.tmhm
+            for (const move of specie.tutor){
+                if (nextSpecie.tutor.includes(move))
+                    continue
+                nextSpecie.tutor.push(move)
+                nextSpecie.modifyMoves = true
+            }
+            for (const move of specie.tmhm){
+                if (nextSpecie.tmhm.includes(move))
+                    continue
+                nextSpecie.tmhm.push(move)
+                nextSpecie.modifyMoves = true
+            }
         }
+    
         if (specie.modifyMoves){
-            console.log(specie.NAME)
+            if (j++ > 5)
+                return
             bridge.send('change-moves', "tmhm", specie.NAME, specie["tmhm"].map(x => gameData.moves[x].NAME))
             bridge.send('change-moves', "tutor", specie.NAME, specie["tutor"].map(x => gameData.moves[x].NAME))
         }
