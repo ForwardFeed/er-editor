@@ -226,17 +226,19 @@ export function setTrainerToEditMode(){
         $('#trainers-save').hide()
     }
     $('#trainers-infobar2').show()
-    const double = s($('#trainers-double'), $(JSHAC(
+    s($('#trainers-double'), $(JSHAC([
+        e('select#trainers-double'),
         ["Double", "Single"].map((x)=>{
             const optn = e('option', '', x)
             optn.value = x
             return optn
         })
-    , e('select#trainers-double'))), "text2val")
+    ])), "text2val")
+    const double = $('#trainers-double')
     double[0].onchange = function(){
         const tPartyName = $('#trainers-infobar1').find(".sel-active").text()
         if (!tPartyName) return
-        const dbB = double.val() === "Double"
+        const dbB =double.val() === "Double"
         if (tPartyName === "Normal" ||tPartyName === "Elite" ){
             gameData.trainers[currentTrainerID].db = dbB
         } else {
@@ -244,17 +246,23 @@ export function setTrainerToEditMode(){
         }
         refreshEditTrainer()
     }
-    const gender = s($('#trainers-gender'), $(JSHAC(
+    double.val(trainer.db === "Double" ? "Double" : "Single")
+    s($('#trainers-gender'), $(JSHAC([
+        e('select#trainers-gender'), 
         ["Boi", "Grill"].map((x)=>{
             const optn = e('option', '', x)
             optn.value = x
             return optn
         })
-    , e('select#trainers-gender'))), "text2val")
+    ])), "text2val")
+    const gender = $('#trainers-gender')
+
     gender[0].onchange = function(){
+        console.log( gender.val(), gender.val()  === "Grill")
         trainer.gender = gender.val() === "Grill"
         refreshEditTrainer()
     }
+    gender.val(trainer.gender ? "Grill" : "Boi")
     const NAME = s($('#trainers-NAME'), $(e('input#trainers-NAME')), "text2val")
     let baseNAME = NAME.val()
     let previousNAME = NAME.val()

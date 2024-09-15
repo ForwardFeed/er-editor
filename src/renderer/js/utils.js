@@ -106,9 +106,10 @@ export function e(tag = "div", classname = "", innerText = "", events = {}){
 /**
  * Javascript HTML Array Concatenation
  * @param {HTMLDivElement | HTMLDivElement[]} htmlArray
+ * @param {HTMLDivElement | undefined} parent
  * @returns  {DocumentFragment}
  */
-export function JSHAC(htmlArray){
+export function JSHAC(htmlArray, parent){
     const frag = document.createDocumentFragment()
     for (let i = 0; i < htmlArray.length; i++){
         const element = htmlArray[i]
@@ -123,6 +124,8 @@ export function JSHAC(htmlArray){
             parent.append(JSHAC(element))
         }
     }
+    if (parent)
+        parent.append(frag)
     return frag
 }
 
