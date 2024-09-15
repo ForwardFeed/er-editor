@@ -87,7 +87,11 @@ export function parseShowdownFormat(text){
                 return sameLineNextStep()
             }
             const moveName = line.replace(/- /, '')
-            poke.moves.push(moveNameList.indexOf(moveName))
+            const index = moveNameList.indexOf(moveName)
+            if (~index){
+                poke.moves.push(index)
+            }
+            
         },
         (line)=>{
             if (!line.match(/\/\//)) return next()
