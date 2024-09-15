@@ -151,10 +151,16 @@ export function setupEditorBuilder(){
             gameData.trainers.splice(currentTrainerID, 1)
             hydrateTrainers()
         }
-    })
+    })  
 }
 
-
+function appendAddTrainerBtn(){
+    $("#trainers-list").prepend(e('div#add-trainer', 'btn data-list-row sel-n-active', "Add Trainer", {
+        onclick: ()=>{
+            addTrainer()
+        }
+    }))
+}
 /**
  * !!ignore rematches so far
  * @returns {@type import('../../../main/app/trainers/base_trainer.js').Trainer }
@@ -258,10 +264,10 @@ export function setTrainerToEditMode(){
     const gender = $('#trainers-gender')
 
     gender[0].onchange = function(){
-        console.log( gender.val(), gender.val()  === "Grill")
         trainer.gender = gender.val() === "Grill"
         refreshEditTrainer()
     }
+    
     gender.val(trainer.gender ? "Grill" : "Boi")
     const NAME = s($('#trainers-NAME'), $(e('input#trainers-NAME')), "text2val")
     let baseNAME = NAME.val()
@@ -330,6 +336,10 @@ export function setTrainerToEditMode(){
             trainer.pic = gameData.tpicT.indexOf(picVal)
             refreshEditTrainer()
         }
+    }
+    // if the button has ben deleted reinstore it
+    if(! $('#add-trainer').length){
+        appendAddTrainerBtn()
     }
 }
 
