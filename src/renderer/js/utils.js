@@ -124,8 +124,11 @@ export function JSHAC(htmlArray, parent){
             parent.append(JSHAC(element))
         }
     }
-    if (parent)
+    if (parent){
         parent.append(frag)
+        return parent
+    }
+        
     return frag
 }
 

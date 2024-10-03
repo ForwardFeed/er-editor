@@ -391,6 +391,7 @@ export function LearnsetEdit(ev){
 }
 
 export function modSpecieBS(ev){
+
     const baseStatsTable = [
         'HP',
         'Atk',
@@ -424,7 +425,6 @@ export function modSpecieBS(ev){
             ])
         })
         , e('div#specie-basestats-mod'))
-    
     createInformationWindow(modPanel, ev, "", false, true, ()=>{
         if (!hasChanged) return
         specie.stats.base = structuredClone(specie.stats.modBase)
