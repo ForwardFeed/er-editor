@@ -595,7 +595,7 @@ const noResetTutors = [
     "MOVE_REST",
     "MOVE_SLEEP_TALK",
     "MOVE_ENDURE",
-    "MOVE_HELPING"
+    "MOVE_HELPING_HAND"
 ]
 
 let resetTimeout = 0
@@ -624,7 +624,7 @@ function resetAllSpecieMove(ev){
         poke.tmhm = poke.tmhm.filter(x => noResetTMListIDs.includes(x))
         poke.tutor = poke.tutor.filter(x => noResetTutorListIDs.includes(x))
         poke.learnset = [{lv: 1, id:1}]
-        console.log(poke.tmhm, poke.tutor, noResetTMListIDs, noResetTutorListIDs)
+        
         bridge.send('change-moves', 'tmhm', poke.NAME, poke.tmhm.map(x => gameData.moves[x].NAME))
         bridge.send('change-learnset', poke.lrnPtr, poke.learnset.map(x => learnsetCompactToLearnset(x)))
         bridge.send('change-moves', 'tutor', poke.NAME, poke.tutor.map(x => gameData.moves[x].NAME))
