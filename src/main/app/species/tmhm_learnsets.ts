@@ -73,7 +73,7 @@ ${moves.map(x => `        TM(${x})`).join('\n')}
 }
 
 export function modTMHM(specie: string, moves: string[]){
-    const tmhmText = moves.length ? createTMHMText(specie, moves) : undefined
+    const tmhmText = createTMHMText(specie, moves)
     let start = 0
     const execArray: ExecArray = [
         (line, ctx, i, lines)=>{
@@ -94,7 +94,7 @@ export function modTMHM(specie: string, moves: string[]){
             if (line.match('TMHM_LEARNSET_END')) {
                 if (!tmhmText){
                     lines.splice(start, i - start + 1)
-                    ctx.next()
+                    ctx.stop()
                     return
                 }
                 lines.splice(start, i - start + 1, tmhmText)

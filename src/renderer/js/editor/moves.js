@@ -1,6 +1,6 @@
 import { gameData } from "../data_version";
 import { currentMoveID } from "../panels/moves_panel";
-import { JSHAC, e } from "../utils";
+import { JSHAC, e, t } from "../utils";
 import { TYPEList } from "./editor";
 import { create2LinesMoveDesc, create4LinesMoveDesc} from "./desc_utils.js"
 import { createInformationWindow } from "../window.js";
@@ -145,7 +145,7 @@ export function setupEditMove(){
         $(this).val( move.name = name)
         hasBeenModified()
     })
-
+    
     setupTarget()
 }
 

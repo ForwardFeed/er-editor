@@ -1,5 +1,5 @@
 import { locationEdit } from "./locations.js"
-import { evosEdit, MoveEdit, LearnsetEdit, modSpecieBS, modAbi, modSpcType, modDescription, fixIllegalLevelLearnSet} from "./species.js"
+import { evosEdit, MoveEdit, LearnsetEdit, modSpecieBS, modAbi, modSpcType, modDescription, fixIllegalLevelLearnSet, setupSpecies} from "./species.js"
 import { gameData } from "../data_version.js"
 import { setupEditorBuilder } from "./trainers.js"
 import { e } from "../utils.js"
@@ -136,6 +136,7 @@ export function setupEditor(){
     $('#change-folder').on('click', function(){
         bridge.send('ask-for-folder')
     })
+    setupSpecies()
 }
 TMHMList = [], TutorList = []
 export function hydrateEditor(){

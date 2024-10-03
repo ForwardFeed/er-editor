@@ -139,3 +139,12 @@ input.mod-stat-num{
     display: flex;
     flex-direction: column;
 }
+
+
+.moves-utils{
+    display: flex;
+}
+
+.moves-utils-btn{
+    margin: auto;
+}

@@ -82,6 +82,9 @@ export class GEdit{
             for (let i = 0; i < lineLen; i++){
                 const line = this.param.cf?lines[i]?.replace(/\/\/.*/, ''):lines[i]
                 if (!line) continue
+                if (!this.execMap[ctx.status]){
+                    console.warn('in '+ this.objective + 'status exceeded what was anticipated curr: ' + ctx.status)
+                }
                 this.execMap[ctx.status](line, ctx, i, lines)
                 if (ctx.stopRead) break
                 if (ctx.reRead) {

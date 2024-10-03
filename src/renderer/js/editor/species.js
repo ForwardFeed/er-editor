@@ -3,7 +3,7 @@ import { createInformationWindow, removeInformationWindow } from "../window.js"
 import { setEvos, currentSpecieID , getSpritesURL, setAllMoves, updateBaseStats, setAbilities, setInnates, setTypes, abilitiesExtraType} from "../panels/species/species_panel.js"
 import { gameData } from "../data_version.js"
 import { MOVEList, pokeList, ABIList, TYPEList, TMHMList, TutorList } from "./editor.js"
-import { JSHAC, e } from "../utils.js"
+import { JSHAC, e, t } from "../utils.js"
 import { bridge } from '../context_bridge.js'
 import { movePicker } from "../pickers.js"
 
@@ -570,4 +570,67 @@ export function fixIllegalLevelLearnSet(ev){
             }],
         ], "6em", "1em"
     ), ev, "mid", true, false)
+}
+
+export function setupSpecies(){
+    $('#species-moves').append(JSHAC([
+        e('div', 'moves-utils', ''), [
+            e('div', 'btn red moves-utils-btn', 'removeAllMoves', {
+                onclick: resetAllSpecieMove
+            })
+        ]
+    ]))
+}
+
+
+const noResetTMList = [
+    "MOVE_PROTECT",
+    "MOVE_HIDDEN_POWER",
+    "MOVE_SECRET_POWER",
+    "MOVE_RETURN",
+    "MOVE_SUBSTITUTE",
+    "MOVE_ATTRACT"
+]
+const noResetTutors = [
+    "MOVE_REST",
+    "MOVE_SLEEP_TALK",
+    "MOVE_ENDURE",
+    "MOVE_HELPING"
+]
+
+let resetTimeout = 0
+function resetAllSpecieMove(ev){
+    const btn = ev.target
+    if (btn.innerText == "removeAllMoves"){
+        t(btn, 'Please Wait')
+        resetTimeout = setTimeout(()=>{
+            t(btn, 'Click To confirm')
+            resetTimeout = setTimeout(()=>{
+                t(btn, 'removeAllMoves')
+            }, 2500)
+        }, 500)
+        
+    } else if (btn.innerText == "Click To confirm"){
+        const noResetTMListIDs = []
+        const noResetTutorListIDs = []
+        gameData.moves.forEach((x, i) => {
+            if (noResetTMList.includes(x.NAME))
+                noResetTMListIDs.push(i)
+            if (noResetTutors.includes(x.NAME))
+                noResetTutorListIDs.push(i)
+        })
+
+        const poke = gameData.species[currentSpecieID]
+        poke.tmhm = poke.tmhm.filter(x => noResetTMListIDs.includes(x))
+        poke.tutor = poke.tutor.filter(x => noResetTutorListIDs.includes(x))
+        poke.learnset = [{lv: 1, id:1}]
+        console.log(poke.tmhm, poke.tutor, noResetTMListIDs, noResetTutorListIDs)
+        bridge.send('change-moves', 'tmhm', poke.NAME, poke.tmhm.map(x => gameData.moves[x].NAME))
+        bridge.send('change-learnset', poke.lrnPtr, poke.learnset.map(x => learnsetCompactToLearnset(x)))
+        bridge.send('change-moves', 'tutor', poke.NAME, poke.tutor.map(x => gameData.moves[x].NAME))
+        setAllMoves()
+        t(btn, 'removeAllMoves')
+        clearTimeout(resetTimeout)
+    }
+    
 }
