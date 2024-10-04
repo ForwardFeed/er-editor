@@ -229,6 +229,22 @@ function setMoveForAllNextEvos(specie, category, moveID, goDownwards=false){
     }
 }
 
+function setLearnsetForAllNextEvos(specie, move, goDownwards=false, ignore=false){
+    for (const evo of specie.evolutions){
+        if (!goDownwards && evo.from) continue
+        if (goDownwards && !evo.from) continue
+        const nextEvo = gameData.species[evo.in]
+        setLearnsetForAllNextEvos(nextEvo, move)
+    }
+    if (ignore)
+        return
+
+    if (!specie.learnset.find(x => x.id == move.id)) {
+        specie.learnset.push(structuredClone(move))
+        bridge.send('change-learnset', specie.lrnPtr, specie.learnset.map(x => learnsetCompactToLearnset(x)))
+    }
+}
+
 export function MoveEdit(ev, moveCat, moveCatDatalist){
     const row = $(ev.target).closest('.species-move-row')
     const rowIndex = row.parent().children().index(row[0])
@@ -346,6 +362,7 @@ function showLearnsetEdit(ev_cb, newMove){
             } else {
                 specie.learnset = specie.learnset.sort(sortByLevel)
             }
+            setLearnsetForAllNextEvos(specie, newMove, false, true)
             setAllMoves()
         }
     })
