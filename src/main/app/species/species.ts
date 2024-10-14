@@ -3,7 +3,7 @@ import * as BaseStats from './base_stats'
 import * as Evolutions from './evolutions'
 import * as EggMoves from './egg_moves'
 import * as LevelUpLearnSets from './level_up_learnsets'
-import * as TMHMLearnsets from './tmhm_learnsets'
+//import * as TMHMLearnsets from './tmhm_learnsets'
 import * as TutorMoves from './tutor_learnsets'
 import * as FormsSpecies from './form_species'
 import * as PokePokedex from './pokedex'
@@ -35,8 +35,9 @@ function parse(pokeData: string): Specie[]{
     const evolutionsResult = Evolutions.parse(lines, baseStatsResult.fileIterator)
     const eggmovesResult = EggMoves.parse(lines, evolutionsResult.fileIterator)
     const levelUpLearnsetsResult = LevelUpLearnSets.parse(lines, eggmovesResult.fileIterator)
-    const TMHMLearnsetsResult = TMHMLearnsets.parse(lines, levelUpLearnsetsResult.fileIterator)
-    const TutorMovesResult = TutorMoves.parse(lines, TMHMLearnsetsResult.fileIterator)
+    //const TMHMLearnsetsResult = TMHMLearnsets.parse(lines, levelUpLearnsetsResult.fileIterator)
+    //const TutorMovesResult = TutorMoves.parse(lines, TMHMLearnsetsResult.fileIterator)
+    const TutorMovesResult = TutorMoves.parse(lines, levelUpLearnsetsResult.fileIterator)
     const formsResult = FormsSpecies.parse(lines, TutorMovesResult.fileIterator)
     const spritesResult = Sprites.parse(lines, formsResult.fileIterator)
 
@@ -49,7 +50,7 @@ function parse(pokeData: string): Specie[]{
             evolutions: evolutionsResult.evolutions.get(key) || [],
             eggmoves: eggmovesResult.eggmoves.get(key) || [],
             learnset: levelUpLearnsetsResult.levelLearnsets.get(key) || [],
-            tmhm: TMHMLearnsetsResult.tmhmLearnsets.get(key) || [],
+            tmhm: /*TMHMLearnsetsResult.tmhmLearnsets.get(key)||*/ [],
             tutorMoves: TutorMovesResult.tutorMoves.get(key) || [],
             forms: formsResult.forms.get(key) || [],
             dex: pokePokedexResult.data.get(key) || {} as PokePokedex.PokePokedex,
@@ -71,7 +72,7 @@ export function getSpecies(ROOT_PRJ: string, optionsGlobal_h: FileDataOptions, g
                 'src/data/pokemon/egg_moves.h',
                 'src/data/pokemon/level_up_learnsets.h', // order with pointers is important
                 'src/data/pokemon/level_up_learnset_pointers.h',
-                'src/data/pokemon/tmhm_learnsets.h',
+                //'src/data/pokemon/tmhm_learnsets.h',
                 'src/data/pokemon/tutor_learnsets.h',
                 'src/data/pokemon/form_species_tables.h',
                 'src/data/pokemon/form_species_table_pointers.h',
