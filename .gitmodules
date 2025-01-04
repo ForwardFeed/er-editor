@@ -1,3 +1,4 @@
 [submodule "er-config"]
 	path = er-config
 	url = https://github.com/Elite-Redux/er-config.git
+	branch = upcoming
