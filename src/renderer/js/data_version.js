@@ -24,7 +24,7 @@ export function setupProtoCompilerCheck(){
 let rootPrj = ""
 export function setupGameDataRetrieving(){
     bridge.receive('game-data', function(data){
-        // bridge.send('exec-protoc', rootPrj) // this is to execute the protoc
+        bridge.send('exec-protoc', rootPrj) // this is to execute the protoc
         gameData = data
         window.gameData = data
         try{
@@ -33,7 +33,7 @@ export function setupGameDataRetrieving(){
         catch(e){
             console.error('fail while hydrating', e)
         }
-        
+
     })
     bridge.receive('no-game-data', function(){
         bridge.send('ask-for-folder')
@@ -43,7 +43,7 @@ export function setupGameDataRetrieving(){
         rootPrj = pRootPrj
         bridge.send('get-game-data')
     })
-    
+
     bridge.send('get-game-data')
     //fetchFromJSONFile()
 }
