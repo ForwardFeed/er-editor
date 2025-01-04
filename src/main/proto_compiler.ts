@@ -38,8 +38,7 @@ export function encodeTextproto(PROOT_PRJ: string) {
 --proto_path=${ROOT_PRJ}/proto \
 --experimental_allow_proto3_optional \
 ${ROOT_PRJ}/proto/SpeciesList.proto \
-< ${ROOT_PRJ}/proto/SpeciesList.textproto \
-> ${ROOT_PRJ}/proto/SpeciesList.binpb`
+< ${ROOT_PRJ}/proto/SpeciesList.textproto`
   // running the command
   console.log(command)
   const ret = execSync(command)

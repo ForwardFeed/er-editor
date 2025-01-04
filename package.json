@@ -20,9 +20,12 @@
     "build:linux": "npm run build && electron-builder --linux"
   },
   "dependencies": {
+    "@bufbuild/protobuf": "^2.2.3",
     "jquery": "^3.7.1"
   },
   "devDependencies": {
+    "@bufbuild/buf": "^1.48.0",
+    "@bufbuild/protoc-gen-es": "^2.2.3",
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@electron-toolkit/utils": "^3.0.0",
