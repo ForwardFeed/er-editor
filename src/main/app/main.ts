@@ -16,8 +16,10 @@ import { compactify } from './compactify';
 import * as Configuration from './configuration';
 import { getTutorTMHMList } from './moves/list_tutor_tmhm';
 import { getTrainerOrder } from './trainers/trainer_ordering';
+import { SpeciesList } from '../gen/SpeciesList_pb.js';
 //import { comparify } from './comparify';
 
+declare global { let speciesList: SpeciesList }
 
 export interface GameData {
     species: Species.Specie[]
@@ -26,7 +28,7 @@ export interface GameData {
     locations: Locations.Locations
     trainers: Map<string, Trainers.Trainer>
     dataScripted: ScriptedData.Result[]
-    mapTable: string[], 
+    mapTable: string[],
     battleItems: Map<string, BattleItems.BattleItem>
     speciesInternalID: Map<string, number>,
     movesInternalID: Map<string, number>,
@@ -59,7 +61,7 @@ export function getGameData(window: Electron.BrowserWindow){
             getGameDataData(window.webContents)
         })
         .catch((err)=>{
-            // 
+            //
             console.error("error while verifying the data", err)
             window.webContents.send('no-game-data')
         })
@@ -112,7 +114,7 @@ function getGameDataData(webContents: Electron.WebContents){
             .catch((err)=>{
                 console.error(`Something went wrong parsing the data: ${err}`)
             })
-        
+
     })
     .catch((reason) => {
         const err = 'Failed at getting global.h reason: ' + reason
@@ -143,7 +145,7 @@ function getGetSprites(_webContents: Electron.WebContents){
             const OUTPUT_PALETTES  = "./out/palettes/"
             if (!FS.existsSync(OUTPUT_SPRITES))FS.mkdirSync(OUTPUT_SPRITES)
             if (!FS.existsSync(OUTPUT_PALETTES))FS.mkdirSync(OUTPUT_PALETTES)
-            
+
             Sprites.getSprites(
                 Configuration.configuration.project_root, optionsGlobal_h, OUTPUT_SPRITES, OUTPUT_PALETTES)
                 .then(()=>{
@@ -153,5 +155,5 @@ function getGetSprites(_webContents: Electron.WebContents){
                     console.error('error while trying to catch sprites ' + err)
                 })
         })
-   
+
 }

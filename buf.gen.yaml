@@ -4,5 +4,5 @@ inputs:
   - directory: er-config
 plugins:
   - local: protoc-gen-es
-    out: src/gen
+    out: src/main/gen
     opt: target=ts

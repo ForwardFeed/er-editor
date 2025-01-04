@@ -10,4 +10,4 @@ squashfs-root
 debug.txt
 #editor
 .vscode
-src/gen/
+src/main/gen/

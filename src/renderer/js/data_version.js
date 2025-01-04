@@ -24,7 +24,7 @@ export function setupProtoCompilerCheck(){
 let rootPrj = ""
 export function setupGameDataRetrieving(){
     bridge.receive('game-data', function(data){
-        bridge.send('protoc-encode', rootPrj) // this is to execute the protoc
+        bridge.send('read-proto-data', rootPrj) // this is to execute the protoc
         gameData = data
         window.gameData = data
         try{
