@@ -21,6 +21,7 @@ export function setupProtoCompilerCheck(){
     //setupGameDataRetrieving()
 }
 
+let rootPrj = ""
 export function setupGameDataRetrieving(){
     bridge.receive('game-data', function(data){
         gameData = data
@@ -36,7 +37,9 @@ export function setupGameDataRetrieving(){
     bridge.receive('no-game-data', function(){
         bridge.send('ask-for-folder')
     })
-    bridge.receive('ok-folder', function(path){
+    bridge.receive('ok-folder', function(pRootPrj){
+        // saving because i need to give it to the proto compiler after
+        rootPrj = pRootPrj
         bridge.send('get-game-data')
     })
     bridge.send('get-game-data')

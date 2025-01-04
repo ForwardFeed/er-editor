@@ -13,7 +13,7 @@ const api: CustomAPI = {
       let validChannels = ["get-game-data", "ask-for-folder", "set-location", "change-evolution",
     "mod-trainer-party", 'remove-trainer', 'add-trainer', "mod-trainer", 'rm-insane', 'add-insane', 'rm-rem', 'add-rem',
     "rename-trainer", "change-moves", "change-learnset", "change-eggmoves", "change-abis", "change-bs", 'change-spc-type',
-    'change-spc-desc', 'check-protoc'];
+    'change-spc-desc', 'check-protoc','exec-protoc'];
       if (validChannels.includes(channel)) {
         console.log(channel, ...args)
           ipcRenderer.send(channel, ...args);
