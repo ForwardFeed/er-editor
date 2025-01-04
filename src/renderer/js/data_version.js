@@ -18,12 +18,13 @@ export function setupProtoCompilerCheck(){
         alert("error while checking the proto compiler: " + err)
     })
     bridge.send('check-protoc')
-    //setupGameDataRetrieving()
+    setupGameDataRetrieving()
 }
 
 let rootPrj = ""
 export function setupGameDataRetrieving(){
     bridge.receive('game-data', function(data){
+        bridge.send('exec-protoc', rootPrj) // this is to execute the protoc
         gameData = data
         window.gameData = data
         try{
@@ -42,6 +43,7 @@ export function setupGameDataRetrieving(){
         rootPrj = pRootPrj
         bridge.send('get-game-data')
     })
+    
     bridge.send('get-game-data')
     //fetchFromJSONFile()
 }

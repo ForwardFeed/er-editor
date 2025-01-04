@@ -30,5 +30,7 @@ ${ROOT_PRJ}/proto/SpeciesList.textproto \
 < ${ROOT_PRJ}/proto/SpeciesList.textproto \
 > ${ROOT_PRJ}/proto/SpeciesList.binpb`
     // running the command
-    console.log(command)
+    // console.log(command)
+    const ret = execSync(command)
+    console.log(ret.toString())
 }
