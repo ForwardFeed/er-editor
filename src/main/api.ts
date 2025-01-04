@@ -12,6 +12,7 @@ import { EggMoveCQ, replaceEggMoves } from './app/species/egg_moves'
 import { LevelUPLearnsetCQ, LevelUpMove, replaceLearnset} from './app/species/level_up_learnsets'
 import { BSCQ, changeAbis, changeBaseStats, changeTypes } from './app/species/base_stats'
 import { DexCQ, changeDesc } from './app/species/pokedex'
+import { canRunProto, checkProtoExistence, executeProtoCompiler } from './proto_compiler'
 
 export function setupApi(window: Electron.BrowserWindow){
     ipcMain.on('get-game-data', () => {
@@ -111,5 +112,17 @@ export function setupApi(window: Electron.BrowserWindow){
         DexCQ.feed(()=>{
             changeDesc(ptr, lines)
         }).poll()
+    })
+    ipcMain.on('check-protoc', (_event)=>{
+        try {
+            checkProtoExistence()
+            const version = canRunProto()
+            window.webContents.send('protoc-ok', version)
+        } catch (e){
+            window.webContents.send('protoc-err', e)
+        }
+    })
+    ipcMain.on('exec-protoc', (_event, rootPrj)=>{
+        executeProtoCompiler(rootPrj)
     })
 }
