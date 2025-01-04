@@ -13,7 +13,7 @@ const api: CustomAPI = {
       let validChannels = ["get-game-data", "ask-for-folder", "set-location", "change-evolution",
     "mod-trainer-party", 'remove-trainer', 'add-trainer', "mod-trainer", 'rm-insane', 'add-insane', 'rm-rem', 'add-rem',
     "rename-trainer", "change-moves", "change-learnset", "change-eggmoves", "change-abis", "change-bs", 'change-spc-type',
-    'change-spc-desc'];
+    'change-spc-desc', 'check-protoc'];
       if (validChannels.includes(channel)) {
         console.log(channel, ...args)
           ipcRenderer.send(channel, ...args);
@@ -22,7 +22,7 @@ const api: CustomAPI = {
       }
     },
     receive: (channel, func) => {
-        let validChannels = ["game-data", "no-game-data", "ok-folder"];
+        let validChannels = ["game-data", "no-game-data", "ok-folder", "protoc-ok", "protoc-err"];
         if (validChannels.includes(channel)) {
             // Deliberately strip event as it includes `sender`
             try{

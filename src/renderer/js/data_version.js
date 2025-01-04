@@ -7,6 +7,19 @@ import { bridge } from './context_bridge.js'
 /**@type {import('../../main/app/compactify').CompactGameData} */
 export let gameData, compareData;
 
+/**
+ * The new version of the editor must valid that the proto compiler exist before doing anything
+ */
+export function setupProtoCompilerCheck(){
+    bridge.receive('protoc-ok', function(version){
+        console.log("proto-compiler-ok, version used: " + version)
+    })
+    bridge.receive('protoc-err', function(err){
+        alert("error while checking the proto compiler: " + err)
+    })
+    bridge.send('check-protoc')
+    //setupGameDataRetrieving()
+}
 
 export function setupGameDataRetrieving(){
     bridge.receive('game-data', function(data){

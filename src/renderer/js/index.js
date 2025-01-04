@@ -1,6 +1,6 @@
 import setupPanels from "./sidebar.js"
 import { setupSpeciesPanel } from "./panels/species/species_panel.js"
-import { setupGameDataRetrieving } from "./data_version.js"
+import { setupProtoCompilerCheck } from "./data_version.js"
 import { setupSearch } from "./search.js"
 import { setupSettings } from "./settings.js"
 import { setupFilters } from "./filters.js"
@@ -22,7 +22,7 @@ function loadApplication() {
         [setupSearch, "search frame"],
         [setupFilters, "filter frame"],
         [setupFormatShowdown, "Showdown format"],
-        [setupGameDataRetrieving, "gamedata loader"],
+        [setupProtoCompilerCheck, "gamedata loader"],
         [setupEditor, "editor loader"],
         [console.log('done'), "finished somehow"],
     ]
