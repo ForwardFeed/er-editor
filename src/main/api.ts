@@ -12,7 +12,7 @@ import { EggMoveCQ, replaceEggMoves } from './app/species/egg_moves'
 import { LevelUPLearnsetCQ, LevelUpMove, replaceLearnset } from './app/species/level_up_learnsets'
 import { BSCQ, changeAbis, changeBaseStats, changeTypes } from './app/species/base_stats'
 import { DexCQ, changeDesc } from './app/species/pokedex'
-import { canRunProto, checkProtoExistence, readTextproto, writeTextproto } from './proto_compiler'
+import { canRunProto, checkProtoExistence, readTextproto, writeSpecies } from './proto_compiler'
 
 export function setupApi(window: Electron.BrowserWindow) {
   ipcMain.on('get-game-data', () => {
@@ -123,9 +123,9 @@ export function setupApi(window: Electron.BrowserWindow) {
     }
   })
   ipcMain.on('read-proto-data', (_event, rootPrj) => {
-    speciesList = readTextproto(rootPrj)
+    // speciesList = readTextproto(rootPrj)
   })
   ipcMain.on('write-proto-data', (_event, rootPrj) => {
-    writeTextproto(rootPrj, speciesList)
+    // writeTextproto(rootPrj, speciesList)
   })
 }

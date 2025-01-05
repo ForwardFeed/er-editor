@@ -4,8 +4,9 @@ import { existsSync, writeFileSync } from 'fs';
 import { configuration } from './app/configuration';
 import { platform } from 'os';
 import { SpeciesList, SpeciesListSchema } from './gen/SpeciesList_pb.js'
-import { fromBinary, toBinary } from '@bufbuild/protobuf';
-import { Readable } from 'stream';
+import { fromBinary, Message, toBinary } from '@bufbuild/protobuf';
+import { GenMessage } from '@bufbuild/protobuf/codegenv1';
+import { MoveList, MoveListSchema } from './gen/MoveList_pb.js';
 
 function protocLocation() {
   switch (platform()) {
@@ -32,30 +33,47 @@ export function canRunProto(): string {
   return versionBeingUsed
 }
 
-export function readTextproto(PROOT_PRJ: string): SpeciesList {
-  const ROOT_PRJ = PROOT_PRJ || configuration.project_root
+export function readTextproto<T extends Message>(projectRoot: string, schema: GenMessage<T>, protoName: string): T {
+  const actualRoot = projectRoot || configuration.project_root
 
   const command = `${protocLocation()} \
-    --encode=er.SpeciesList \
-    --proto_path=${ROOT_PRJ}/proto \
+    --encode=er.${protoName} \
+    --proto_path=${actualRoot}/proto \
     --experimental_allow_proto3_optional \
-    ${ROOT_PRJ}/proto/SpeciesList.proto \
-    < ${ROOT_PRJ}/proto/SpeciesList.textproto`
+    ${actualRoot}/proto/${protoName}.proto \
+    < ${actualRoot}/proto/${protoName}.textproto`
 
   console.log(command)
   const ret = execSync(command)
-  return fromBinary(SpeciesListSchema, ret)
+  return fromBinary(schema, ret)
 }
 
-export function writeTextproto(PROOT_PRJ: string, speciesList: SpeciesList) {
-  const ROOT_PRJ = PROOT_PRJ || configuration.project_root
+export function writeTextproto<T extends Message>(projectRoot: string, schema: GenMessage<T>, protoName: string, message: T) {
+  const actualRoot = projectRoot || configuration.project_root
 
   const command = `${protocLocation()} \
-    --decode=er.SpeciesList \
-    --proto_path=${ROOT_PRJ}/proto \
+    --decode=er.${protoName} \
+    --proto_path=${actualRoot}/proto \
     --experimental_allow_proto3_optional \
-    ${ROOT_PRJ}/proto/SpeciesList.proto`
+    ${actualRoot}/proto/${protoName}.proto`
 
-  const ret = execSync(command, { input: toBinary(SpeciesListSchema, speciesList) })
-  writeFileSync(`${ROOT_PRJ}/proto/SpeciesListSchema.textproto`, `# proto-file: Species.proto\n# proto-message: er.SpeciesList\n\n${ret}`)
+  const ret = execSync(command, { input: toBinary(schema, message) })
+  writeFileSync(`${actualRoot}/proto/${schema}.textproto`, `# proto-file: ${protoName}.proto\n# proto-message: er.${protoName}\n\n${ret}`)
+
+}
+
+export function readSpecies(ROOT_PRJ: string): SpeciesList {
+  return readTextproto(ROOT_PRJ, SpeciesListSchema, "SpeciesList")
+}
+
+export function writeSpecies(ROOT_PRJ: string, speciesList: SpeciesList) {
+  writeTextproto(ROOT_PRJ, SpeciesListSchema, "SpeciesList", speciesList)
+}
+
+export function readMoves(ROOT_PRJ: string): MoveList {
+  return readTextproto(ROOT_PRJ, MoveListSchema, "MovesList")
+}
+
+export function writeMoves(ROOT_PRJ: string, movesList: MoveList) {
+  writeTextproto(ROOT_PRJ, MoveListSchema, "MovesList", movesList)
 }
