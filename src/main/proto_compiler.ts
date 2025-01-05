@@ -7,6 +7,7 @@ import { SpeciesList, SpeciesListSchema } from './gen/SpeciesList_pb.js'
 import { fromBinary, Message, toBinary } from '@bufbuild/protobuf';
 import { GenMessage } from '@bufbuild/protobuf/codegenv1';
 import { MoveList, MoveListSchema } from './gen/MoveList_pb.js';
+import { AbilityList, AbilityListSchema } from './gen/AbilityList_pb.js';
 
 function protocLocation() {
   switch (platform()) {
@@ -76,4 +77,12 @@ export function readMoves(ROOT_PRJ: string): MoveList {
 
 export function writeMoves(ROOT_PRJ: string, movesList: MoveList) {
   writeTextproto(ROOT_PRJ, MoveListSchema, "MovesList", movesList)
+}
+
+export function readAbilities(ROOT_PRJ: string): AbilityList {
+  return readTextproto(ROOT_PRJ, AbilityListSchema, "AbilitiesList")
+}
+
+export function writeAbilities(ROOT_PRJ: string, abilitiesList: AbilityList) {
+  writeTextproto(ROOT_PRJ, AbilityListSchema, "AbilitiesList", abilitiesList)
 }
