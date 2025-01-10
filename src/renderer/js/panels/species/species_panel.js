@@ -271,9 +271,9 @@ function changeBaseStat(node, value, statID, cmp) {
 export function setAbilities(abilities, specie) {
     $('#species-abilities').empty().append(
         JSHAC(abilities.map((val, i) => {
-            if (abilities[i] == abilities[i - 1] || abilities[i] === 0) {
+            /*if (abilities[i] == abilities[i - 1] || abilities[i] === 0) {
                 return undefined
-            }
+            }*/
             const abi = gameData.abilities[abilities[i]]
             const name = e("div", "species-ability", abi.name)
             addTooltip(name, abi.desc)
@@ -293,9 +293,9 @@ export function setAbilities(abilities, specie) {
 export function setInnates(innates) {
     $('#species-innates').empty().append(
         JSHAC(innates.map((val, i) => {
-            if (innates[i] == innates[i - 1] || innates[i] === 0) {
+            /*if (innates[i] == innates[i - 1] || innates[i] === 0) {
                 return
-            }
+            }*/
             const inn = gameData.abilities[innates[i]]
             const name = e("div", "species-innate", inn.name)
             longClickToFilter(0, name, "ability", () => { return inn.name }, 0)

@@ -469,9 +469,10 @@ export function modAbi(ev, abiCat, target){
         if (nextAbi == -1 || abiID == nextAbi) return
         // because some abilities repeat themselves if the pokemon only have one ability
         // so i have to replace all
-        specie.stats[abiCat].forEach((x, i, arr)=> {
+        /*specie.stats[abiCat].forEach((x, i, arr)=> {
             if (x == abiID) arr[i] = nextAbi
-        })
+        })*/
+        specie.stats[abiCat][rowIndex] = nextAbi
         if (abiCat === "abis"){
             setAbilities(specie.stats.abis, specie)
         } else {

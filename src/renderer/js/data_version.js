@@ -44,8 +44,12 @@ export function setupGameDataRetrieving(){
         bridge.send('get-game-data')
     })
     
-    bridge.send('get-game-data')
-    //fetchFromJSONFile()
+    const DEBUG_NO_FETCH = false
+    if (DEBUG_NO_FETCH){
+        fetchFromJSONFile()
+    } else {
+        bridge.send('get-game-data')
+    }
 }
 
 function fetchFromJSONFile(){
