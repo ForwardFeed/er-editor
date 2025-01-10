@@ -1,6 +1,6 @@
 {
   "name": "er-editor",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "A minimal Electron application with TypeScript",
   "main": "./out/main/index.js",
   "author": "example.com",
