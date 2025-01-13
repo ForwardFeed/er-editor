@@ -26,7 +26,6 @@ function initContext(): Context{
 
 const executionMap: {[key: string]: (line: string, context: Context) => void} = {
     "ptr": (line, context) =>{
-        console.log(line)
         if (line.match('u32 gMonFrontPic')){
             const ptr = regexGrabStr(line, /\w+(?=\[)/)
             const path = regexGrabStr(line, /(?<=")[^"]+/).replace(/[^/]+lz/, 'front.png')
