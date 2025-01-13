@@ -64,6 +64,7 @@ export function getFileData(fullpath: string,
  * @param options FileDataOptions that will be applied to the reading of all files
  * @returns the promise of a concatenated result of all the data of all files, (the order isn't tested yet) 
  * or may be an error if any file didn't got read as planed
+ * if a filepath starts with "#" the macros aren't preprocessed.
  */
 
 export function getMulFilesData(fullFilePathList: string[],
@@ -72,7 +73,15 @@ export function getMulFilesData(fullFilePathList: string[],
     
     const promiseArray: Promise<FileData>[] = []
     for (const filepath of fullFilePathList){
-        promiseArray.push(getFileData(filepath, options))
+        // some files must no read macros because they hinder the code.
+        if (filepath[0] == "#"){
+            const cloneOption = structuredClone(options)
+            cloneOption.filterMacros = false
+            promiseArray.push(getFileData(filepath.replace('#', ''), cloneOption))
+        } else {
+            promiseArray.push(getFileData(filepath, options))
+        }
+        
     }
 
     let cumulativeText = ""
@@ -313,5 +322,10 @@ export function checkFiles(fullFilePathList: string[]): Promise<boolean> {
  * @returns an array of absolute path of files, or at least absolute to the folder path
  */
 export function autojoinFilePath(directory: string, files: string[]): string[] {
-    return files.map(file => Path.join(directory, file))
+    return files.map(filepath => {
+        if (filepath[0] === "#"){
+            return "#" + Path.join(directory, filepath.replace('#', ''))
+        }
+        return Path.join(directory, filepath)
+    })
 }

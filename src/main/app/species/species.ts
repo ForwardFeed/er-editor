@@ -76,9 +76,7 @@ export function getSpecies(ROOT_PRJ: string, optionsGlobal_h: FileDataOptions, g
                 'src/data/pokemon/tutor_learnsets.h',
                 'src/data/pokemon/form_species_tables.h',
                 'src/data/pokemon/form_species_table_pointers.h',
-                'src/data/graphics/pokemon.h',
-                'src/data/pokemon_graphics/front_pic_table.h',
-                'src/data/graphics/pokemon.h',
+                '#src/data/graphics/pokemon.h',
                 'src/data/pokemon_graphics/front_pic_table.h',
             ]), optionsGlobal_h)
         .then((pokeData)=>{
