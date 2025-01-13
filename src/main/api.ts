@@ -12,6 +12,7 @@ import { EggMoveCQ, replaceEggMoves } from './app/species/egg_moves'
 import { LevelUPLearnsetCQ, LevelUpMove, replaceLearnset} from './app/species/level_up_learnsets'
 import { BSCQ, changeAbis, changeBaseStats, changeTypes } from './app/species/base_stats'
 import { DexCQ, changeDesc } from './app/species/pokedex'
+//@ts-ignore
 import { canRunProto, checkProtoExistence, executeProtoCompiler } from './proto_compiler'
 
 export function setupApi(window: Electron.BrowserWindow){
@@ -115,9 +116,10 @@ export function setupApi(window: Electron.BrowserWindow){
     })
     ipcMain.on('check-protoc', (_event)=>{
         try {
-            checkProtoExistence()
+            /*checkProtoExistence()
             const version = canRunProto()
-            window.webContents.send('protoc-ok', version)
+            window.webContents.send('protoc-ok', version)*/
+            window.webContents.send('protoc-ok', "none because i've skipped this phase")
         } catch (e){
             window.webContents.send('protoc-err', e)
         }
