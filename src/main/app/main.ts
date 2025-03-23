@@ -17,7 +17,7 @@ import * as Configuration from './configuration';
 import { getTutorTMHMList } from './moves/list_tutor_tmhm';
 import { getTrainerOrder } from './trainers/trainer_ordering';
 import { create } from '@bufbuild/protobuf';
-import { ArgumentSchema, Crit, HitsAir, MoveEffectArgumentSchema, MoveListSchema, MoveSchema, MoveSplit, MoveTarget, SplitFlag, Status } from '../gen/MoveList_pb.js';
+import { ArgumentSchema, Crit, HitsAir, MiscMoveEffect, MoveEffectArgumentSchema, MoveListSchema, MoveSchema, MoveSplit, MoveTarget, SplitFlag, Status } from '../gen/MoveList_pb.js';
 import { MoveEnum } from '../gen/MoveEnum_pb.js';
 import { MoveEffect } from '../gen/MoveEffect_pb.js';
 import { Type } from '../gen/Types_pb.js';
@@ -212,6 +212,11 @@ function getGameDataData(webContents: Electron.WebContents) {
                 argumentWrapper.argument = {
                   case: "status",
                   value: Status[it.argument]
+                }
+              }else if (it.argument.startsWith("MISC_EFFECT_")) {
+                argumentWrapper.argument = {
+                  case: "misc",
+                  value: MiscMoveEffect[it.argument]
                 }
               } else if (it.argument.startsWith("MOVE_EFFECT_")) {
                 argumentWrapper.argument = {
