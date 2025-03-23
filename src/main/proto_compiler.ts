@@ -1,5 +1,5 @@
 
-import { execSync, exec } from 'child_process';
+import { execSync } from 'child_process';
 import { existsSync, writeFileSync } from 'fs';
 import { configuration } from './app/configuration';
 import { platform } from 'os';
@@ -72,11 +72,11 @@ export function writeSpecies(ROOT_PRJ: string, speciesList: SpeciesList) {
 }
 
 export function readMoves(ROOT_PRJ: string): MoveList {
-  return readTextproto(ROOT_PRJ, MoveListSchema, "MovesList")
+  return readTextproto(ROOT_PRJ, MoveListSchema, "MoveList")
 }
 
 export function writeMoves(ROOT_PRJ: string, movesList: MoveList) {
-  writeTextproto(ROOT_PRJ, MoveListSchema, "MovesList", movesList)
+  writeTextproto(ROOT_PRJ, MoveListSchema, "MoveList", movesList)
 }
 
 export function readAbilities(ROOT_PRJ: string): AbilityList {

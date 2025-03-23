@@ -16,18 +16,15 @@ import { compactify } from './compactify';
 import * as Configuration from './configuration';
 import { getTutorTMHMList } from './moves/list_tutor_tmhm';
 import { getTrainerOrder } from './trainers/trainer_ordering';
-import { SpeciesList } from '../gen/SpeciesList_pb.js';
 import { create } from '@bufbuild/protobuf';
-import { AbilityListSchema, AbilitySchema } from '../gen/AbilityList_pb.js';
-import { AbilityEnum } from '../gen/AbilityEnum_pb.js';
-import { writeAbilities } from '../proto_compiler.js';
-import { MoveListSchema, MoveSchema, MoveSplit, MoveTarget } from '../gen/MoveList_pb.js';
+import { ArgumentSchema, Crit, HitsAir, MoveEffectArgumentSchema, MoveListSchema, MoveSchema, MoveSplit, MoveTarget, SplitFlag, Status } from '../gen/MoveList_pb.js';
 import { MoveEnum } from '../gen/MoveEnum_pb.js';
 import { MoveEffect } from '../gen/MoveEffect_pb.js';
 import { Type } from '../gen/Types_pb.js';
+import { writeMoves } from '../proto_compiler.js';
+import { Xtox } from './parse_utils.js';
+import { BattleMoveEffect } from '../gen/BattleMoveEffect_pb.js';
 //import { comparify } from './comparify';
-
-declare global { let speciesList: SpeciesList }
 
 export interface GameData {
   species: Species.Specie[]
@@ -105,26 +102,93 @@ function getGameDataData(webContents: Electron.WebContents) {
       //promiseArray.push()
       Promise.allSettled(promiseArray)
         .then((values) => {
-          const moveList = create(MoveListSchema)
-          gameData.moves.forEach(it => {
+          const moves = [...gameData.moves.values()].map(it => {
+            function hasFlag(flag) {
+              if (flag.includes("_")) flag = Xtox("FLAG_", flag)
+              return it.flags.includes(flag)
+            }
+            console.log("EFFECT_" + it.effect.replace(" ", "_").toUpperCase())
             const move = create(MoveSchema, {
               id: MoveEnum[it.NAME],
               name: it.name,
               shortName: it.shortName,
               description: it.desc,
               shortDescription: it.desc,
-              effect: MoveEffect[it.effect],
+              effect: MoveEffect["EFFECT_" + it.effect.replace(" ", "_").toUpperCase()],
               split: MoveSplit[it.split],
-              type: Type[it.types[0].slice(5)],
-              type2: (it.types.length > 1) ? Type[it.types[1].slice(5)] : Type.NONE,
+              type: Type[it.types[0].toUpperCase()],
+              type2: (it.types.length > 1) ? Type[it.types[1].toUpperCase()] : Type.NONE,
               target: MoveTarget[it.target],
               power: it.power,
               accuracy: it.acc,
               pp: it.pp,
               effectChance: it.chance,
               priority: it.priority,
-              contact: it.flags.includes("FLAG_MAKES_CONTACT"),
+              contact: hasFlag("FLAG_MAKES_CONTACT"),
+              ignoresStatStages: hasFlag("FLAG_STAT_STAGES_IGNORED"),
+              doubleDamageVsMega: hasFlag("doubleDamageVsMega"),
+              everyOtherTurn: hasFlag("everyOtherTurn"),
+              isProtection: hasFlag("FLAG_PROTECTION_MOVE"),
+              ignoresAbility: hasFlag("FLAG_TARGET_ABILITY_IGNORED"),
+              twoTurn: hasFlag("twoTurnMove"),
+              snatchAffected: hasFlag("FLAG_SNATCH_AFFECTED"),
+              magicCoatAffected: hasFlag("FLAG_MAGIC_COAT_AFFECTED"),
+              mirrorMoveAffected: hasFlag("FLAG_MIRROR_MOVE_AFFECTED"),
+              noKingsRock: !hasFlag("FLAG_KINGS_ROCK_AFFECTED") && it.split !== "STATUS",
+              reckless: hasFlag("FLAG_RECKLESS_BOOST"),
+              ironFist: hasFlag("FLAG_IRON_FIST_BOOST"),
+              noSheerForce: !hasFlag("FLAG_SHEER_FORCE_BOOST") && it.split !== "STATUS" && it.chance > 0,
+              strongJaw: hasFlag("FLAG_STRONG_JAW_BOOST"),
+              megaLauncher: hasFlag("FLAG_MEGA_LAUNCHER_BOOST"),
+              striker: hasFlag("FLAG_STRIKER_BOOST"),
+              hitsUnderground: hasFlag("FLAG_DMG_UNDERGROUND"),
+              hitsUnderwater: hasFlag("FLAG_DMG_UNDERWATER"),
+              sound: hasFlag("FLAG_SOUND"),
+              ballistic: hasFlag("FLAG_BALLISTIC"),
+              powderAffected: hasFlag("FLAG_POWDER"),
+              dance: hasFlag("FLAG_DANCE"),
+              ignoresLevitation: hasFlag("FLAG_DMG_UNGROUNDED_IGNORE_TYPE_IF_FLYING"),
+              thawUser: hasFlag("FLAG_THAW_USER"),
+              ignoresSubstitute: hasFlag("FLAG_HIT_IN_SUBSTITUTE"),
+              keenEdge: hasFlag("FLAG_KEEN_EDGE_BOOST"),
+              bone: hasFlag("FLAG_BONE_BASED"),
+              weather: hasFlag("FLAG_WEATHER_BASED"),
+              field: hasFlag("FLAG_FIELD_BASED"),
+              noParentalBond: hasFlag("parentalBondBanned"),
+              arrow: hasFlag("arrowBased"),
+              horn: hasFlag("hornBased"),
+              air: hasFlag("airBased"),
+              hammer: hasFlag("hammerBased"),
+              throwing: hasFlag("throwingBased"),
+              lunar: hasFlag("lunar"),
+              metronomeBanned: hasFlag("metronomeBanned"),
+              copycatBanned: hasFlag("copycatBanned"),
+              sleepTalkBanned: hasFlag("sleepTalkBanned"),
+              mimicBanned: hasFlag("mimicBanned"),
+              splitModifier: it.splitModifier,
             })
+
+            switch (move.id) {
+              case MoveEnum.MOVE_DOUBLE_IRON_BASH:
+              case MoveEnum.MOVE_TWINEEDLE:
+              case MoveEnum.MOVE_CROSS_POISON:
+              case MoveEnum.MOVE_DOUBLE_SHOCK:
+                move.hitCount = 2
+                break
+            }
+
+            if (hasFlag("FLAG_DMG_2X_IN_AIR")) {
+              move.hitsAir = HitsAir.DOUBLE_DAMAGE
+            } else if (hasFlag("FLAG_DMG_IN_AIR")) {
+              move.hitsAir = HitsAir.HITS
+            }
+
+            if (hasFlag("alwaysCrit")) {
+              move.crit = Crit.ALWAYS
+            } else if (hasFlag("FLAG_HIGH_CRIT")) {
+              move.crit = Crit.HIGH
+            }
+
             switch (move.target) {
               case MoveTarget.ALLY:
               case MoveTarget.BOTH:
@@ -134,9 +198,47 @@ function getGameDataData(webContents: Electron.WebContents) {
               case MoveTarget.SELECTED:
               case MoveTarget.USER_OR_SELECTED:
               case MoveTarget.USER_OR_ALLY:
-                if (!it.flags.includes("FLAG_PROTECT_AFFECTED")) move.ignoresProtect = true
+                if (!hasFlag("FLAG_PROTECT_AFFECTED")) move.ignoresProtect = true
             }
+
+            if (it.argument) {
+              const argumentWrapper = create(ArgumentSchema)
+              if (it.argument.startsWith("TYPE_")) {
+                argumentWrapper.argument = {
+                  case: "type",
+                  value: Type[it.argument.substring("TYPE_".length)]
+                }
+              } else if (it.argument.startsWith("STATUS1_")) {
+                argumentWrapper.argument = {
+                  case: "status",
+                  value: Status[it.argument]
+                }
+              } else if (it.argument.startsWith("MOVE_EFFECT_")) {
+                argumentWrapper.argument = {
+                  case: "effect",
+                  value: create(MoveEffectArgumentSchema, {
+                    affectsUser: it.argument.includes("MOVE_EFFECT_AFFECTS_USER"),
+                    certain: it.argument.includes("MOVE_EFFECT_CERTAIN"),
+                    effect: BattleMoveEffect[it.argument.trimStart().split(" ")[0]]
+                  })
+                }
+              } else if (!isNaN(parseInt(it.argument))) {
+                argumentWrapper.argument = {
+                  case: "int",
+                  value: parseInt(it.argument),
+                }
+              } else {
+                argumentWrapper.argument = {
+                  case: "other",
+                  value: it.argument
+                }
+              }
+              move.argument = argumentWrapper
+            }
+
+            return move
           })
+          writeMoves(ROOT_PRJ, create(MoveListSchema, { moves: moves }))
           values.map((x) => {
             if (x.status !== "fulfilled") {
               console.error(`Something went wrong parsing the data: ${x.reason}`)
