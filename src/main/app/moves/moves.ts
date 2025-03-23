@@ -2,7 +2,12 @@ import { join } from "path"
 import { regexGrabNum, regexGrabStr, Xtox } from "../parse_utils"
 import { FileDataOptions, getFileData, getMulFilesData, autojoinFilePath } from "../utils"
 import { GameData } from "../main"
-import { SplitFlag } from "../../gen/MoveList_pb.js"
+import { ArgumentSchema, Crit, HitsAir, MiscMoveEffect, MoveEffectArgumentSchema, MoveSchema, MoveSplit, MoveTarget, Move as ProtoMove, SplitFlag, Status } from "../../gen/MoveList_pb.js"
+import { MoveEnum } from "../../gen/MoveEnum_pb.js"
+import { MoveEffect } from "../../gen/MoveEffect_pb.js"
+import { create } from "@bufbuild/protobuf"
+import { Type } from "../../gen/Types_pb.js"
+import { BattleMoveEffect } from "../../gen/BattleMoveEffect_pb.js"
 
 interface Description {
   ptrDesc: string,
@@ -258,6 +263,147 @@ export function parse(filedata: string): Map<string, Move> {
     if (context.stopRead) break
   }
   return context.moves
+}
+
+export function convertLegacyMove(legacyMove: Move): ProtoMove {
+  function hasFlag(flag) {
+    if (flag.includes("_")) flag = Xtox("FLAG_", flag)
+    return legacyMove.flags.includes(flag)
+  }
+  const move = create(MoveSchema, {
+    id: MoveEnum[legacyMove.NAME],
+    name: legacyMove.name,
+    shortName: legacyMove.shortName,
+    description: legacyMove.desc,
+    shortDescription: legacyMove.desc,
+    effect: MoveEffect["EFFECT_" + legacyMove.effect.replace(" ", "_").toUpperCase()],
+    split: MoveSplit[legacyMove.split],
+    type: Type[legacyMove.types[0].toUpperCase()],
+    type2: (legacyMove.types.length > 1) ? Type[legacyMove.types[1].toUpperCase()] : Type.NONE,
+    target: MoveTarget[legacyMove.target],
+    power: legacyMove.power,
+    accuracy: legacyMove.acc,
+    pp: legacyMove.pp,
+    effectChance: legacyMove.chance,
+    priority: legacyMove.priority,
+    contact: hasFlag("FLAG_MAKES_CONTACT"),
+    ignoresStatStages: hasFlag("FLAG_STAT_STAGES_IGNORED"),
+    doubleDamageVsMega: hasFlag("doubleDamageVsMega"),
+    everyOtherTurn: hasFlag("everyOtherTurn"),
+    isProtection: hasFlag("FLAG_PROTECTION_MOVE"),
+    ignoresAbility: hasFlag("FLAG_TARGET_ABILITY_IGNORED"),
+    twoTurn: hasFlag("twoTurnMove"),
+    snatchAffected: hasFlag("FLAG_SNATCH_AFFECTED"),
+    magicCoatAffected: hasFlag("FLAG_MAGIC_COAT_AFFECTED"),
+    mirrorMoveAffected: hasFlag("FLAG_MIRROR_MOVE_AFFECTED"),
+    noKingsRock: !hasFlag("FLAG_KINGS_ROCK_AFFECTED") && legacyMove.split !== "STATUS",
+    reckless: hasFlag("FLAG_RECKLESS_BOOST"),
+    ironFist: hasFlag("FLAG_IRON_FIST_BOOST"),
+    noSheerForce: !hasFlag("FLAG_SHEER_FORCE_BOOST") && legacyMove.split !== "STATUS" && legacyMove.chance > 0,
+    strongJaw: hasFlag("FLAG_STRONG_JAW_BOOST"),
+    megaLauncher: hasFlag("FLAG_MEGA_LAUNCHER_BOOST"),
+    striker: hasFlag("FLAG_STRIKER_BOOST"),
+    hitsUnderground: hasFlag("FLAG_DMG_UNDERGROUND"),
+    hitsUnderwater: hasFlag("FLAG_DMG_UNDERWATER"),
+    sound: hasFlag("FLAG_SOUND"),
+    ballistic: hasFlag("FLAG_BALLISTIC"),
+    powderAffected: hasFlag("FLAG_POWDER"),
+    dance: hasFlag("FLAG_DANCE"),
+    ignoresLevitation: hasFlag("FLAG_DMG_UNGROUNDED_IGNORE_TYPE_IF_FLYING"),
+    thawUser: hasFlag("FLAG_THAW_USER"),
+    ignoresSubstitute: hasFlag("FLAG_HIT_IN_SUBSTITUTE"),
+    keenEdge: hasFlag("FLAG_KEEN_EDGE_BOOST"),
+    bone: hasFlag("FLAG_BONE_BASED"),
+    weather: hasFlag("FLAG_WEATHER_BASED"),
+    field: hasFlag("FLAG_FIELD_BASED"),
+    noParentalBond: hasFlag("parentalBondBanned"),
+    arrow: hasFlag("arrowBased"),
+    horn: hasFlag("hornBased"),
+    air: hasFlag("airBased"),
+    hammer: hasFlag("hammerBased"),
+    throwing: hasFlag("throwingBased"),
+    lunar: hasFlag("lunar"),
+    metronomeBanned: hasFlag("metronomeBanned"),
+    copycatBanned: hasFlag("copycatBanned"),
+    sleepTalkBanned: hasFlag("sleepTalkBanned"),
+    mimicBanned: hasFlag("mimicBanned"),
+    splitModifier: legacyMove.splitModifier,
+  })
+
+  switch (move.id) {
+    case MoveEnum.MOVE_DOUBLE_IRON_BASH:
+    case MoveEnum.MOVE_TWINEEDLE:
+    case MoveEnum.MOVE_CROSS_POISON:
+    case MoveEnum.MOVE_DOUBLE_SHOCK:
+      move.hitCount = 2
+      break
+  }
+
+  if (hasFlag("FLAG_DMG_2X_IN_AIR")) {
+    move.hitsAir = HitsAir.DOUBLE_DAMAGE
+  } else if (hasFlag("FLAG_DMG_IN_AIR")) {
+    move.hitsAir = HitsAir.HITS
+  }
+
+  if (hasFlag("alwaysCrit")) {
+    move.crit = Crit.ALWAYS
+  } else if (hasFlag("FLAG_HIGH_CRIT")) {
+    move.crit = Crit.HIGH
+  }
+
+  switch (move.target) {
+    case MoveTarget.ALLY:
+    case MoveTarget.BOTH:
+    case MoveTarget.DEPENDS:
+    case MoveTarget.FOES_AND_ALLY:
+    case MoveTarget.RANDOM:
+    case MoveTarget.SELECTED:
+    case MoveTarget.USER_OR_SELECTED:
+    case MoveTarget.USER_OR_ALLY:
+      if (!hasFlag("FLAG_PROTECT_AFFECTED")) move.ignoresProtect = true
+  }
+
+  if (legacyMove.argument) {
+    const argumentWrapper = create(ArgumentSchema)
+    if (legacyMove.argument.startsWith("TYPE_")) {
+      argumentWrapper.argument = {
+        case: "type",
+        value: Type[legacyMove.argument.substring("TYPE_".length)]
+      }
+    } else if (legacyMove.argument.startsWith("STATUS1_")) {
+      argumentWrapper.argument = {
+        case: "status",
+        value: Status[legacyMove.argument]
+      }
+    } else if (legacyMove.argument.startsWith("MISC_EFFECT_")) {
+      argumentWrapper.argument = {
+        case: "misc",
+        value: MiscMoveEffect[legacyMove.argument]
+      }
+    } else if (legacyMove.argument.startsWith("MOVE_EFFECT_")) {
+      argumentWrapper.argument = {
+        case: "effect",
+        value: create(MoveEffectArgumentSchema, {
+          affectsUser: legacyMove.argument.includes("MOVE_EFFECT_AFFECTS_USER"),
+          certain: legacyMove.argument.includes("MOVE_EFFECT_CERTAIN"),
+          effect: BattleMoveEffect[legacyMove.argument.trimStart().split(" ")[0]]
+        })
+      }
+    } else if (!isNaN(parseInt(legacyMove.argument))) {
+      argumentWrapper.argument = {
+        case: "int",
+        value: parseInt(legacyMove.argument),
+      }
+    } else {
+      argumentWrapper.argument = {
+        case: "other",
+        value: legacyMove.argument
+      }
+    }
+    move.argument = argumentWrapper
+  }
+
+  return move
 }
 
 export function getMoves(ROOT_PRJ: string, optionsGlobal_h: FileDataOptions, gameData: GameData): Promise<void> {
