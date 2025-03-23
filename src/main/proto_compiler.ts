@@ -59,7 +59,7 @@ export function writeTextproto<T extends Message>(projectRoot: string, schema: G
     ${actualRoot}/proto/${protoName}.proto`
 
   const ret = execSync(command, { input: toBinary(schema, message) })
-  writeFileSync(`${actualRoot}/proto/${schema}.textproto`, `# proto-file: ${protoName}.proto\n# proto-message: er.${protoName}\n\n${ret}`)
+  writeFileSync(`${actualRoot}/proto/${protoName}.textproto`, `# proto-file: ${protoName}.proto\n# proto-message: er.${protoName}\n\n${ret}`)
 
 }
 
@@ -83,6 +83,6 @@ export function readAbilities(ROOT_PRJ: string): AbilityList {
   return readTextproto(ROOT_PRJ, AbilityListSchema, "AbilitiesList")
 }
 
-export function writeAbilities(ROOT_PRJ: string, abilitiesList: AbilityList) {
-  writeTextproto(ROOT_PRJ, AbilityListSchema, "AbilitiesList", abilitiesList)
+export function writeAbilities(ROOT_PRJ: string, abilityList: AbilityList) {
+  writeTextproto(ROOT_PRJ, AbilityListSchema, "AbilityList", abilityList)
 }
