@@ -1,13 +1,15 @@
-import { join } from "path"
+import { join, resolve } from "path"
 import { regexGrabNum, regexGrabStr, Xtox } from "../parse_utils"
 import { FileDataOptions, getFileData, getMulFilesData, autojoinFilePath } from "../utils"
 import { GameData } from "../main"
-import { ArgumentSchema, Crit, HitsAir, MiscMoveEffect, MoveEffectArgumentSchema, MoveSchema, MoveSplit, MoveTarget, Move as ProtoMove, SplitFlag, Status } from "../../gen/MoveList_pb.js"
+import { ArgumentSchema, Crit, HitsAir, is_flag, MiscMoveEffect, MoveEffectArgumentSchema, MoveSchema, MoveSplit, MoveTarget, Move as ProtoMove, SplitFlag, Status } from "../../gen/MoveList_pb.js"
 import { MoveEnum } from "../../gen/MoveEnum_pb.js"
 import { MoveEffect } from "../../gen/MoveEffect_pb.js"
-import { create } from "@bufbuild/protobuf"
+import { create, getOption } from "@bufbuild/protobuf"
 import { Type } from "../../gen/Types_pb.js"
 import { BattleMoveEffect } from "../../gen/BattleMoveEffect_pb.js"
+import { getUpdatedMoveEffectMapping, getUpdatedMoveMapping, readMoves } from "../../proto_compiler.js"
+import { enum_name, field_name } from "../../gen/Common_pb.js"
 
 interface Description {
   ptrDesc: string,
@@ -406,7 +408,51 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
   return move
 }
 
-export function getMoves(ROOT_PRJ: string, optionsGlobal_h: FileDataOptions, gameData: GameData): Promise<void> {
+function protoMoveToLegacyMove(move: ProtoMove, updatedMoveMapping: Map<MoveEnum, string>, updatedMoveEffectMapping: Map<MoveEffect, string>): [string, Move] {
+  const legacyMove: Move = {
+    NAME: updatedMoveMapping.get(move.id) || "MOVE_NONE",
+    name: move.name,
+    shortName: move.shortName,
+    effect: Xtox("EFFECT_", updatedMoveEffectMapping.get(move.effect) || "EFFECT_HIT"),
+    power: move.power,
+    types: (move.type2 ? [Type[move.type || 0] || "MYSTERY", Type[move.type2]] : [Type[move.type || 0] || "MYSTERY"]).map(it => Xtox("TYPE_", it)),
+    acc: move.accuracy,
+    pp: move.pp,
+    chance: move.effectChance,
+    target: MoveTarget[move.target || 0],
+    priority: move.priority,
+    flags: [],
+    split: MoveSplit[move.split || 0],
+    splitModifier: SplitFlag.USE_BASE_SPLIT,
+    argument: "",
+    desc: move.shortDescription,
+    descPtr: "PTRSHORT" + move.id,
+    longDesc: move.description,
+    longDescPtr: "PTRLONG" + move.id
+  }
+
+  for (const field of MoveSchema.fields) {
+    if (getOption(field, is_flag) && move[field.name]) {
+      if (field.enum) {
+        legacyMove.flags.push(getOption(field.enum.value[move[field.name]], enum_name))
+      } else {
+        legacyMove.flags.push(getOption(field, field_name))
+      }
+    }
+  }
+
+  return [legacyMove.NAME, legacyMove]
+}
+
+export function getMoves(ROOT_PRJ: string, gameData: GameData): Promise<void> {
+  gameData.moveList = readMoves(ROOT_PRJ)
+  const moveEnumMapping = getUpdatedMoveMapping(ROOT_PRJ)
+  const moveEffectMapping = getUpdatedMoveEffectMapping(ROOT_PRJ)
+  gameData.moves = new Map(gameData.moveList.moves.map(it => protoMoveToLegacyMove(it, moveEnumMapping, moveEffectMapping)))
+  return new Promise<void>((resolve: () => void, _) => { resolve() })
+}
+
+export function getLegacyMoves(ROOT_PRJ: string, optionsGlobal_h: FileDataOptions, gameData: GameData): Promise<void> {
   return new Promise((resolve: () => void, reject) => {
     getFileData(join(ROOT_PRJ, 'include/constants/battle_config.h'), optionsGlobal_h)
       .then((battle_config) => {
