@@ -21,6 +21,8 @@ import { MoveList, MoveListSchema } from '../gen/MoveList_pb.js';
 import { writeAbilities } from '../proto_compiler.js';
 import { AbilityList, AbilityListSchema, AbilitySchema } from '../gen/AbilityList_pb.js';
 import { AbilityEnum } from '../gen/AbilityEnum_pb.js';
+import { MoveEffect } from '../gen/MoveEffect_pb.js';
+import { BattleMoveEffect } from '../gen/BattleMoveEffect_pb.js';
 //import { comparify } from './comparify';
 
 export interface GameData {
@@ -47,7 +49,13 @@ const gameData: GameData = {
   abilities: new Map(),
   abilityList: create(AbilityListSchema),
   moves: new Map(),
-  moveList: create(MoveListSchema),
+  moveList: create(MoveListSchema, {
+    nonSheerForceEffect: Object.keys(Moves.sheerForceBannedEffects).map(it => MoveEffect[it]),
+    nonSheerForceMoveEffect: Object.keys(Moves.sheerForceBannedMoveEffects).map(it => BattleMoveEffect[it]),
+    flinchEffect: Object.keys(Moves.flinchEffects).map(it => MoveEffect[it]),
+    flinchMoveEffect: Object.keys(Moves.flinchMoveEffects).map(it => BattleMoveEffect[it]),
+    kingsRockBanned: Object.keys(Moves.kingsRockBanned).map(it => MoveEffect[it]),
+  }),
   locations: {} as Locations.Locations,
   trainers: new Map(),
   dataScripted: [],
@@ -103,7 +111,6 @@ function getGameDataData(webContents: Electron.WebContents) {
       //promiseArray.push()
       Promise.allSettled(promiseArray)
         .then((values) => {
-          // readMoves(ROOT_PRJ)
           // const moves = [...gameData.moves.values()].map(it => Moves.convertLegacyMove(it))
           // gameData.moveList.moves.push(...moves)
           // writeMoves(ROOT_PRJ, gameData.moveList)

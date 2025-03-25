@@ -4,12 +4,84 @@ import { FileDataOptions, getFileData, getMulFilesData, autojoinFilePath } from 
 import { GameData } from "../main"
 import { ArgumentSchema, Crit, HitsAir, is_flag, MiscMoveEffect, MoveEffectArgumentSchema, MoveSchema, MoveSplit, MoveTarget, Move as ProtoMove, SplitFlag, Status } from "../../gen/MoveList_pb.js"
 import { MoveEnum } from "../../gen/MoveEnum_pb.js"
-import { MoveEffect } from "../../gen/MoveEffect_pb.js"
+import { MoveEffect, MoveEffectSchema } from "../../gen/MoveEffect_pb.js"
 import { create, getOption } from "@bufbuild/protobuf"
 import { Type } from "../../gen/Types_pb.js"
-import { BattleMoveEffect } from "../../gen/BattleMoveEffect_pb.js"
+import { BattleMoveEffect, BattleMoveEffectSchema } from "../../gen/BattleMoveEffect_pb.js"
 import { getUpdatedMoveEffectMapping, getUpdatedMoveMapping, readMoves } from "../../proto_compiler.js"
 import { enum_name, field_name } from "../../gen/Common_pb.js"
+
+export const sheerForceBannedEffects = {
+  "EFFECT_PAY_DAY": true,
+  "EFFECT_TRAP": true,
+  "EFFECT_RAMPAGE": true,
+  "EFFECT_STEALTH_ROCK_HIT": true,
+  "EFFECT_SMACK_DOWN": true,
+  "EFFECT_OVERHEAT": true,
+  "EFFECT_CLOSE_COMBAT": true,
+  "EFFECT_CLEAR_SMOG": true,
+  "EFFECT_INCINERATE": true,
+  "EFFECT_KNOCK_OFF": true,
+  "EFFECT_THIEF": true,
+  "EFFECT_NIGHTMARE": true,
+  "EFFECT_CREEPING_THORNS_HIT": true,
+  "EFFECT_WAKE_UP_SLAP": true,
+  "EFFECT_HAMMER_ARM": true,
+  "EFFECT_FEINT": true,
+  "EFFECT_BUG_BITE": true,
+  "EFFECT_FLING": true,
+  "EFFECT_FLAME_BURST": true,
+  "EFFECT_V_CREATE": true,
+  "EFFECT_HIT_PREVENT_ESCAPE": true,
+  "EFFECT_HYPERSPACE_FURY": true,
+  "EFFECT_BURN_UP": true,
+  "EFFECT_SPECTRAL_THIEF": true,
+  "EFFECT_CORROSIVE_GAS": true,
+  "EFFECT_STICKY_WEB_HIT": true,
+  "EFFECT_REMOVE_TERRAIN_NO_FAIL": true,
+  "EFFECT_MISC_HIT": true,
+  "EFFECT_SPIKE_HIT": true,
+  "EFFECT_TREPIDATION": true,
+  "EFFECT_PLACEHOLDER": true,
+}
+
+export const sheerForceBannedMoveEffects = {
+  "MOVE_EFFECT_FEINT": true,
+  "MOVE_EFFECT_WATER_PLEDGE": true,
+  "MOVE_EFFECT_FIRE_PLEDGE": true,
+  "MOVE_EFFECT_GRASS_PLEDGE": true,
+  "MOVE_EFFECT_SCALE_SHOT": true,
+  "MOVE_EFFECT_WYRM_WIND": true,
+  "MOVE_EFFECT_GLAIVE_RUSH": true,
+  "MOVE_EFFECT_SALT_CURE": true,
+  "MOVE_EFFECT_PREVENT_ESCAPE": true,
+}
+export const flinchEffects = {
+  "EFFECT_FLINCH_HIT": true,
+  "EFFECT_TWISTER": true,
+  "EFFECT_TRIPLE_ARROWS": true,
+  "EFFECT_FAKE_OUT": true,
+  "EFFECT_FLINCH_MINIMIZE_HIT": true,
+  "EFFECT_FLINCH_STATUS": true,
+  "EFFECT_FLINCH_RECOIL_33": true,
+  "EFFECT_FLINCH_RECOIL_50": true,
+  "EFFECT_SNORE": true,
+}
+
+export const kingsRockBanned = {
+  "EFFECT_COUNTER": true,
+  "EFFECT_MIRROR_COAT": true,
+  "EFFECT_FUTURE_SIGHT": true,
+  "EFFECT_NATURAL_GIFT": true,
+  "EFFECT_METAL_BURST": true,
+  "EFFECT_FLING": true,
+  "EFFECT_UPPER_HAND": true,
+  "EFFECT_PLACEHOLDER": true,
+}
+
+export const flinchMoveEffects = {
+  "MOVE_EFFECT_FLINCH": true,
+}
 
 interface Description {
   ptrDesc: string,
@@ -134,7 +206,7 @@ const stageBattleMovesExecutionMap: { [key: string]: (line: string, context: Con
     } else if (line.match('.split')) {
       context.currMove.split = regexGrabStr(line, /(?<==)\w+/).replace(/^SPLIT_/, '')
     } else if (line.match('.argument')) {
-      context.currMove.argument = regexGrabStr(line, /(?<==)\w+/)
+      context.currMove.argument = regexGrabStr(line, /(?<==)\w+(\s*\|\s*\w+)*/)
     } else if (line.match(/\.\w+=TRUE/)) {
       context.currMove.flags.push(regexGrabStr(line, /(?<=\.)\w+/))
     } else if (line.match(/};/)) {
@@ -278,7 +350,7 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
     shortName: legacyMove.shortName,
     description: legacyMove.desc,
     shortDescription: legacyMove.desc,
-    effect: MoveEffect["EFFECT_" + legacyMove.effect.replace(" ", "_").toUpperCase()],
+    effect: MoveEffect["EFFECT_" + legacyMove.effect.replace(" ", "_").replace(" ", "_").replace(" ", "_").replace(" ", "_").toUpperCase()],
     split: MoveSplit[legacyMove.split],
     type: Type[legacyMove.types[0].toUpperCase()],
     type2: (legacyMove.types.length > 1) ? Type[legacyMove.types[1].toUpperCase()] : Type.NONE,
@@ -301,7 +373,6 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
     noKingsRock: !hasFlag("FLAG_KINGS_ROCK_AFFECTED") && legacyMove.split !== "STATUS",
     reckless: hasFlag("FLAG_RECKLESS_BOOST"),
     ironFist: hasFlag("FLAG_IRON_FIST_BOOST"),
-    noSheerForce: !hasFlag("FLAG_SHEER_FORCE_BOOST") && legacyMove.split !== "STATUS" && legacyMove.chance > 0,
     strongJaw: hasFlag("FLAG_STRONG_JAW_BOOST"),
     megaLauncher: hasFlag("FLAG_MEGA_LAUNCHER_BOOST"),
     striker: hasFlag("FLAG_STRIKER_BOOST"),
@@ -331,6 +402,8 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
     mimicBanned: hasFlag("mimicBanned"),
     splitModifier: legacyMove.splitModifier,
   })
+
+  if (!move.effect && legacyMove.effect !== "Hit") console.log(legacyMove.effect)
 
   switch (move.id) {
     case MoveEnum.MOVE_DOUBLE_IRON_BASH:
@@ -388,7 +461,7 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
         value: create(MoveEffectArgumentSchema, {
           affectsUser: legacyMove.argument.includes("MOVE_EFFECT_AFFECTS_USER"),
           certain: legacyMove.argument.includes("MOVE_EFFECT_CERTAIN"),
-          effect: BattleMoveEffect[legacyMove.argument.trimStart().split(" ")[0]]
+          effect: BattleMoveEffect[legacyMove.argument.trimStart().split("|")[0]]
         })
       }
     } else if (!isNaN(parseInt(legacyMove.argument))) {
@@ -404,6 +477,26 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
     }
     move.argument = argumentWrapper
   }
+
+  if (move.name === "Overheat") {
+    console.log(MoveEffectSchema.value[move.effect].name, move.effect)
+  }
+
+  let noSheerForce = !hasFlag("FLAG_SHEER_FORCE_BOOST") && legacyMove.split !== "STATUS" && legacyMove.chance > 0 && !sheerForceBannedEffects[MoveEffectSchema.value[move.effect].name]
+
+  if (noSheerForce && !(move.argument?.argument.case === "effect" && sheerForceBannedMoveEffects[BattleMoveEffectSchema.value[move.argument.argument.value.effect].name])) {
+    move.noSheerForce = true
+  }
+
+  if (move.noKingsRock && move.effectChance) {
+    if (flinchEffects[MoveEffectSchema.value[move.effect].name]) {
+      move.noKingsRock = false
+    } else if (move.argument?.argument.case === "effect" && flinchMoveEffects[BattleMoveEffectSchema.value[move.argument.argument.value.effect].name]) {
+      move.noKingsRock = false
+    }
+  }
+
+  if (move.noKingsRock && kingsRockBanned[MoveEffectSchema.value[move.effect].name]) move.noKingsRock = false
 
   return move
 }
