@@ -1,4 +1,4 @@
-import { join, resolve } from "path"
+import { join } from "path"
 import { regexGrabNum, regexGrabStr, Xtox } from "../parse_utils"
 import { FileDataOptions, getFileData, getMulFilesData, autojoinFilePath } from "../utils"
 import { GameData } from "../main"

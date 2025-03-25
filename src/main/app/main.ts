@@ -18,7 +18,7 @@ import { getTutorTMHMList } from './moves/list_tutor_tmhm';
 import { getTrainerOrder } from './trainers/trainer_ordering';
 import { create } from '@bufbuild/protobuf';
 import { MoveList, MoveListSchema } from '../gen/MoveList_pb.js';
-import { readMoves, writeAbilities, writeMoves } from '../proto_compiler.js';
+import { writeAbilities } from '../proto_compiler.js';
 import { AbilityList, AbilityListSchema, AbilitySchema } from '../gen/AbilityList_pb.js';
 import { AbilityEnum } from '../gen/AbilityEnum_pb.js';
 //import { comparify } from './comparify';
