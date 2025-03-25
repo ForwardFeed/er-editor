@@ -18,7 +18,7 @@ import { getTutorTMHMList } from './moves/list_tutor_tmhm';
 import { getTrainerOrder } from './trainers/trainer_ordering';
 import { create } from '@bufbuild/protobuf';
 import { MoveList, MoveListSchema } from '../gen/MoveList_pb.js';
-import { writeAbilities, writeMoves } from '../proto_compiler.js';
+import { getUpdatedMoveMapping, readMoves, writeAbilities, writeMoves } from '../proto_compiler.js';
 import { AbilityList, AbilityListSchema, AbilitySchema } from '../gen/AbilityList_pb.js';
 import { AbilityEnum } from '../gen/AbilityEnum_pb.js';
 //import { comparify } from './comparify';
@@ -103,6 +103,8 @@ function getGameDataData(webContents: Electron.WebContents) {
       //promiseArray.push()
       Promise.allSettled(promiseArray)
         .then((values) => {
+          readMoves(ROOT_PRJ)
+          console.log(getUpdatedMoveMapping(ROOT_PRJ))
           const moves = [...gameData.moves.values()].map(it => Moves.convertLegacyMove(it))
           gameData.moveList.moves.push(...moves)
           writeMoves(ROOT_PRJ, gameData.moveList)

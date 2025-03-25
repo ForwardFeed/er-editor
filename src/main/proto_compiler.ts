@@ -1,6 +1,6 @@
 
 import { execSync } from 'child_process';
-import { existsSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { configuration } from './app/configuration';
 import { platform } from 'os';
 import { SpeciesList, SpeciesListSchema } from './gen/SpeciesList_pb.js'
@@ -8,6 +8,9 @@ import { fromBinary, Message, toBinary } from '@bufbuild/protobuf';
 import { GenMessage } from '@bufbuild/protobuf/codegenv1';
 import { MoveList, MoveListSchema } from './gen/MoveList_pb.js';
 import { AbilityList, AbilityListSchema } from './gen/AbilityList_pb.js';
+import { DescriptorProto, EnumDescriptorProto, FileDescriptorProto, FileDescriptorSetSchema } from '@bufbuild/protobuf/wkt';
+import { MoveEnum, MoveEnumSchema } from './gen/MoveEnum_pb.js';
+import type { GenEnum } from "@bufbuild/protobuf/codegenv1";
 
 function protocLocation() {
   switch (platform()) {
@@ -46,7 +49,64 @@ export function readTextproto<T extends Message>(projectRoot: string, schema: Ge
 
   console.log(command)
   const ret = execSync(command)
+
   return fromBinary(schema, ret)
+}
+
+function getUpdatedEnumMapping<T extends number>(projectRoot: String, enumSchema: GenEnum<T>): Map<T, string> {
+  const actualRoot = projectRoot || configuration.project_root
+
+  const protoName = enumSchema.file.name
+
+  const command = `${protocLocation()}
+    ${actualRoot}/proto/${protoName}.proto
+    --proto_path=${actualRoot}/proto
+    --java_out=${actualRoot}/tools/codegen/src
+    --descriptor_set_out=${actualRoot}/tools/codegen/timestamp/depsets/${protoName}.proto
+    --experimental_allow_proto3_optional`
+
+  execSync(command)
+
+  const enumName = enumSchema.typeName
+
+  const descriptor = fromBinary(FileDescriptorSetSchema, readFileSync(`${actualRoot}/tools/codegen/timestamp/depsets/${protoName}.proto`))
+  descriptor.file.filter(it => enumName.startsWith(it.package))
+
+  function findEnumInMessage(message: DescriptorProto, path: string): EnumDescriptorProto | undefined {
+    console.log("DescriptorProto: ", message.name, path)
+    if (!path.startsWith(message.name + ".")) return
+    const newPath = path.substring((message.name + ".").length)
+    if (newPath.length <= 0) return
+    for (const enumType of message.enumType) {
+      if (enumType.name === newPath) return enumType
+    }
+    for (const messageType of message.nestedType) {
+      const enumType = findEnumInMessage(messageType, newPath)
+      if (enumType) return enumType
+    }
+    return
+  }
+
+  function findEnumInFile(file: FileDescriptorProto): EnumDescriptorProto | undefined {
+    if (!enumName.startsWith(file.package + ".")) return
+    const path = enumName.substring((file.package + ".").length)
+    if (path.length <= 0) return
+    for (const enumType of file.enumType) {
+      if (enumType.name === path) return enumType
+    }
+    for (const messageType of file.messageType) {
+      const enumType = findEnumInMessage(messageType, path)
+      if (enumType) return enumType
+    }
+    return
+  }
+
+  const enumDesc = descriptor.file.reduce<EnumDescriptorProto | undefined>((acc, fileDesc) => acc || findEnumInFile(fileDesc), undefined)
+
+  if (!enumDesc) throw `Could not find enum ${enumName} in proto ${protoName}`
+
+  const values = enumDesc.value.map<[T, string]>(it => [it.number as T, it.name]);
+  return new Map(values)
 }
 
 export function writeTextproto<T extends Message>(projectRoot: string, schema: GenMessage<T>, protoName: string, message: T) {
@@ -77,6 +137,10 @@ export function readMoves(ROOT_PRJ: string): MoveList {
 
 export function writeMoves(ROOT_PRJ: string, movesList: MoveList) {
   writeTextproto(ROOT_PRJ, MoveListSchema, "MoveList", movesList)
+}
+
+export function getUpdatedMoveMapping(ROOT_PRJ: string): Map<MoveEnum, string> {
+  return getUpdatedEnumMapping(ROOT_PRJ, MoveEnumSchema)
 }
 
 export function readAbilities(ROOT_PRJ: string): AbilityList {
