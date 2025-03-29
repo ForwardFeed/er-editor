@@ -4,12 +4,12 @@ import { FileDataOptions, getFileData, getMulFilesData, autojoinFilePath } from 
 import { GameData } from "../main"
 import { ArgumentSchema, Crit, HitsAir, is_flag, MiscMoveEffect, MoveEffectArgumentSchema, MoveSchema, MoveSplit, MoveTarget, Move as ProtoMove, SplitFlag, Status } from "../../gen/MoveList_pb.js"
 import { MoveEnum } from "../../gen/MoveEnum_pb.js"
-import { MoveEffect, MoveEffectSchema } from "../../gen/MoveEffect_pb.js"
 import { create, getOption } from "@bufbuild/protobuf"
 import { Type } from "../../gen/Types_pb.js"
 import { BattleMoveEffect, BattleMoveEffectSchema } from "../../gen/BattleMoveEffect_pb.js"
 import { getUpdatedMoveEffectMapping, getUpdatedMoveMapping, readMoves } from "../../proto_compiler.js"
 import { enum_name, field_name } from "../../gen/Common_pb.js"
+import { MoveBehavior, MoveBehaviorSchema } from "../../gen/MoveBehavior_pb.js"
 
 export const sheerForceBannedEffects = {
   "EFFECT_PAY_DAY": true,
@@ -348,9 +348,9 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
     id: MoveEnum[legacyMove.NAME],
     name: legacyMove.name,
     shortName: legacyMove.shortName,
-    description: legacyMove.desc,
+    description: legacyMove.longDesc,
     shortDescription: legacyMove.desc,
-    effect: MoveEffect["EFFECT_" + legacyMove.effect.replace(" ", "_").replace(" ", "_").replace(" ", "_").replace(" ", "_").toUpperCase()],
+    effect: MoveBehavior["EFFECT_" + legacyMove.effect.replace(" ", "_").replace(" ", "_").replace(" ", "_").replace(" ", "_").toUpperCase()],
     split: MoveSplit[legacyMove.split],
     type: Type[legacyMove.types[0].toUpperCase()],
     type2: (legacyMove.types.length > 1) ? Type[legacyMove.types[1].toUpperCase()] : Type.NONE,
@@ -479,29 +479,31 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
   }
 
   if (move.name === "Overheat") {
-    console.log(MoveEffectSchema.value[move.effect].name, move.effect)
+    console.log(MoveBehaviorSchema.value[move.effect].name, move.effect)
   }
 
-  let noSheerForce = !hasFlag("FLAG_SHEER_FORCE_BOOST") && legacyMove.split !== "STATUS" && legacyMove.chance > 0 && !sheerForceBannedEffects[MoveEffectSchema.value[move.effect].name]
+  let noSheerForce = !hasFlag("FLAG_SHEER_FORCE_BOOST") && legacyMove.split !== "STATUS" && legacyMove.chance > 0 && !sheerForceBannedEffects[MoveBehaviorSchema.value[move.effect].name]
 
   if (noSheerForce && !(move.argument?.argument.case === "effect" && sheerForceBannedMoveEffects[BattleMoveEffectSchema.value[move.argument.argument.value.effect].name])) {
     move.noSheerForce = true
   }
 
   if (move.noKingsRock && move.effectChance) {
-    if (flinchEffects[MoveEffectSchema.value[move.effect].name]) {
+    if (flinchEffects[MoveBehaviorSchema.value[move.effect].name]) {
       move.noKingsRock = false
     } else if (move.argument?.argument.case === "effect" && flinchMoveEffects[BattleMoveEffectSchema.value[move.argument.argument.value.effect].name]) {
       move.noKingsRock = false
     }
   }
 
-  if (move.noKingsRock && kingsRockBanned[MoveEffectSchema.value[move.effect].name]) move.noKingsRock = false
+  if (move.noKingsRock && kingsRockBanned[MoveBehaviorSchema.value[move.effect].name]) move.noKingsRock = false
+
+  if (move.name.length < 13 && move.id) move.shortName = move.name
 
   return move
 }
 
-function protoMoveToLegacyMove(move: ProtoMove, updatedMoveMapping: Map<MoveEnum, string>, updatedMoveEffectMapping: Map<MoveEffect, string>): [string, Move] {
+function protoMoveToLegacyMove(move: ProtoMove, updatedMoveMapping: Map<MoveEnum, string>, updatedMoveEffectMapping: Map<MoveBehavior, string>): [string, Move] {
   const legacyMove: Move = {
     NAME: updatedMoveMapping.get(move.id) || "MOVE_NONE",
     name: move.name,

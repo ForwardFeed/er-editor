@@ -11,7 +11,7 @@ import { AbilityList, AbilityListSchema } from './gen/AbilityList_pb.js';
 import { DescriptorProto, EnumDescriptorProto, FileDescriptorProto, FileDescriptorSetSchema } from '@bufbuild/protobuf/wkt';
 import { MoveEnum, MoveEnumSchema } from './gen/MoveEnum_pb.js';
 import type { GenEnum } from "@bufbuild/protobuf/codegenv1";
-import { MoveEffect, MoveEffectSchema } from './gen/MoveEffect_pb.js';
+import { MoveBehavior, MoveBehaviorSchema } from './gen/MoveBehavior_pb.js';
 
 function protocLocation() {
   switch (platform()) {
@@ -143,8 +143,8 @@ export function getUpdatedMoveMapping(ROOT_PRJ: string): Map<MoveEnum, string> {
   return getUpdatedEnumMapping(ROOT_PRJ, MoveEnumSchema)
 }
 
-export function getUpdatedMoveEffectMapping(ROOT_PRJ: string): Map<MoveEffect, string> {
-  return getUpdatedEnumMapping(ROOT_PRJ, MoveEffectSchema)
+export function getUpdatedMoveEffectMapping(ROOT_PRJ: string): Map<MoveBehavior, string> {
+  return getUpdatedEnumMapping(ROOT_PRJ, MoveBehaviorSchema)
 }
 
 export function readAbilities(ROOT_PRJ: string): AbilityList {
