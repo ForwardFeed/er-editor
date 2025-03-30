@@ -2,14 +2,13 @@ import { join } from "path"
 import { regexGrabNum, regexGrabStr, Xtox } from "../parse_utils"
 import { FileDataOptions, getFileData, getMulFilesData, autojoinFilePath } from "../utils"
 import { GameData } from "../main"
-import { ArgumentSchema, Crit, HitsAir, is_flag, MiscMoveEffect, MoveEffectArgumentSchema, MoveSchema, MoveSplit, MoveTarget, Move as ProtoMove, SplitFlag, Status } from "../../gen/MoveList_pb.js"
+import { ArgumentSchema, Crit, enum_name, field_name, HitsAir, is_flag, MiscMoveEffect, MoveEffectArgumentSchema, MoveSchema, MoveSplit, MoveTarget, Move as ProtoMove, SplitFlag, Status } from "../../gen/MoveList_pb.js"
 import { MoveEnum } from "../../gen/MoveEnum_pb.js"
 import { create, getOption } from "@bufbuild/protobuf"
 import { Type } from "../../gen/Types_pb.js"
-import { BattleMoveEffect, BattleMoveEffectSchema } from "../../gen/BattleMoveEffect_pb.js"
 import { getUpdatedMoveEffectMapping, getUpdatedMoveMapping, readMoves } from "../../proto_compiler.js"
-import { enum_name, field_name } from "../../gen/Common_pb.js"
 import { MoveBehavior, MoveBehaviorSchema } from "../../gen/MoveBehavior_pb.js"
+import { MoveEffectSchema } from "../../gen/MoveEffect_pb.js"
 
 export const sheerForceBannedEffects = {
   "EFFECT_PAY_DAY": true,
@@ -461,7 +460,7 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
         value: create(MoveEffectArgumentSchema, {
           affectsUser: legacyMove.argument.includes("MOVE_EFFECT_AFFECTS_USER"),
           certain: legacyMove.argument.includes("MOVE_EFFECT_CERTAIN"),
-          effect: BattleMoveEffect[legacyMove.argument.trimStart().split("|")[0]]
+          effect: MoveBehavior[legacyMove.argument.trimStart().split("|")[0]]
         })
       }
     } else if (!isNaN(parseInt(legacyMove.argument))) {
@@ -484,14 +483,14 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
 
   let noSheerForce = !hasFlag("FLAG_SHEER_FORCE_BOOST") && legacyMove.split !== "STATUS" && legacyMove.chance > 0 && !sheerForceBannedEffects[MoveBehaviorSchema.value[move.effect].name]
 
-  if (noSheerForce && !(move.argument?.argument.case === "effect" && sheerForceBannedMoveEffects[BattleMoveEffectSchema.value[move.argument.argument.value.effect].name])) {
+  if (noSheerForce && !(move.argument?.argument.case === "effect" && sheerForceBannedMoveEffects[MoveEffectSchema.value[move.argument.argument.value.effect].name])) {
     move.noSheerForce = true
   }
 
   if (move.noKingsRock && move.effectChance) {
     if (flinchEffects[MoveBehaviorSchema.value[move.effect].name]) {
       move.noKingsRock = false
-    } else if (move.argument?.argument.case === "effect" && flinchMoveEffects[BattleMoveEffectSchema.value[move.argument.argument.value.effect].name]) {
+    } else if (move.argument?.argument.case === "effect" && flinchMoveEffects[MoveEffectSchema.value[move.argument.argument.value.effect].name]) {
       move.noKingsRock = false
     }
   }
