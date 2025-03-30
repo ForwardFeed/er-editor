@@ -18,9 +18,7 @@ import { getTutorTMHMList } from './moves/list_tutor_tmhm';
 import { getTrainerOrder } from './trainers/trainer_ordering';
 import { create } from '@bufbuild/protobuf';
 import { MoveList, MoveListSchema } from '../gen/MoveList_pb.js';
-import { writeAbilities } from '../proto_compiler.js';
-import { AbilityList, AbilityListSchema, AbilitySchema } from '../gen/AbilityList_pb.js';
-import { AbilityEnum } from '../gen/AbilityEnum_pb.js';
+import { AbilityList, AbilityListSchema } from '../gen/AbilityList_pb.js';
 //import { comparify } from './comparify';
 
 export interface GameData {
@@ -107,13 +105,13 @@ function getGameDataData(webContents: Electron.WebContents) {
           // gameData.moveList.moves.push(...moves)
           // writeMoves(ROOT_PRJ, gameData.moveList)
 
-          const abilities = [...gameData.abilities.values()].map(it => create(AbilitySchema, {
-            id: AbilityEnum[it.NAME],
-            name: it.name,
-            description: it.desc,
-          }))
-          gameData.abilityList.ability.push(...abilities)
-          writeAbilities(ROOT_PRJ, gameData.abilityList)
+          // const abilities = [...gameData.abilities.values()].map(it => create(AbilitySchema, {
+          //   id: AbilityEnum[it.NAME],
+          //   name: it.name,
+          //   description: it.desc,
+          // }))
+          // gameData.abilityList.ability.push(...abilities)
+          // writeAbilities(ROOT_PRJ, gameData.abilityList)
 
           values.map((x) => {
             if (x.status !== "fulfilled") {
