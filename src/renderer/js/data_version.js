@@ -22,34 +22,34 @@ export function setupProtoCompilerCheck() {
 }
 
 let rootPrj = ""
-export function setupGameDataRetrieving(){
-    bridge.receive('game-data', function(data){
-        // bridge.send('exec-protoc', rootPrj) // this is to execute the protoc
-        gameData = data
-        window.gameData = data
-        try{
-            hydrate()
-        }
-        catch(e){
-            console.error('fail while hydrating', e)
-        }
-
-    })
-    bridge.receive('no-game-data', function(){
-        bridge.send('ask-for-folder')
-    })
-    bridge.receive('ok-folder', function(pRootPrj){
-        // saving because i need to give it to the proto compiler after
-        rootPrj = pRootPrj
-        bridge.send('get-game-data')
-    })
-
-    const DEBUG_NO_FETCH = false
-    if (DEBUG_NO_FETCH){
-        fetchFromJSONFile()
-    } else {
-        bridge.send('get-game-data')
+export function setupGameDataRetrieving() {
+  bridge.receive('game-data', function (data) {
+    // bridge.send('exec-protoc', rootPrj) // this is to execute the protoc
+    gameData = data
+    window.gameData = data
+    try {
+      hydrate()
     }
+    catch (e) {
+      console.error('fail while hydrating', e)
+    }
+
+  })
+  bridge.receive('no-game-data', function () {
+    bridge.send('ask-for-folder')
+  })
+  bridge.receive('ok-folder', function (pRootPrj) {
+    // saving because i need to give it to the proto compiler after
+    rootPrj = pRootPrj
+    bridge.send('get-game-data')
+  })
+
+  const DEBUG_NO_FETCH = false
+  if (DEBUG_NO_FETCH) {
+    fetchFromJSONFile()
+  } else {
+    bridge.send('get-game-data')
+  }
 }
 
 function fetchFromJSONFile() {
