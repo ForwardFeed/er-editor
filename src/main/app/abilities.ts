@@ -1,3 +1,6 @@
+import { AbilityEnum } from "../gen/AbilityEnum_pb.js"
+import { Ability as ProtoAbility } from "../gen/AbilityList_pb.js"
+import { getUpdatedAbilityMapping, readAbilities } from "../proto_compiler.js"
 import { GameData } from "./main"
 import { regexGrabStr } from "./parse_utils"
 import { FileDataOptions, getMulFilesData, autojoinFilePath } from "./utils"
@@ -83,7 +86,22 @@ function parse(fileData: string): Map<string, Ability> {
   return context.abilities
 }
 
-export function getAbilities(ROOT_PRJ: string, optionsGlobal_h: FileDataOptions, gameData: GameData): Promise<void> {
+function protoAbilityToLegacyAbility(ability: ProtoAbility, enumMapping: Map<AbilityEnum, string>): [string, Ability] {
+  const legacyAbility: Ability = {
+    name: ability.name,
+    NAME: enumMapping.get(ability.id) || "ABILITY_NONE",
+    desc: ability.description,
+  }
+  return [legacyAbility.NAME, legacyAbility]
+}
+
+export function getAbilities(ROOT_PRJ: string, gameData: GameData) {
+  gameData.abilityList = readAbilities(ROOT_PRJ)
+  const updatedAbilityMapping = getUpdatedAbilityMapping(ROOT_PRJ)
+  gameData.abilities = new Map(gameData.abilityList.ability.map(it => protoAbilityToLegacyAbility(it, updatedAbilityMapping)))
+}
+
+export function getLegacyAbilities(ROOT_PRJ: string, optionsGlobal_h: FileDataOptions, gameData: GameData): Promise<void> {
   return new Promise((resolve: () => void, reject) => {
     getMulFilesData(autojoinFilePath(ROOT_PRJ, ['src/data/text/abilities.h',
     ]), optionsGlobal_h)

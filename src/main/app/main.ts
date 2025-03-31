@@ -87,8 +87,8 @@ function getGameDataData(webContents: Electron.WebContents) {
       }
       const promiseArray: Array<Promise<unknown>> = []
       promiseArray.push(Species.getSpecies(ROOT_PRJ, optionsGlobal_h, gameData))
-      promiseArray.push(Moves.getMoves(ROOT_PRJ, gameData))
-      promiseArray.push(Abilities.getAbilities(ROOT_PRJ, optionsGlobal_h, gameData))
+      Moves.getMoves(ROOT_PRJ, gameData)
+      Abilities.getAbilities(ROOT_PRJ, gameData)
       promiseArray.push(Locations.getLocations(ROOT_PRJ, gameData))
       promiseArray.push(Trainers.getTrainers(ROOT_PRJ, gameData))
       promiseArray.push(ScriptedData.parse(ROOT_PRJ, gameData))
@@ -101,18 +101,6 @@ function getGameDataData(webContents: Electron.WebContents) {
       //promiseArray.push()
       Promise.allSettled(promiseArray)
         .then((values) => {
-          // const moves = [...gameData.moves.values()].map(it => Moves.convertLegacyMove(it))
-          // gameData.moveList.moves.push(...moves)
-          // writeMoves(ROOT_PRJ, gameData.moveList)
-
-          // const abilities = [...gameData.abilities.values()].map(it => create(AbilitySchema, {
-          //   id: AbilityEnum[it.NAME],
-          //   name: it.name,
-          //   description: it.desc,
-          // }))
-          // gameData.abilityList.ability.push(...abilities)
-          // writeAbilities(ROOT_PRJ, gameData.abilityList)
-
           values.map((x) => {
             if (x.status !== "fulfilled") {
               console.error(`Something went wrong parsing the data: ${x.reason}`)

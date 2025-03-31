@@ -12,6 +12,7 @@ import { DescriptorProto, EnumDescriptorProto, FileDescriptorProto, FileDescript
 import { MoveEnum, MoveEnumSchema } from './gen/MoveEnum_pb.js';
 import type { GenEnum } from "@bufbuild/protobuf/codegenv1";
 import { MoveBehavior, MoveBehaviorSchema } from './gen/MoveBehavior_pb.js';
+import { AbilityEnum, AbilityEnumSchema } from './gen/AbilityEnum_pb.js';
 
 function protocLocation() {
   switch (platform()) {
@@ -38,8 +39,10 @@ export function canRunProto(): string {
   return versionBeingUsed
 }
 
-export function readTextproto<T extends Message>(projectRoot: string, schema: GenMessage<T>, protoName: string): T {
+export function readTextproto<T extends Message>(projectRoot: string, schema: GenMessage<T>): T {
   const actualRoot = projectRoot || configuration.project_root
+
+  const protoName = schema.name
 
   const command = `${protocLocation()} \
     --encode=er.${protoName} \
@@ -109,8 +112,10 @@ function getUpdatedEnumMapping<T extends number>(projectRoot: String, enumSchema
   return new Map(values)
 }
 
-export function writeTextproto<T extends Message>(projectRoot: string, schema: GenMessage<T>, protoName: string, message: T) {
+export function writeTextproto<T extends Message>(projectRoot: string, schema: GenMessage<T>, message: T) {
   const actualRoot = projectRoot || configuration.project_root
+
+  const protoName = schema.name
 
   const command = `${protocLocation()} \
     --decode=er.${protoName} \
@@ -124,19 +129,19 @@ export function writeTextproto<T extends Message>(projectRoot: string, schema: G
 }
 
 export function readSpecies(ROOT_PRJ: string): SpeciesList {
-  return readTextproto(ROOT_PRJ, SpeciesListSchema, "SpeciesList")
+  return readTextproto(ROOT_PRJ, SpeciesListSchema)
 }
 
 export function writeSpecies(ROOT_PRJ: string, speciesList: SpeciesList) {
-  writeTextproto(ROOT_PRJ, SpeciesListSchema, "SpeciesList", speciesList)
+  writeTextproto(ROOT_PRJ, SpeciesListSchema, speciesList)
 }
 
 export function readMoves(ROOT_PRJ: string): MoveList {
-  return readTextproto(ROOT_PRJ, MoveListSchema, "MoveList")
+  return readTextproto(ROOT_PRJ, MoveListSchema)
 }
 
 export function writeMoves(ROOT_PRJ: string, movesList: MoveList) {
-  writeTextproto(ROOT_PRJ, MoveListSchema, "MoveList", movesList)
+  writeTextproto(ROOT_PRJ, MoveListSchema, movesList)
 }
 
 export function getUpdatedMoveMapping(ROOT_PRJ: string): Map<MoveEnum, string> {
@@ -147,10 +152,14 @@ export function getUpdatedMoveEffectMapping(ROOT_PRJ: string): Map<MoveBehavior,
   return getUpdatedEnumMapping(ROOT_PRJ, MoveBehaviorSchema)
 }
 
+export function getUpdatedAbilityMapping(ROOT_PRJ: string): Map<AbilityEnum, string> {
+  return getUpdatedEnumMapping(ROOT_PRJ, AbilityEnumSchema)
+}
+
 export function readAbilities(ROOT_PRJ: string): AbilityList {
-  return readTextproto(ROOT_PRJ, AbilityListSchema, "AbilitiesList")
+  return readTextproto(ROOT_PRJ, AbilityListSchema)
 }
 
 export function writeAbilities(ROOT_PRJ: string, abilityList: AbilityList) {
-  writeTextproto(ROOT_PRJ, AbilityListSchema, "AbilityList", abilityList)
+  writeTextproto(ROOT_PRJ, AbilityListSchema, abilityList)
 }
