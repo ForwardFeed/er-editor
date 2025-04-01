@@ -13,6 +13,7 @@ import { MoveEnum, MoveEnumSchema } from './gen/MoveEnum_pb.js';
 import type { GenEnum } from "@bufbuild/protobuf/codegenv1";
 import { MoveBehavior, MoveBehaviorSchema } from './gen/MoveBehavior_pb.js';
 import { AbilityEnum, AbilityEnumSchema } from './gen/AbilityEnum_pb.js';
+import { SpeciesEnum, SpeciesEnumSchema } from './gen/SpeciesEnum_pb.js';
 
 function protocLocation() {
   switch (platform()) {
@@ -154,6 +155,10 @@ export function getUpdatedMoveEffectMapping(ROOT_PRJ: string): Map<MoveBehavior,
 
 export function getUpdatedAbilityMapping(ROOT_PRJ: string): Map<AbilityEnum, string> {
   return getUpdatedEnumMapping(ROOT_PRJ, AbilityEnumSchema)
+}
+
+export function getUpdatedSpeciesMapping(ROOT_PRJ: string): Map<SpeciesEnum, string> {
+  return getUpdatedEnumMapping(ROOT_PRJ, SpeciesEnumSchema)
 }
 
 export function readAbilities(ROOT_PRJ: string): AbilityList {

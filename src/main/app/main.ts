@@ -19,10 +19,12 @@ import { getTrainerOrder } from './trainers/trainer_ordering';
 import { create } from '@bufbuild/protobuf';
 import { MoveList, MoveListSchema } from '../gen/MoveList_pb.js';
 import { AbilityList, AbilityListSchema } from '../gen/AbilityList_pb.js';
+import { SpeciesList, SpeciesListSchema } from '../gen/SpeciesList_pb.js';
 //import { comparify } from './comparify';
 
 export interface GameData {
   species: Species.Specie[],
+  speciesList: SpeciesList,
   abilities: Map<string, Abilities.Ability>,
   abilityList: AbilityList,
   moves: Map<string, Moves.Move>,
@@ -42,6 +44,7 @@ export interface GameData {
 
 const gameData: GameData = {
   species: [] as Species.Specie[],
+  speciesList: create(SpeciesListSchema),
   abilities: new Map(),
   abilityList: create(AbilityListSchema),
   moves: new Map(),
@@ -86,7 +89,8 @@ function getGameDataData(webContents: Electron.WebContents) {
         macros: global_h.macros
       }
       const promiseArray: Array<Promise<unknown>> = []
-      promiseArray.push(Species.getSpecies(ROOT_PRJ, optionsGlobal_h, gameData))
+      Species.getSpecies(ROOT_PRJ, gameData)
+      // promiseArray.push(Species.getLegacySpecies(ROOT_PRJ, optionsGlobal_h, gameData))
       Moves.getMoves(ROOT_PRJ, gameData)
       Abilities.getAbilities(ROOT_PRJ, gameData)
       promiseArray.push(Locations.getLocations(ROOT_PRJ, gameData))
