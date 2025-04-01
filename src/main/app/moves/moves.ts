@@ -540,7 +540,7 @@ function protoMoveToLegacyMove(move: ProtoMove, updatedMoveMapping: Map<MoveEnum
 
 export function getMoves(ROOT_PRJ: string, gameData: GameData) {
   gameData.moveList = readMoves(ROOT_PRJ)
-  const moveEnumMapping = getUpdatedMoveMapping(ROOT_PRJ)
+  const moveEnumMapping = gameData.moveEnumMap
   const moveEffectMapping = getUpdatedMoveEffectMapping(ROOT_PRJ)
   gameData.moves = new Map(gameData.moveList.moves.map(it => protoMoveToLegacyMove(it, moveEnumMapping, moveEffectMapping)))
 }

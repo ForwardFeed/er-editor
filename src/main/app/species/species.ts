@@ -14,7 +14,7 @@ import { GameData } from '../main'
 import { getUpdatedAbilityMapping, getUpdatedMoveMapping, getUpdatedSpeciesMapping, readSpecies } from '../../proto_compiler.js'
 import { SpeciesEnum } from '../../gen/SpeciesEnum_pb.js'
 import { Evolution } from './evolutions'
-import { BodyColor, EggGroup, Species, Species_Gender, Species_Learnset, Species_Learnset_UniversalTutors, Species_LearnsetSchema, Species_SpeciesDexInfo, Species_SpeciesDexInfoSchema } from '../../gen/SpeciesList_pb.js'
+import { BodyColor, EggGroup, Species, Species_Gender, Species_Learnset, Species_Learnset_UniversalTutors, Species_LearnsetSchema, Species_SpeciesDexInfo, Species_SpeciesDexInfoSchema, SpeciesList } from '../../gen/SpeciesList_pb.js'
 import { MoveEnum } from '../../gen/MoveEnum_pb.js'
 import { Xtox } from '../parse_utils.js'
 import { Type } from '../../gen/Types_pb.js'
@@ -120,7 +120,7 @@ function getBaseSpecies(species: Species, speciesMap: Map<SpeciesEnum, Species>)
   }
 }
 
-function getLearnsetMon(species: Species, speciesMap: Map<SpeciesEnum, Species>): Species {
+export function getLearnsetMon(species: Species, speciesMap: Map<SpeciesEnum, Species>): Species {
   if (species.id === SpeciesEnum.SPECIES_NONE) return species
   if (species.learnsetOrRef.case === "learnset") return species
   if (species.learnsetOrRef.value) return getLearnsetMon(speciesMap.get(species.learnsetOrRef.value)!!, speciesMap)
@@ -131,7 +131,7 @@ function getLearnsetMon(species: Species, speciesMap: Map<SpeciesEnum, Species>)
   return getLearnsetMon(speciesMap.get(species.learnsetOrRef.value)!!, speciesMap)
 }
 
-function getUniversalTutors(type: Species_Learnset_UniversalTutors, isGenderless: boolean) {
+export function getUniversalTutors(type: Species_Learnset_UniversalTutors, isGenderless: boolean): string[] {
   const tutors = ["MOVE_ENDURE", "MOVE_HELPING_HAND", "MOVE_PROTECT", "MOVE_REST", "MOVE_SLEEP_TALK", "MOVE_SUBSTITUTE"]
   if (type !== Species_Learnset_UniversalTutors.NO_ATTACKS) {
     tutors.push("MOVE_HIDDEN_POWER", "MOVE_SECRET_POWER", "MOVE_RETURN")
@@ -152,13 +152,17 @@ function getSprite(species: Species, speciesMap: Map<SpeciesEnum, Species>): str
   return ""
 }
 
+export function toSpeciesMap(speciesList: SpeciesList): Map<SpeciesEnum, Species> {
+  return new Map(speciesList.species.map(it => [it.id, it]))
+}
+
 export function getSpecies(ROOT_PRJ: string, gameData: GameData) {
   gameData.speciesList = readSpecies(ROOT_PRJ)
-  const updatedSpeciesEnum = getUpdatedSpeciesMapping(ROOT_PRJ)
-  const updatedMoveEnum = getUpdatedMoveMapping(ROOT_PRJ)
-  const updatedAbilityMapping = getUpdatedAbilityMapping(ROOT_PRJ)
+  const updatedSpeciesEnum = gameData.speciesEnumMap
+  const updatedMoveEnum = gameData.moveEnumMap
+  const updatedAbilityMapping = gameData.abilityEnumMap
   const evoMap = createEvoMapping(gameData, updatedSpeciesEnum, updatedMoveEnum)
-  const speciesMap = new Map(gameData.speciesList.species.map(it => [it.id, it]))
+  const speciesMap = gameData.speciesMap = toSpeciesMap(gameData.speciesList)
 
   gameData.species = []
   for (const species of gameData.speciesList.species) {

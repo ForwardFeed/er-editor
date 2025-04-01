@@ -1,18 +1,27 @@
 import { ipcMain } from 'electron'
-import { getGameData } from './app/main'
-import { askForFolder } from './app/configuration'
+import { gameData, getGameData } from './app/main'
+import { askForFolder, configuration } from './app/configuration'
 import { setLocation, locationCQ } from './app/locations'
 import { replaceEvolution, evoCQ, Evolution } from './app/species/evolutions'
 import { modTrainerParty, trainerEditCQ, modTrainer, rmInsane, addInsane, removeTrainer, addTrainer, renameTrainer } from './app/trainers/edit'
 import { TrainerPokemon } from './app/trainers/teams'
 import { Trainer } from './app/trainers/trainers'
 import { modTMHM, TMHMCQ } from './app/species/tmhm_learnsets'
-import { TutorCQ, modTutor } from './app/species/tutor_learnsets'
 import { EggMoveCQ, replaceEggMoves } from './app/species/egg_moves'
 import { LevelUPLearnsetCQ, LevelUpMove, replaceLearnset } from './app/species/level_up_learnsets'
 import { BSCQ, changeAbis, changeBaseStats, changeTypes } from './app/species/base_stats'
 import { DexCQ, changeDesc } from './app/species/pokedex'
-import { canRunProto, checkProtoExistence } from './proto_compiler'
+import { canRunProto, checkProtoExistence, getUpdatedMoveMapping, getUpdatedSpeciesMapping, readSpecies, writeSpecies } from './proto_compiler'
+import { getLearnsetMon, getUniversalTutors, toSpeciesMap } from './app/species/species.js'
+import { create } from '@bufbuild/protobuf'
+import { Species_Learnset, Species_LearnsetSchema } from './gen/SpeciesList_pb.js'
+import { CallQueue } from './call_queue.js'
+
+function invertMap<K, V>(map: Map<K, V>): Map<V, K> {
+  return new Map([...map.entries()].map(it => [it[1], it[0]]))
+}
+
+export const SpeciesCQ = new CallQueue("Species")
 
 export function setupApi(window: Electron.BrowserWindow) {
   ipcMain.on('get-game-data', () => {
@@ -74,9 +83,23 @@ export function setupApi(window: Electron.BrowserWindow) {
       }).poll()
     },
     "tutor": (specie: string, moves: string[]) => {
-      TutorCQ.feed(() => {
-        modTutor(specie, moves)
-      }).poll()
+      const species = gameData.speciesList
+      const speciesEnumMap = invertMap(gameData.speciesEnumMap)
+      const moveEnumMap = invertMap(gameData.moveEnumMap)
+      const speciesMap = gameData.speciesMap
+      const learnsetMon = getLearnsetMon(speciesMap.get(speciesEnumMap.get(specie)!!)!!, speciesMap)
+      if (!learnsetMon.learnsetOrRef) {
+        learnsetMon.learnsetOrRef = { value: create(Species_LearnsetSchema), case: "learnset" }
+      }
+      const learnset = learnsetMon.learnsetOrRef.value as Species_Learnset
+      const universalTutors = getUniversalTutors(learnset.universalTutors, learnsetMon.gender.case === "genderless")
+      learnset.tutor = moves.filter(it => !universalTutors.includes(it)).map(it => moveEnumMap.get(it)!!)
+
+      if (!SpeciesCQ.queue.length) {
+        SpeciesCQ.feed(() => {
+          writeSpecies(configuration.project_root, species)
+        }).poll()
+      }
     },
     "eggmoves": (specie: string, moves: string[]) => {
       EggMoveCQ.feed(() => {

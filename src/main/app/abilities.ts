@@ -97,7 +97,7 @@ function protoAbilityToLegacyAbility(ability: ProtoAbility, enumMapping: Map<Abi
 
 export function getAbilities(ROOT_PRJ: string, gameData: GameData) {
   gameData.abilityList = readAbilities(ROOT_PRJ)
-  const updatedAbilityMapping = getUpdatedAbilityMapping(ROOT_PRJ)
+  const updatedAbilityMapping = gameData.abilityEnumMap
   gameData.abilities = new Map(gameData.abilityList.ability.map(it => protoAbilityToLegacyAbility(it, updatedAbilityMapping)))
 }
 

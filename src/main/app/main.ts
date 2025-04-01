@@ -19,12 +19,20 @@ import { getTrainerOrder } from './trainers/trainer_ordering';
 import { create } from '@bufbuild/protobuf';
 import { MoveList, MoveListSchema } from '../gen/MoveList_pb.js';
 import { AbilityList, AbilityListSchema } from '../gen/AbilityList_pb.js';
-import { SpeciesList, SpeciesListSchema } from '../gen/SpeciesList_pb.js';
+import { Species as ProtoSpecies, SpeciesList, SpeciesListSchema } from '../gen/SpeciesList_pb.js';
+import { SpeciesEnum } from '../gen/SpeciesEnum_pb.js';
+import { MoveEnum } from '../gen/MoveEnum_pb.js';
+import { getUpdatedAbilityMapping, getUpdatedMoveMapping, getUpdatedSpeciesMapping } from '../proto_compiler.js';
+import { AbilityEnum } from '../gen/AbilityEnum_pb.js';
 //import { comparify } from './comparify';
 
 export interface GameData {
+  speciesEnumMap: Map<SpeciesEnum, string>,
+  moveEnumMap: Map<MoveEnum, string>,
+  abilityEnumMap: Map<AbilityEnum, string>,
   species: Species.Specie[],
   speciesList: SpeciesList,
+  speciesMap: Map<SpeciesEnum, ProtoSpecies>,
   abilities: Map<string, Abilities.Ability>,
   abilityList: AbilityList,
   moves: Map<string, Moves.Move>,
@@ -42,9 +50,13 @@ export interface GameData {
   trainerOrder: string[]
 }
 
-const gameData: GameData = {
+export const gameData: GameData = {
+  speciesEnumMap: new Map(),
+  moveEnumMap: new Map(),
+  abilityEnumMap: new Map(),
   species: [] as Species.Specie[],
   speciesList: create(SpeciesListSchema),
+  speciesMap: new Map(),
   abilities: new Map(),
   abilityList: create(AbilityListSchema),
   moves: new Map(),
@@ -82,15 +94,12 @@ function getGlobalH(ROOT_PRJ: string) {
 function getGameDataData(webContents: Electron.WebContents) {
   const ROOT_PRJ = Configuration.configuration.project_root
   getGlobalH(ROOT_PRJ)
-    .then((global_h) => {
-      const optionsGlobal_h = {
-        filterComments: true,
-        filterMacros: true,
-        macros: global_h.macros
-      }
+    .then(() => {
       const promiseArray: Array<Promise<unknown>> = []
+      gameData.speciesEnumMap = getUpdatedSpeciesMapping(ROOT_PRJ)
+      gameData.moveEnumMap = getUpdatedMoveMapping(ROOT_PRJ)
+      gameData.abilityEnumMap = getUpdatedAbilityMapping(ROOT_PRJ)
       Species.getSpecies(ROOT_PRJ, gameData)
-      // promiseArray.push(Species.getLegacySpecies(ROOT_PRJ, optionsGlobal_h, gameData))
       Moves.getMoves(ROOT_PRJ, gameData)
       Abilities.getAbilities(ROOT_PRJ, gameData)
       promiseArray.push(Locations.getLocations(ROOT_PRJ, gameData))

@@ -1,6 +1,6 @@
 
 import { execSync } from 'child_process';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, openSync, readFileSync, writeFileSync } from 'fs';
 import { configuration } from './app/configuration';
 import { platform } from 'os';
 import { SpeciesList, SpeciesListSchema } from './gen/SpeciesList_pb.js'
@@ -124,9 +124,11 @@ export function writeTextproto<T extends Message>(projectRoot: string, schema: G
     --experimental_allow_proto3_optional \
     ${actualRoot}/proto/${protoName}.proto`
 
-  const ret = execSync(command, { input: toBinary(schema, message) })
-  writeFileSync(`${actualRoot}/proto/${protoName}.textproto`, `# proto-file: ${protoName}.proto\n# proto-message: er.${protoName}\n\n${ret}`)
+  const filepath = `${actualRoot}/proto/${protoName}.textproto`
 
+  writeFileSync(filepath, `# proto-file: ${protoName}.proto\n# proto-message: er.${protoName}\n\n`)
+
+  execSync(command, { input: toBinary(schema, message), stdio: [undefined, openSync(filepath, 'a')] })
 }
 
 export function readSpecies(ROOT_PRJ: string): SpeciesList {
