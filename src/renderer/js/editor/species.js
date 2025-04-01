@@ -18,7 +18,7 @@ function evoCompactToEvo(/**@type {import('../../../main/app/compactify').Compac
             into: gameData.species[x.in].NAME
         }
     })
-    
+
 }
 
 function callbackModifyEvo(row, ev_cb){
@@ -81,7 +81,7 @@ function callbackModifyEvo(row, ev_cb){
             $(reasonInput).attr('list', 'move-datalist')
         } else if (kindSelect.value === "EVO_SPECIFIC_MON_IN_PARTY"){
             $(reasonInput).attr('list', 'SPECIES-datalist')
-        } 
+        }
         else {
             $(reasonInput).attr('list', '')
         }
@@ -91,7 +91,7 @@ function callbackModifyEvo(row, ev_cb){
     row.find('.evo-reason').replaceWith(JSHAC([
         kindSelect,
         reasonInput
-    ]))    
+    ]))
 }
 
 
@@ -142,7 +142,7 @@ export function evosEdit(ev){
                     poke.NAME,
                     evoCompactToEvo(poke.evolutions.filter(x => !x.from))
                 )
-                
+
             }]
         ].filter(x => x[0]), "6em", "1em"
     ), ev, "mid", true, false)
@@ -173,7 +173,7 @@ const evoKindList = [
     "EVO_LEVEL_NIGHT" ,
     "EVO_LEVEL_DUSK" ,
     "EVO_LEVEL_DAY" ,
-    "EVO_SPECIFIC_MAPSEC" 
+    "EVO_SPECIFIC_MAPSEC"
 ]
 
 function onceOverShareMovesToNextEvo(){
@@ -207,10 +207,10 @@ function onceOverShareMovesToNextEvo(){
             bridge.send('change-moves', "tmhm", specie.NAME, specie["tmhm"].map(x => gameData.moves[x].NAME))
         }
         if (specie.modifyMovesLearnset){
-            bridge.send('change-learnset', specie.lrnPtr, specie.learnset.map(x => learnsetCompactToLearnset(x)))
+            bridge.send('change-learnset', specie.NAME, specie.learnset.map(x => learnsetCompactToLearnset(x)))
         }
     }
-    
+
 }
 window.onceOverShareMovesToNextEvo = onceOverShareMovesToNextEvo
 function setMoveForAllNextEvos(specie, category, moveID, goDownwards=false){
@@ -241,7 +241,7 @@ function setLearnsetForAllNextEvos(specie, move, goDownwards=false, ignore=false
 
     if (!specie.learnset.find(x => x.id == move.id)) {
         specie.learnset.push(structuredClone(move))
-        bridge.send('change-learnset', specie.lrnPtr, specie.learnset.map(x => learnsetCompactToLearnset(x)))
+        bridge.send('change-learnset', specie.NAME, specie.learnset.map(x => learnsetCompactToLearnset(x)))
     }
 }
 
@@ -295,15 +295,15 @@ export function MoveEdit(ev, moveCat, moveCatDatalist){
                 } else {
                     bridge.send('change-moves', moveCat, specie.NAME, specie[moveCat].map(x => gameData.moves[x].NAME))
                 }
-                
+
                 setAllMoves()
             }]
         ]
     , "6em", "1em"), ev, null, true, false)
 }
 
-/** 
- * @param {@type import('../../../main/app/compactify').CompactLevelUpMove} lrn 
+/**
+ * @param {@type import('../../../main/app/compactify').CompactLevelUpMove} lrn
  * @returns {@type import('../../../main/app/species/level_up_learnsets.js').LevelUpMove}
  */
 function learnsetCompactToLearnset(lrn){
@@ -317,8 +317,8 @@ function sendUpdateLearnset(){
     const specie = gameData.species[currentSpecieID]
     specie.learnset = specie.learnset.filter(x => x.id)
     setAllMoves()
-    bridge.send('change-learnset', specie.lrnPtr, specie.learnset.map(x => learnsetCompactToLearnset(x)))
-    
+    bridge.send('change-learnset', specie.NAME, specie.learnset.map(x => learnsetCompactToLearnset(x)))
+
 }
 
 function showLearnsetEdit(ev_cb, newMove){
@@ -372,7 +372,7 @@ function showLearnsetEdit(ev_cb, newMove){
             picker,
             saveDiv
         ]
-        
+
     ]), ev_cb, "focus", true, true, sendUpdateLearnset)
 }
 
@@ -389,7 +389,7 @@ export function LearnsetEdit(ev){
                 const newMove = {lv: 0, id: 0}
                 specie.learnset.push(newMove)
                 showLearnsetEdit(ev_cb, newMove)
-                
+
             }],
             [move?`-Rem ${move?.name}`:null, (ev_cb)=>{
                 removeInformationWindow(ev_cb)
@@ -401,7 +401,7 @@ export function LearnsetEdit(ev){
                 removeInformationWindow(ev_cb)
                 const newMove = specie.learnset[rowIndex]
                 showLearnsetEdit(ev_cb, newMove)
-                
+
             }]
         ]
     , "6em", "1em"), ev, null, true, false)
@@ -457,13 +457,13 @@ export function modAbi(ev, abiCat, target){
     const specie = gameData.species[currentSpecieID]
     const abiID = specie.stats[abiCat][rowIndex]
     const abiNAME = gameData.abilities[abiID].NAME
-    
+
     const input = e('input', 'builder-overlay-list', abiNAME)
     input.addEventListener('focus', ()=>{
         input.value = "ABILITY_"
     })
     input.setAttribute('list', 'abi-datalist')
-    
+
     createInformationWindow(input, ev, "focus", true, true, ()=>{
         const nextAbi = ABIList.indexOf(input.value)
         if (nextAbi == -1 || abiID == nextAbi) return
@@ -498,7 +498,7 @@ export function modSpcType(ev){
         setTypes([...specie.stats.types, abilitiesExtraType(specie.activeAbi, specie)], specie)
         bridge.send('change-spc-type', specie.NAME, specie.stats.types.map(x => `TYPE_${gameData.typeT[x].toUpperCase()}`))
     })
-    
+
 }
 
 export function modDescription(ev){
@@ -582,7 +582,7 @@ export function fixIllegalLevelLearnSet(ev){
                     }
                 }
                 bridge.send('change-moves', 'tmhm', specie.NAME, specie.tmhm.map(x => gameData.moves[x].NAME))
-                bridge.send('change-learnset', specie.lrnPtr, specie.learnset.map(x => learnsetCompactToLearnset(x)))
+                bridge.send('change-learnset', specie.NAME, specie.learnset.map(x => learnsetCompactToLearnset(x)))
                 bridge.send('change-moves', 'tutor', specie.NAME, specie.tutor.map(x => gameData.moves[x].NAME))
                 setAllMoves()
             }],
@@ -627,7 +627,7 @@ function resetAllSpecieMove(ev){
                 t(btn, 'removeAllMoves')
             }, 2500)
         }, 500)
-        
+
     } else if (btn.innerText == "Click To confirm"){
         const noResetTMListIDs = []
         const noResetTutorListIDs = []
@@ -642,13 +642,13 @@ function resetAllSpecieMove(ev){
         poke.tmhm = poke.tmhm.filter(x => noResetTMListIDs.includes(x))
         poke.tutor = poke.tutor.filter(x => noResetTutorListIDs.includes(x))
         poke.learnset = [{lv: 1, id:1}]
-        
+
         bridge.send('change-moves', 'tmhm', poke.NAME, poke.tmhm.map(x => gameData.moves[x].NAME))
-        bridge.send('change-learnset', poke.lrnPtr, poke.learnset.map(x => learnsetCompactToLearnset(x)))
+        bridge.send('change-learnset', specie.NAME, poke.learnset.map(x => learnsetCompactToLearnset(x)))
         bridge.send('change-moves', 'tutor', poke.NAME, poke.tutor.map(x => gameData.moves[x].NAME))
         setAllMoves()
         t(btn, 'removeAllMoves')
         clearTimeout(resetTimeout)
     }
-    
+
 }

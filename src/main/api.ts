@@ -14,14 +14,22 @@ import { DexCQ, changeDesc } from './app/species/pokedex'
 import { canRunProto, checkProtoExistence, getUpdatedMoveMapping, getUpdatedSpeciesMapping, readSpecies, writeSpecies } from './proto_compiler'
 import { getLearnsetMon, getUniversalTutors, toSpeciesMap } from './app/species/species.js'
 import { create } from '@bufbuild/protobuf'
-import { Species_Learnset, Species_LearnsetSchema } from './gen/SpeciesList_pb.js'
+import { Species_Learnset, Species_Learnset_LevelUpMoveSchema, Species_LearnsetSchema } from './gen/SpeciesList_pb.js'
 import { CallQueue } from './call_queue.js'
+import { MoveEnum } from './gen/MoveEnum_pb.js'
 
 function invertMap<K, V>(map: Map<K, V>): Map<V, K> {
   return new Map([...map.entries()].map(it => [it[1], it[0]]))
 }
 
-export const SpeciesCQ = new CallQueue("Species")
+const SpeciesCQ = new CallQueue("Species")
+function markSpeciesDirty() {
+  if (!SpeciesCQ.queue.length) {
+    SpeciesCQ.feed(() => {
+      writeSpecies(configuration.project_root, gameData.speciesList)
+    }).poll()
+  }
+}
 
 export function setupApi(window: Electron.BrowserWindow) {
   ipcMain.on('get-game-data', () => {
@@ -83,7 +91,6 @@ export function setupApi(window: Electron.BrowserWindow) {
       }).poll()
     },
     "tutor": (specie: string, moves: string[]) => {
-      const species = gameData.speciesList
       const speciesEnumMap = invertMap(gameData.speciesEnumMap)
       const moveEnumMap = invertMap(gameData.moveEnumMap)
       const speciesMap = gameData.speciesMap
@@ -95,11 +102,7 @@ export function setupApi(window: Electron.BrowserWindow) {
       const universalTutors = getUniversalTutors(learnset.universalTutors, learnsetMon.gender.case === "genderless")
       learnset.tutor = moves.filter(it => !universalTutors.includes(it)).map(it => moveEnumMap.get(it)!!)
 
-      if (!SpeciesCQ.queue.length) {
-        SpeciesCQ.feed(() => {
-          writeSpecies(configuration.project_root, species)
-        }).poll()
-      }
+      markSpeciesDirty()
     },
     "eggmoves": (specie: string, moves: string[]) => {
       EggMoveCQ.feed(() => {
@@ -107,14 +110,35 @@ export function setupApi(window: Electron.BrowserWindow) {
       }).poll()
     }
   }
-  ipcMain.on('change-moves', (_event, target: string, specie: string, move: string) => {
+  ipcMain.on('change-moves', (_event, target: string, specie: string, moves: string[]) => {
     const targetCall = targetChangeMove[target]
-    if (targetCall) targetCall(specie, move)
+    if (targetCall) targetCall(specie, moves)
   })
-  ipcMain.on('change-learnset', (_event, ptr: string, moves: LevelUpMove[]) => {
-    LevelUPLearnsetCQ.feed(() => {
-      replaceLearnset(ptr, moves)
-    }).poll()
+  ipcMain.on('change-learnset', (_event, specie: string, moves: LevelUpMove[]) => {
+    const speciesEnumMap = invertMap(gameData.speciesEnumMap)
+    const moveEnumMap = invertMap(gameData.moveEnumMap)
+    const speciesMap = gameData.speciesMap
+    const learnsetMon = getLearnsetMon(speciesMap.get(speciesEnumMap.get(specie)!!)!!, speciesMap)
+    if (!learnsetMon.learnsetOrRef) {
+      learnsetMon.learnsetOrRef = { value: create(Species_LearnsetSchema), case: "learnset" }
+    }
+    const learnset = learnsetMon.learnsetOrRef.value as Species_Learnset
+    const moveGrouping: (MoveEnum[] | undefined)[] = []
+    for (const move of moves) {
+      const grouping = moveGrouping[move.level] || (moveGrouping[move.level] = [])
+      grouping.push(moveEnumMap.get(move.move)!!)
+    }
+
+    learnset.level = []
+    for (let i = 0; i < moveGrouping.length; i++) {
+      if (!moveGrouping[i]) continue
+      learnset.level.push(create(Species_Learnset_LevelUpMoveSchema, {
+        level: i,
+        move: moveGrouping[i]
+      }))
+    }
+
+    markSpeciesDirty()
   })
   ipcMain.on('change-abis', (_event, specie: string, field: string, abis: string[]) => {
     BSCQ.feed(() => {
