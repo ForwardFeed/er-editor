@@ -71,7 +71,7 @@ function parse(pokeData: string): Specie[] {
   return species
 }
 
-function createEvoMapping(gameData: GameData, updatedSpeciesEnum: Map<SpeciesEnum, string>, updatedMoveEnum: Map<MoveEnum, string>): Map<SpeciesEnum, [Evolution[], string[]]> {
+export function createEvoMapping(gameData: GameData): Map<SpeciesEnum, [Evolution[], string[]]> {
   const evoMap = new Map<SpeciesEnum, [Evolution[], string[]]>(gameData.speciesList.species.map<[SpeciesEnum, [Evolution[], string[]]]>(it => [it.id, [[], []]]))
 
   for (const species of gameData.speciesList.species) {
@@ -80,15 +80,15 @@ function createEvoMapping(gameData: GameData, updatedSpeciesEnum: Map<SpeciesEnu
       evos.push({
         kind: evo.gender ? "EVO_LEVEL_" + Species_Gender[evo.gender] : "EVO_LEVEL",
         specifier: evo.level.toString(),
-        into: updatedSpeciesEnum.get(evo.to)!!,
+        into: gameData.speciesEnumMap.get(evo.to)!!,
       })
     }
 
     for (const mega of species.mega) {
       evoMap.get(mega.from)!![0].push({
         kind: mega.evoUsing.case === "move" ? "EVO_MOVE_MEGA_EVOLUTION" : "EVO_MEGA_EVOLUTION",
-        specifier: mega.evoUsing.case === "move" ? updatedMoveEnum.get(mega.evoUsing.value)!! : mega.evoUsing.value || "",
-        into: updatedSpeciesEnum.get(species.id)!!
+        specifier: mega.evoUsing.case === "move" ? gameData.moveEnumMap.get(mega.evoUsing.value)!! : mega.evoUsing.value || "",
+        into: gameData.speciesEnumMap.get(species.id)!!
       })
     }
 
@@ -96,12 +96,12 @@ function createEvoMapping(gameData: GameData, updatedSpeciesEnum: Map<SpeciesEnu
       evoMap.get(primal.from)!![0].push({
         kind: "EVO_PRIMAL_REVERSION",
         specifier: primal.item,
-        into: updatedSpeciesEnum.get(species.id)!!
+        into: gameData.speciesEnumMap.get(species.id)!!
       })
     }
 
     if (species.formShiftOf) {
-      evoMap.get(species.formShiftOf)!![1].push(updatedSpeciesEnum.get(species.id)!!)
+      evoMap.get(species.formShiftOf)!![1].push(gameData.speciesEnumMap.get(species.id)!!)
     }
   }
   return evoMap
@@ -161,7 +161,7 @@ export function getSpecies(ROOT_PRJ: string, gameData: GameData) {
   const updatedSpeciesEnum = gameData.speciesEnumMap
   const updatedMoveEnum = gameData.moveEnumMap
   const updatedAbilityMapping = gameData.abilityEnumMap
-  const evoMap = createEvoMapping(gameData, updatedSpeciesEnum, updatedMoveEnum)
+  const evoMap = createEvoMapping(gameData)
   const speciesMap = gameData.speciesMap = toSpeciesMap(gameData.speciesList)
 
   gameData.species = []
