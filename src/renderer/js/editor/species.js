@@ -539,7 +539,7 @@ export function modDescription(ev){
     const display = e('pre', 'edt-desc-display', toFullCCode(specie.dex.desc, specie.dex.descPtr))
     const saveRow = e('div', 'edt-desc-save btn', null, {
         onclick: ()=>{
-            bridge.send('change-spc-desc', specie.dex.descPtr, splitIntoLines(input.value))
+            bridge.send('change-spc-desc', specie.NAME, input.value.trim())
             saveRow.style.display = "none"
         }
     })

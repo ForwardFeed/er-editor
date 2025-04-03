@@ -107,7 +107,7 @@ function createEvoMapping(gameData: GameData, updatedSpeciesEnum: Map<SpeciesEnu
   return evoMap
 }
 
-function getBaseSpecies(species: Species, speciesMap: Map<SpeciesEnum, Species>): Species_SpeciesDexInfo {
+export function getBaseSpecies(species: Species, speciesMap: Map<SpeciesEnum, Species>): Species_SpeciesDexInfo {
   if (!species.id) return create(Species_SpeciesDexInfoSchema)
 
   switch (species.baseSpeciesInfo.case) {

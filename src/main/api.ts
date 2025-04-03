@@ -8,15 +8,16 @@ import { TrainerPokemon } from './app/trainers/teams'
 import { Trainer } from './app/trainers/trainers'
 import { modTMHM, TMHMCQ } from './app/species/tmhm_learnsets'
 import { EggMoveCQ, replaceEggMoves } from './app/species/egg_moves'
-import { LevelUPLearnsetCQ, LevelUpMove, replaceLearnset } from './app/species/level_up_learnsets'
+import { LevelUpMove } from './app/species/level_up_learnsets'
 import { BSCQ, changeAbis, changeBaseStats, changeTypes } from './app/species/base_stats'
 import { DexCQ, changeDesc } from './app/species/pokedex'
-import { canRunProto, checkProtoExistence, getUpdatedMoveMapping, getUpdatedSpeciesMapping, readSpecies, writeSpecies } from './proto_compiler'
-import { getLearnsetMon, getUniversalTutors, toSpeciesMap } from './app/species/species.js'
+import { canRunProto, checkProtoExistence, writeSpecies } from './proto_compiler'
+import { getBaseSpecies, getLearnsetMon, getUniversalTutors } from './app/species/species.js'
 import { create } from '@bufbuild/protobuf'
 import { Species_Learnset, Species_Learnset_LevelUpMoveSchema, Species_LearnsetSchema } from './gen/SpeciesList_pb.js'
 import { CallQueue } from './call_queue.js'
 import { MoveEnum } from './gen/MoveEnum_pb.js'
+import { Type } from './gen/Types_pb.js'
 
 function invertMap<K, V>(map: Map<K, V>): Map<V, K> {
   return new Map([...map.entries()].map(it => [it[1], it[0]]))
@@ -85,11 +86,6 @@ export function setupApi(window: Electron.BrowserWindow) {
     }).poll()
   })
   const targetChangeMove = {
-    "tmhm": (specie: string, moves: string[]) => {
-      TMHMCQ.feed(() => {
-        modTMHM(specie, moves)
-      }).poll()
-    },
     "tutor": (specie: string, moves: string[]) => {
       const speciesEnumMap = invertMap(gameData.speciesEnumMap)
       const moveEnumMap = invertMap(gameData.moveEnumMap)
@@ -104,11 +100,6 @@ export function setupApi(window: Electron.BrowserWindow) {
 
       markSpeciesDirty()
     },
-    "eggmoves": (specie: string, moves: string[]) => {
-      EggMoveCQ.feed(() => {
-        replaceEggMoves(specie, moves)
-      }).poll()
-    }
   }
   ipcMain.on('change-moves', (_event, target: string, specie: string, moves: string[]) => {
     const targetCall = targetChangeMove[target]
@@ -141,24 +132,49 @@ export function setupApi(window: Electron.BrowserWindow) {
     markSpeciesDirty()
   })
   ipcMain.on('change-abis', (_event, specie: string, field: string, abis: string[]) => {
-    BSCQ.feed(() => {
-      changeAbis(specie, field === "abis" ? "abilities" : "innates", abis)
-    }).poll()
+    const abilityMap = invertMap(gameData.abilityEnumMap)
+    const speciesMap = invertMap(gameData.speciesEnumMap)
+
+    const species = gameData.speciesMap.get(speciesMap.get(specie)!!)!!
+    const abilities = abis.map(it => abilityMap.get(it)!!)
+    if (field === "abis") {
+      species.ability = abilities
+    } else {
+      species.innate = abilities
+    }
+
+    markSpeciesDirty()
   })
   ipcMain.on('change-bs', (_event, specie: string, values: number[]) => {
-    BSCQ.feed(() => {
-      changeBaseStats(specie, values)
-    }).poll()
+    const speciesMap = invertMap(gameData.speciesEnumMap)
+    const species = gameData.speciesMap.get(speciesMap.get(specie)!!)!!
+    species.hp = values[0]
+    species.atk = values[1]
+    species.def = values[2]
+    species.spatk = values[3]
+    species.spdef = values[4]
+    species.spe = values[5]
+
+    markSpeciesDirty()
   })
   ipcMain.on('change-spc-type', (_event, specie: string, types: [string, string]) => {
-    BSCQ.feed(() => {
-      changeTypes(specie, types)
-    }).poll()
+    const speciesMap = invertMap(gameData.speciesEnumMap)
+    const species = gameData.speciesMap.get(speciesMap.get(specie)!!)!!
+    species.type = Type[types[0].slice("TYPE_".length)]
+    if (types[0] !== types[1]) {
+      species.type2 = Type[types[1].slice("TYPE_".length)]
+    } else {
+      species.type2 = Type.NONE
+    }
+
+    markSpeciesDirty()
   })
-  ipcMain.on('change-spc-desc', (_event, ptr: string, lines: string[]) => {
-    DexCQ.feed(() => {
-      changeDesc(ptr, lines)
-    }).poll()
+  ipcMain.on('change-spc-desc', (_event, specie: string, desc: string) => {
+    const speciesMap = invertMap(gameData.speciesEnumMap)
+    const species = getBaseSpecies(gameData.speciesMap.get(speciesMap.get(specie)!!)!!, gameData.speciesMap)
+    species.description = desc
+
+    markSpeciesDirty()
   })
   ipcMain.on('check-protoc', (_event) => {
     try {
