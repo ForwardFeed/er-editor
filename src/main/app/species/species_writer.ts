@@ -9,6 +9,7 @@ import { Species, Species_EvolutionSchema, Species_Gender, Species_Learnset, Spe
 import { CallQueue } from '../../call_queue.js'
 import { MoveEnum } from '../../gen/MoveEnum_pb.js'
 import { Type } from '../../gen/Types_pb.js'
+import { Species_MegaEvolution_MegaType } from '../../gen/SpeciesList_pb.js'
 
 function invertMap<K, V>(map: Map<K, V>): Map<V, K> {
   return new Map([...map.entries()].map(it => [it[1], it[0]]))
@@ -23,17 +24,29 @@ function markSpeciesDirty() {
   }
 }
 
-function megaEvoFromEvolution(evo: Evolution, from: Species, moveEnumMap: Map<string, MoveEnum>) {
+function megaEvoFromEvolution(evo: Evolution, from: Species, moveEnumMap: Map<string, MoveEnum>, type?: Species_MegaEvolution_MegaType) {
   const megaEvo = create(Species_MegaEvolutionSchema, { from: from.id })
+  if (type === undefined) {
+    const pieces = evo.into.split("_")
+    if (pieces.includes("X")) type = Species_MegaEvolution_MegaType.MEGA_X
+    else if (pieces.includes("Y")) type = Species_MegaEvolution_MegaType.MEGA_Y
+    else if (pieces.includes("Z")) type = Species_MegaEvolution_MegaType.MEGA_Z
+    else if (pieces.includes("A")) type = Species_MegaEvolution_MegaType.MEGA_A
+    else if (pieces.includes("B")) type = Species_MegaEvolution_MegaType.MEGA_B
+    else if (pieces.includes("C")) type = Species_MegaEvolution_MegaType.MEGA_C
+    else type = Species_MegaEvolution_MegaType.MEGA_UNSPECIFIED
+  }
   if (evo.kind === "EVO_MEGA_EVOLUTION") {
     megaEvo.evoUsing = {
       case: "item",
-      value: evo.specifier
+      value: evo.specifier,
+      type: type,
     }
   } else {
     megaEvo.evoUsing = {
       case: "move",
-      value: moveEnumMap.get(evo.specifier)!!
+      value: moveEnumMap.get(evo.specifier)!!,
+      type: type,
     }
   }
   return megaEvo
@@ -69,7 +82,7 @@ export function updateEvos(specie: string, evos: Evolution[]) {
       if (oldMega.kind === evo.kind && oldMega.specifier === evo.specifier) continue
       if (evo.kind.startsWith("EVO_MEGA") && oldMega.kind.startsWith("EVO_MEGA")) {
         megas.delete(to)
-        toSpecies.mega = toSpecies.mega.map(it => it.from !== species.id ? it : megaEvoFromEvolution(evo, species, moveEnumMap))
+        toSpecies.mega = toSpecies.mega.map(it => it.from !== species.id ? it : megaEvoFromEvolution(evo, species, moveEnumMap, it.type))
         continue
       }
 
