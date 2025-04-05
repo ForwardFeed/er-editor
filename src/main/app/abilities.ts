@@ -1,6 +1,6 @@
 import { AbilityEnum } from "../gen/AbilityEnum_pb.js"
 import { Ability as ProtoAbility } from "../gen/AbilityList_pb.js"
-import { getUpdatedAbilityMapping, readAbilities } from "../proto_compiler.js"
+import { readAbilities } from "../proto_compiler.js"
 import { GameData } from "./main"
 import { regexGrabStr } from "./parse_utils"
 import { FileDataOptions, getMulFilesData, autojoinFilePath } from "./utils"

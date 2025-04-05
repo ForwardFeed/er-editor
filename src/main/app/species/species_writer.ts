@@ -5,7 +5,7 @@ import { LevelUpMove } from '../species/level_up_learnsets'
 import { writeSpecies } from '../../proto_compiler'
 import { createEvoMapping, getBaseSpecies, getLearnsetMon, getUniversalTutors } from '../species/species.js'
 import { create } from '@bufbuild/protobuf'
-import { Species, Species_EvolutionSchema, Species_Gender, Species_Learnset, Species_Learnset_LevelUpMoveSchema, Species_LearnsetSchema, Species_MegaEvolutionSchema, Species_PrimalEvolution, Species_PrimalEvolution_PrimalType, Species_PrimalEvolutionSchema } from './gen/SpeciesList_pb.js'
+import { Species, Species_EvolutionSchema, Species_Gender, Species_Learnset, Species_Learnset_LevelUpMoveSchema, Species_LearnsetSchema, Species_MegaEvolutionSchema, Species_PrimalEvolution, Species_PrimalEvolution_PrimalType, Species_PrimalEvolutionSchema } from '../../gen/SpeciesList_pb.js'
 import { CallQueue } from '../../call_queue.js'
 import { MoveEnum } from '../../gen/MoveEnum_pb.js'
 import { Type } from '../../gen/Types_pb.js'
@@ -25,7 +25,6 @@ function markSpeciesDirty() {
 }
 
 function megaEvoFromEvolution(evo: Evolution, from: Species, moveEnumMap: Map<string, MoveEnum>, type?: Species_MegaEvolution_MegaType) {
-  const megaEvo = create(Species_MegaEvolutionSchema, { from: from.id })
   if (type === undefined) {
     const pieces = evo.into.split("_")
     if (pieces.includes("X")) type = Species_MegaEvolution_MegaType.MEGA_X
@@ -36,17 +35,17 @@ function megaEvoFromEvolution(evo: Evolution, from: Species, moveEnumMap: Map<st
     else if (pieces.includes("C")) type = Species_MegaEvolution_MegaType.MEGA_C
     else type = Species_MegaEvolution_MegaType.MEGA_UNSPECIFIED
   }
+
+  const megaEvo = create(Species_MegaEvolutionSchema, { from: from.id, type: type })
   if (evo.kind === "EVO_MEGA_EVOLUTION") {
     megaEvo.evoUsing = {
       case: "item",
       value: evo.specifier,
-      type: type,
     }
   } else {
     megaEvo.evoUsing = {
       case: "move",
       value: moveEnumMap.get(evo.specifier)!!,
-      type: type,
     }
   }
   return megaEvo

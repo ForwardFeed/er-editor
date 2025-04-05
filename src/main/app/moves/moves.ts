@@ -6,7 +6,7 @@ import { ArgumentSchema, Crit, enum_name, field_name, HitsAir, is_flag, MiscMove
 import { MoveEnum } from "../../gen/MoveEnum_pb.js"
 import { create, getOption } from "@bufbuild/protobuf"
 import { Type } from "../../gen/Types_pb.js"
-import { getUpdatedMoveEffectMapping, getUpdatedMoveMapping, readMoves } from "../../proto_compiler.js"
+import { getUpdatedMoveEffectMapping, readMoves } from "../../proto_compiler.js"
 import { MoveBehavior, MoveBehaviorSchema } from "../../gen/MoveBehavior_pb.js"
 import { MoveEffectSchema } from "../../gen/MoveEffect_pb.js"
 
