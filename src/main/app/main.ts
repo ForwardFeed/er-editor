@@ -14,7 +14,6 @@ import * as BattleItems from './battle_items/battle_items'
 import * as InternalID from './internal_id'
 import { compactify } from './compactify';
 import * as Configuration from './configuration';
-import { getTutorTMHMList } from './moves/list_tutor_tmhm';
 import { getTrainerOrder } from './trainers/trainer_ordering';
 import { create } from '@bufbuild/protobuf';
 import { MoveList, MoveListSchema } from '../gen/MoveList_pb.js';
@@ -45,6 +44,9 @@ export interface GameData {
   speciesInternalID: Map<string, number>,
   movesInternalID: Map<string, number>,
   trainerInternalID: Map<string, number>,
+  universalTutors: string[],
+  universalAttackTutors: string[],
+  universalGenderedTutors: string[],
   tutors: string[],
   tmhm: string[],
   trainerOrder: string[]
@@ -72,6 +74,9 @@ export const gameData: GameData = {
   tutors: [],
   tmhm: [],
   trainerOrder: [],
+  universalTutors: [],
+  universalAttackTutors: [],
+  universalGenderedTutors: []
 }
 
 export function getGameData(window: Electron.BrowserWindow) {
@@ -99,8 +104,8 @@ function getGameDataData(webContents: Electron.WebContents) {
       gameData.speciesEnumMap = getUpdatedSpeciesMapping(ROOT_PRJ)
       gameData.moveEnumMap = getUpdatedMoveMapping(ROOT_PRJ)
       gameData.abilityEnumMap = getUpdatedAbilityMapping(ROOT_PRJ)
-      Species.getSpecies(ROOT_PRJ, gameData)
       Moves.getMoves(ROOT_PRJ, gameData)
+      Species.getSpecies(ROOT_PRJ, gameData)
       Abilities.getAbilities(ROOT_PRJ, gameData)
       promiseArray.push(Locations.getLocations(ROOT_PRJ, gameData))
       promiseArray.push(Trainers.getTrainers(ROOT_PRJ, gameData))
@@ -109,9 +114,7 @@ function getGameDataData(webContents: Electron.WebContents) {
       gameData.speciesInternalID = new Map([...gameData.speciesEnumMap.entries()].map(it => [it[1], it[0]]))
       gameData.movesInternalID = new Map([...gameData.moveEnumMap.entries()].map(it => [it[1], it[0]]))
       promiseArray.push(InternalID.getTrainersInternalID(ROOT_PRJ, gameData))
-      promiseArray.push(getTutorTMHMList(ROOT_PRJ, gameData))
       promiseArray.push(getTrainerOrder(gameData))
-      //promiseArray.push()
       Promise.allSettled(promiseArray)
         .then((values) => {
           values.map((x) => {

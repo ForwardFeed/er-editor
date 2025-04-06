@@ -2,7 +2,7 @@ import { join } from "path"
 import { regexGrabNum, regexGrabStr, Xtox } from "../parse_utils"
 import { FileDataOptions, getFileData, getMulFilesData, autojoinFilePath } from "../utils"
 import { GameData } from "../main"
-import { ArgumentSchema, Crit, enum_name, field_name, HitsAir, is_flag, MiscMoveEffect, MoveEffectArgumentSchema, MoveSchema, MoveSplit, MoveTarget, Move as ProtoMove, SplitFlag, Status } from "../../gen/MoveList_pb.js"
+import { ArgumentSchema, Crit, enum_name, field_name, HitsAir, is_flag, MiscMoveEffect, MoveEffectArgumentSchema, MoveSchema, MoveSplit, MoveTarget, Move as ProtoMove, SplitFlag, Status, TutorType } from "../../gen/MoveList_pb.js"
 import { MoveEnum } from "../../gen/MoveEnum_pb.js"
 import { create, getOption } from "@bufbuild/protobuf"
 import { Type } from "../../gen/Types_pb.js"
@@ -543,6 +543,10 @@ export function getMoves(ROOT_PRJ: string, gameData: GameData) {
   const moveEnumMapping = gameData.moveEnumMap
   const moveEffectMapping = getUpdatedMoveEffectMapping(ROOT_PRJ)
   gameData.moves = new Map(gameData.moveList.moves.map(it => protoMoveToLegacyMove(it, moveEnumMapping, moveEffectMapping)))
+  gameData.tutors = gameData.moveList.moves.filter(it => it.tutor).map(it => gameData.moveEnumMap.get(it.id)!!).sort()
+  gameData.universalTutors = gameData.moveList.moves.filter(it => it.tutor === TutorType.TUTOR_UNIVERSAL_STATUS).map(it => gameData.moveEnumMap.get(it.id)!!)
+  gameData.universalAttackTutors = gameData.moveList.moves.filter(it => it.tutor === TutorType.TUTOR_UNIVERSAL_ATTACK).map(it => gameData.moveEnumMap.get(it.id)!!)
+  gameData.universalGenderedTutors = gameData.moveList.moves.filter(it => it.tutor === TutorType.TUTOR_UNIVERSAL_STATUS_GENDERED).map(it => gameData.moveEnumMap.get(it.id)!!)
 }
 
 export function getLegacyMoves(ROOT_PRJ: string, optionsGlobal_h: FileDataOptions, gameData: GameData): Promise<void> {

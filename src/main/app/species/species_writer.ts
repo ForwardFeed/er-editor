@@ -120,7 +120,7 @@ export function updateTutors(specie: string, moves: string[]) {
     learnsetMon.learnsetOrRef = { value: create(Species_LearnsetSchema), case: "learnset" }
   }
   const learnset = learnsetMon.learnsetOrRef.value as Species_Learnset
-  const universalTutors = getUniversalTutors(learnset.universalTutors, learnsetMon.gender.case === "genderless")
+  const universalTutors = getUniversalTutors(learnset.universalTutors, learnsetMon.gender.case === "genderless", gameData)
   learnset.tutor = moves.filter(it => !universalTutors.includes(it)).map(it => moveEnumMap.get(it)!!)
 
   markSpeciesDirty()

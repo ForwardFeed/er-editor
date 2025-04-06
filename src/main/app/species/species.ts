@@ -130,13 +130,13 @@ export function getLearnsetMon(species: Species, speciesMap: Map<SpeciesEnum, Sp
   return getLearnsetMon(speciesMap.get(species.learnsetOrRef.value)!!, speciesMap)
 }
 
-export function getUniversalTutors(type: Species_Learnset_UniversalTutors, isGenderless: boolean): string[] {
-  const tutors = ["MOVE_ENDURE", "MOVE_HELPING_HAND", "MOVE_PROTECT", "MOVE_REST", "MOVE_SLEEP_TALK", "MOVE_SUBSTITUTE"]
+export function getUniversalTutors(type: Species_Learnset_UniversalTutors, isGenderless: boolean, gameData: GameData): string[] {
+  const tutors = gameData.universalTutors.slice()
   if (type !== Species_Learnset_UniversalTutors.NO_ATTACKS) {
-    tutors.push("MOVE_HIDDEN_POWER", "MOVE_SECRET_POWER", "MOVE_RETURN")
+    tutors.push(...gameData.universalAttackTutors)
   }
   if (!isGenderless) {
-    tutors.push("MOVE_ATTRACT")
+    tutors.push(...gameData.universalGenderedTutors)
   }
   return tutors
 }
@@ -205,7 +205,7 @@ export function getSpecies(ROOT_PRJ: string, gameData: GameData) {
       evolutions: evoMap.get(species.id)!![0],
       eggmoves: [],
       learnset: learnset.level.flatMap(levelGroup => levelGroup.move.map<LevelUpMove>(it => { return { level: levelGroup.level, move: updatedMoveEnum.get(it)!! } })),
-      tutorMoves: learnset.tutor.map(it => updatedMoveEnum.get(it)!!).concat(...getUniversalTutors(learnset.universalTutors, species.gender.case === "genderless")),
+      tutorMoves: learnset.tutor.map(it => updatedMoveEnum.get(it)!!).concat(...getUniversalTutors(learnset.universalTutors, species.gender.case === "genderless", gameData)),
       tmhm: [],
       forms: evoMap.get(species.id)!![1],
       dex: {
