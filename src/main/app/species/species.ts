@@ -115,7 +115,7 @@ export function getBaseSpecies(species: Species, speciesMap: Map<SpeciesEnum, Sp
     case "formOf":
       return getBaseSpecies(speciesMap.get(species.baseSpeciesInfo.value)!!, speciesMap)
     default:
-      throw `Species ${species.id} missing base species info`
+      return create(Species_SpeciesDexInfoSchema)
   }
 }
 
