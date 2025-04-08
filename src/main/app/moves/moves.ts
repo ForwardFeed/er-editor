@@ -516,7 +516,7 @@ function protoMoveToLegacyMove(move: ProtoMove, updatedMoveMapping: Map<MoveEnum
     target: MoveTarget[move.target || 0],
     priority: move.priority,
     flags: [],
-    split: MoveSplit[move.split || 0],
+    split: move.splitModifier ? SplitFlag[move.splitModifier] : MoveSplit[move.split || 0],
     splitModifier: SplitFlag.USE_BASE_SPLIT,
     argument: "",
     desc: move.shortDescription,
