@@ -14,7 +14,7 @@ import { GameData } from '../main'
 import { readSpecies } from '../../proto_compiler.js'
 import { SpeciesEnum } from '../../gen/SpeciesEnum_pb.js'
 import { Evolution } from './evolutions'
-import { BodyColor, EggGroup, Species, Species_Gender, Species_Learnset, Species_Learnset_UniversalTutors, Species_LearnsetSchema, Species_SpeciesDexInfo, Species_SpeciesDexInfoSchema, SpeciesList } from '../../gen/SpeciesList_pb.js'
+import { BodyColor, EggGroup, Species, Species_Gender, Species_Learnset, Species_Learnset_UniversalTutors, Species_LearnsetSchema, Species_MegaEvolution_MegaType, Species_PrimalEvolution_PrimalType, Species_SpeciesDexInfo, Species_SpeciesDexInfoSchema, SpeciesList } from '../../gen/SpeciesList_pb.js'
 import { Xtox } from '../parse_utils.js'
 import { Type } from '../../gen/Types_pb.js'
 import { inspect } from 'util'
@@ -171,9 +171,19 @@ export function getSpecies(ROOT_PRJ: string, gameData: GameData) {
     const learnsetSpecies = getLearnsetMon(species, speciesMap)
     const learnset = learnsetSpecies.learnsetOrRef.value as Species_Learnset || create(Species_LearnsetSchema)
 
+    let name = species.baseSpeciesInfo.case === "dex" ? species.baseSpeciesInfo.value.name : ""
+    name = name || species.longName
+    if (!name && species.mega.length) {
+      name = `${baseSpeciesInfo.name} ${Xtox("", Species_MegaEvolution_MegaType[species.mega[0].type].replace("_UNSPECIFIED", ""))}`
+    }
+    if (!name && species.primal.length) {
+      name = `${baseSpeciesInfo.name} ${Xtox("", Species_PrimalEvolution_PrimalType[species.primal[0].type])}`
+    }
+    if (!name) name = Xtox("SPECIES_", updatedSpeciesEnum.get(species.id)!!)
+
     gameData.species.push({
       NAME: updatedSpeciesEnum.get(species.id)!!,
-      name: Xtox("SPECIES_", updatedSpeciesEnum.get(species.id)!!),
+      name: name,
       baseStats: {
         baseHP: species.hp,
         baseAttack: species.atk,
