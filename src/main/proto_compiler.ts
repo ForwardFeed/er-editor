@@ -1,6 +1,6 @@
 
 import { execSync } from 'child_process';
-import { existsSync, openSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'fs';
 import { configuration } from './app/configuration';
 import { platform } from 'os';
 import { SpeciesList, SpeciesListSchema } from './gen/SpeciesList_pb.js'
@@ -63,12 +63,18 @@ function getUpdatedEnumMapping<T extends number>(projectRoot: String, enumSchema
 
   const protoName = enumSchema.file.name
 
-  const command = `${protocLocation()}
-    ${actualRoot}/proto/${protoName}.proto
-    --proto_path=${actualRoot}/proto
-    --java_out=${actualRoot}/tools/codegen/src
-    --descriptor_set_out=${actualRoot}/tools/codegen/timestamp/depsets/${protoName}.proto
+  if (!existsSync(`${actualRoot}/tools/codegen/src/er/proto`)) mkdirSync(`${actualRoot}/tools/codegen/src/er/proto`, { recursive: true })
+
+  if (!existsSync(`${actualRoot}/tools/codegen/timestamp/depsets`)) mkdirSync(`${actualRoot}/tools/codegen/timestamp/depsets`, { recursive: true })
+
+  const command = `${protocLocation()} \
+    ${actualRoot}/proto/${protoName}.proto \
+    --proto_path=${actualRoot}/proto \
+    --java_out=${actualRoot}/tools/codegen/src \
+    --descriptor_set_out=${actualRoot}/tools/codegen/timestamp/depsets/${protoName}.proto \
     --experimental_allow_proto3_optional`
+
+  console.log(command)
 
   execSync(command)
 
