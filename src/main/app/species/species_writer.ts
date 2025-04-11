@@ -10,6 +10,7 @@ import { CallQueue } from '../../call_queue.js'
 import { MoveEnum } from '../../gen/MoveEnum_pb.js'
 import { Type } from '../../gen/Types_pb.js'
 import { Species_MegaEvolution_MegaType } from '../../gen/SpeciesList_pb.js'
+import { ItemEnum } from '../../gen/ItemEnum_pb.js'
 
 function invertMap<K, V>(map: Map<K, V>): Map<V, K> {
   return new Map([...map.entries()].map(it => [it[1], it[0]]))
@@ -24,7 +25,7 @@ function markSpeciesDirty() {
   }
 }
 
-function megaEvoFromEvolution(evo: Evolution, from: Species, moveEnumMap: Map<string, MoveEnum>, type?: Species_MegaEvolution_MegaType) {
+function megaEvoFromEvolution(evo: Evolution, from: Species, moveEnumMap: Map<string, MoveEnum>, itemEnumMap: Map<string, ItemEnum>, type?: Species_MegaEvolution_MegaType) {
   if (type === undefined) {
     const pieces = evo.into.split("_")
     if (pieces.includes("X")) type = Species_MegaEvolution_MegaType.MEGA_X
@@ -40,7 +41,7 @@ function megaEvoFromEvolution(evo: Evolution, from: Species, moveEnumMap: Map<st
   if (evo.kind === "EVO_MEGA_EVOLUTION") {
     megaEvo.evoUsing = {
       case: "item",
-      value: evo.specifier,
+      value: itemEnumMap.get(evo.specifier)!!,
     }
   } else {
     megaEvo.evoUsing = {
@@ -51,10 +52,10 @@ function megaEvoFromEvolution(evo: Evolution, from: Species, moveEnumMap: Map<st
   return megaEvo
 }
 
-function primalEvoFromEvolution(evo: Evolution, from: Species): Species_PrimalEvolution {
+function primalEvoFromEvolution(evo: Evolution, from: Species, itemEnumMap: Map<string, ItemEnum>): Species_PrimalEvolution {
   return create(Species_PrimalEvolutionSchema, {
     from: from.id,
-    item: evo.specifier,
+    item: itemEnumMap.get(evo.specifier)!!,
     type: evo.into.includes("_CROWNED") ? Species_PrimalEvolution_PrimalType.CROWNED
       : evo.into.endsWith("_ORIGIN") ? Species_PrimalEvolution_PrimalType.ORIGIN
         : Species_PrimalEvolution_PrimalType.PRIMAL
@@ -65,6 +66,7 @@ export function updateEvos(specie: string, evos: Evolution[]) {
   const evolutionMap = createEvoMapping(gameData)
   const speciesEnumMap = invertMap(gameData.speciesEnumMap)
   const moveEnumMap = invertMap(gameData.moveEnumMap)
+  const itemEnumMap = invertMap(gameData.itemEnumMap)
   const species = gameData.speciesMap.get(speciesEnumMap.get(specie)!!)!!
   species.evo = evos.filter(it => it.kind.startsWith("EVO_LEVEL")).map(it => create(Species_EvolutionSchema, {
     to: speciesEnumMap.get(it.into),
@@ -81,21 +83,21 @@ export function updateEvos(specie: string, evos: Evolution[]) {
       if (oldMega.kind === evo.kind && oldMega.specifier === evo.specifier) continue
       if (evo.kind.startsWith("EVO_MEGA") && oldMega.kind.startsWith("EVO_MEGA")) {
         megas.delete(to)
-        toSpecies.mega = toSpecies.mega.map(it => it.from !== species.id ? it : megaEvoFromEvolution(evo, species, moveEnumMap, it.type))
+        toSpecies.mega = toSpecies.mega.map(it => it.from !== species.id ? it : megaEvoFromEvolution(evo, species, moveEnumMap, itemEnumMap, - it.type))
         continue
       }
 
       if (evo.kind.startsWith("EVO_PRIMAL") && oldMega.kind.startsWith("EVO_PRIMAL")) {
         megas.delete(to)
-        toSpecies.primal = toSpecies.primal.map(it => it.from !== species.id ? it : primalEvoFromEvolution(evo, species))
+        toSpecies.primal = toSpecies.primal.map(it => it.from !== species.id ? it : primalEvoFromEvolution(evo, species, itemEnumMap))
         continue
       }
     }
 
     if (evo.kind.startsWith("EVO_MEGA")) {
-      toSpecies.mega.push(megaEvoFromEvolution(evo, species, moveEnumMap))
+      toSpecies.mega.push(megaEvoFromEvolution(evo, species, moveEnumMap, itemEnumMap))
     } else {
-      toSpecies.primal.push(primalEvoFromEvolution(evo, species))
+      toSpecies.primal.push(primalEvoFromEvolution(evo, species, itemEnumMap))
     }
   }
 

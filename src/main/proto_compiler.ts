@@ -1,10 +1,10 @@
 
 import { execSync } from 'child_process';
-import { existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, openSync, readdirSync, readFileSync, writeFileSync } from 'fs';
 import { configuration } from './app/configuration';
 import { platform } from 'os';
 import { SpeciesList, SpeciesListSchema } from './gen/SpeciesList_pb.js'
-import { fromBinary, Message, toBinary } from '@bufbuild/protobuf';
+import { create, fromBinary, Message, toBinary } from '@bufbuild/protobuf';
 import { GenMessage } from '@bufbuild/protobuf/codegenv1';
 import { MoveList, MoveListSchema } from './gen/MoveList_pb.js';
 import { AbilityList, AbilityListSchema } from './gen/AbilityList_pb.js';
@@ -14,6 +14,8 @@ import type { GenEnum } from "@bufbuild/protobuf/codegenv1";
 import { MoveBehavior, MoveBehaviorSchema } from './gen/MoveBehavior_pb.js';
 import { AbilityEnum, AbilityEnumSchema } from './gen/AbilityEnum_pb.js';
 import { SpeciesEnum, SpeciesEnumSchema } from './gen/SpeciesEnum_pb.js';
+import { ItemEnum, ItemEnumSchema } from './gen/ItemEnum_pb.js';
+import { ItemList, ItemListSchema } from './gen/ItemList_pb.js';
 
 function protocLocation() {
   switch (platform()) {
@@ -40,17 +42,18 @@ export function canRunProto(): string {
   return versionBeingUsed
 }
 
-export function readTextproto<T extends Message>(projectRoot: string, schema: GenMessage<T>): T {
+export function readTextproto<T extends Message>(projectRoot: string, schema: GenMessage<T>, textprotoPath?: string): T {
   const actualRoot = projectRoot || configuration.project_root
 
   const protoName = schema.name
+  const textprotoName = textprotoPath || `${protoName}.textproto`
 
   const command = `${protocLocation()} \
     --encode=er.${protoName} \
     --proto_path=${actualRoot}/proto \
     --experimental_allow_proto3_optional \
     ${actualRoot}/proto/${protoName}.proto \
-    < ${actualRoot}/proto/${protoName}.textproto`
+    < ${actualRoot}/proto/${textprotoName}`
 
   console.log(command)
   const ret = execSync(command)
@@ -169,10 +172,23 @@ export function getUpdatedSpeciesMapping(ROOT_PRJ: string): Map<SpeciesEnum, str
   return getUpdatedEnumMapping(ROOT_PRJ, SpeciesEnumSchema)
 }
 
+export function getUpdatedItemMapping(ROOT_PRJ: string): Map<ItemEnum, string> {
+  return getUpdatedEnumMapping(ROOT_PRJ, ItemEnumSchema)
+}
+
 export function readAbilities(ROOT_PRJ: string): AbilityList {
   return readTextproto(ROOT_PRJ, AbilityListSchema)
 }
 
 export function writeAbilities(ROOT_PRJ: string, abilityList: AbilityList) {
   writeTextproto(ROOT_PRJ, AbilityListSchema, abilityList)
+}
+
+export function readItems(ROOT_PRJ: string): ItemList {
+  const items = create(ItemListSchema)
+  for (const file of readdirSync(`${ROOT_PRJ}/proto/items/`)) {
+    if (!file.endsWith(".textproto")) continue
+    items.item.push(...readTextproto(ROOT_PRJ, ItemListSchema, `items/${file}`).item)
+  }
+  return items
 }

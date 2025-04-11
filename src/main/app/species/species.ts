@@ -20,6 +20,7 @@ import { Type } from '../../gen/Types_pb.js'
 import { inspect } from 'util'
 import { create } from '@bufbuild/protobuf'
 import { LevelUpMove } from './level_up_learnsets'
+import { ItemEnum } from '../../gen/ItemEnum_pb.js'
 
 export interface Specie {
   NAME: string,
@@ -86,7 +87,7 @@ export function createEvoMapping(gameData: GameData): Map<SpeciesEnum, [Evolutio
     for (const mega of species.mega) {
       evoMap.get(mega.from)!![0].push({
         kind: mega.evoUsing.case === "move" ? "EVO_MOVE_MEGA_EVOLUTION" : "EVO_MEGA_EVOLUTION",
-        specifier: mega.evoUsing.case === "move" ? gameData.moveEnumMap.get(mega.evoUsing.value)!! : mega.evoUsing.value || "",
+        specifier: mega.evoUsing.case === "move" ? gameData.moveEnumMap.get(mega.evoUsing.value)!! :gameData.itemEnumMap.get(mega.evoUsing.value || ItemEnum.ITEM_NONE)!!,
         into: gameData.speciesEnumMap.get(species.id)!!
       })
     }
@@ -94,7 +95,7 @@ export function createEvoMapping(gameData: GameData): Map<SpeciesEnum, [Evolutio
     for (const primal of species.primal) {
       evoMap.get(primal.from)!![0].push({
         kind: "EVO_PRIMAL_REVERSION",
-        specifier: primal.item,
+        specifier: gameData.itemEnumMap.get(primal.item)!!,
         into: gameData.speciesEnumMap.get(species.id)!!
       })
     }
