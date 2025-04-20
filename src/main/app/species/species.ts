@@ -148,7 +148,7 @@ function getSprite(species: Species, speciesMap: Map<SpeciesEnum, Species>): str
   }
 
   if (!species.visualsOr.value) return ""
-  if (species.visualsOr.value.front) return "graphics/pokemon/" + species.visualsOr.value.front.path + ".png"
+  if (species.visualsOr.value.front) return "graphics/pokemon/" + species.visualsOr.value.front.path.replace("anim_front", "front") + ".png"
   return ""
 }
 
