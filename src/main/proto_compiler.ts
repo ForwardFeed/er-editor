@@ -16,6 +16,8 @@ import { AbilityEnum, AbilityEnumSchema } from './gen/AbilityEnum_pb.js';
 import { SpeciesEnum, SpeciesEnumSchema } from './gen/SpeciesEnum_pb.js';
 import { ItemEnum, ItemEnumSchema } from './gen/ItemEnum_pb.js';
 import { ItemList, ItemListSchema } from './gen/ItemList_pb.js';
+import { TrainerClass, TrainerClassSchema, TrainerList, TrainerListSchema, TrainerMusic, TrainerMusicSchema, TrainerPic, TrainerPicSchema } from './gen/TrainerList_pb.js';
+import { TrainerEnum, TrainerEnumSchema } from './gen/TrainerEnum_pb.js';
 
 function protocLocation() {
   switch (platform()) {
@@ -191,4 +193,28 @@ export function readItems(ROOT_PRJ: string): ItemList {
     items.item.push(...readTextproto(ROOT_PRJ, ItemListSchema, `items/${file}`).item)
   }
   return items
+}
+
+export function readTrainers(ROOT_PRJ: string): TrainerList {
+  return readTextproto(ROOT_PRJ, TrainerListSchema)
+}
+
+export function writeTrainers(ROOT_PRJ: string, trainerList: TrainerList) {
+  writeTextproto(ROOT_PRJ, TrainerListSchema, trainerList)
+}
+
+export function getUpdatedTrainerMapping(ROOT_PRJ: string): Map<TrainerEnum, string> {
+  return getUpdatedEnumMapping(ROOT_PRJ, TrainerEnumSchema)
+}
+
+export function getUpdatedTrainerClassMapping(ROOT_PRJ: string): Map<TrainerClass, string> {
+  return getUpdatedEnumMapping(ROOT_PRJ, TrainerClassSchema)
+}
+
+export function getUpdatedTrainerMusicMapping(ROOT_PRJ: string): Map<TrainerMusic, string> {
+  return getUpdatedEnumMapping(ROOT_PRJ, TrainerMusicSchema)
+}
+
+export function getUpdatedTrainerPicMapping(ROOT_PRJ: string): Map<TrainerPic, string> {
+  return getUpdatedEnumMapping(ROOT_PRJ, TrainerPicSchema)
 }

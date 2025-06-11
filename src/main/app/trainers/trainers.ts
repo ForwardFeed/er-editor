@@ -1,3 +1,4 @@
+import { getUpdatedTrainerClassMapping, getUpdatedTrainerMapping, getUpdatedTrainerMusicMapping, getUpdatedTrainerPicMapping, readTrainers } from "../../proto_compiler.js";
 import { GameData } from "../main";
 import { autojoinFilePath, getMulFilesData } from "../utils";
 import * as TrainerNames from './base_trainer'
@@ -44,7 +45,7 @@ function parse(fileData: string): Map<string, Trainer>{
         const rematchs = rematchList.map((x, i)=> {
             const rem = TrainerNamesResult.trainers.get(x)
             if (!i) rematchM = x
-            if (!rem) return 
+            if (!rem) return
             return {
                 double: rem.double,
                 party: TrainersTeamResult.trainers.get(rem.partyPtr) || [],
@@ -73,9 +74,38 @@ function parse(fileData: string): Map<string, Trainer>{
     return trainers
 }
 
-export function getTrainers(ROOT_PRJ: string, gameData: GameData): Promise<void>{
+export function getTrainers(ROOT_PRJ: string, gameData: GameData) {
+  const trainers = readTrainers(ROOT_PRJ)
+  const trainerMapping = getUpdatedTrainerMapping(ROOT_PRJ)
+  const trainerPicMapping = getUpdatedTrainerPicMapping(ROOT_PRJ)
+  const trainerMusicMapping = getUpdatedTrainerMusicMapping(ROOT_PRJ)
+  const trainerClassMapping = getUpdatedTrainerClassMapping(ROOT_PRJ)
+
+  gameData.trainers = new Map()
+  for (const trainer of trainers.trainer) {
+    const idString = trainerMapping.get(trainer.id)!!
+    gameData.trainers.set(idString, {
+      name: idString,
+      realName: trainer.name,
+      NAME: idString,
+      tclass: trainerClassMapping.get(trainer.class!!)!!,
+      double: trainer.forcedDouble,
+      party: [],
+      insane: [],
+      rematches: [],
+      ptr: "",
+      ptrInsane: "",
+      gender: false,
+      music: "",
+      pic: "",
+      rematchM: ""
+    })
+  }
+}
+
+export function getLegacyTrainers(ROOT_PRJ: string, gameData: GameData): Promise<void>{
     return new Promise((resolve: ()=>void, reject)=>{
-        const filepaths = autojoinFilePath(ROOT_PRJ, [  
+        const filepaths = autojoinFilePath(ROOT_PRJ, [
                                                         'src/battle_setup.c',
                                                         'src/data/trainers.h',
                                                         'src/data/trainer_parties.h'])
@@ -89,5 +119,5 @@ export function getTrainers(ROOT_PRJ: string, gameData: GameData): Promise<void>
             reject(err)
         })
     })
-    
+
 }
