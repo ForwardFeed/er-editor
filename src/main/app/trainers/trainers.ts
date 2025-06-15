@@ -108,6 +108,8 @@ function monToLegacyMon(
 
 export function getTrainers(ROOT_PRJ: string, gameData: GameData) {
   const trainers = readTrainers(ROOT_PRJ);
+  gameData.trainerList = trainers;
+  gameData.trainerMap = new Map(trainers.trainer.map((it) => [it.id, it]));
 
   gameData.trainers = new Map();
   for (const trainer of trainers.trainer) {

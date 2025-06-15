@@ -39,7 +39,10 @@ import { AbilityEnum } from "../gen/AbilityEnum_pb.js";
 import { ItemEnum } from "../gen/ItemEnum_pb.js";
 import { TrainerEnum } from "../gen/TrainerEnum_pb.js";
 import {
+  Trainer,
   TrainerClass,
+  TrainerList,
+  TrainerListSchema,
   TrainerMusic,
   TrainerPic,
 } from "../gen/TrainerList_pb.js";
@@ -63,6 +66,8 @@ export interface GameData {
   moveList: MoveList;
   locations: Locations.Locations;
   trainers: Map<string, Trainers.Trainer>;
+  trainerList: TrainerList;
+  trainerMap: Map<TrainerEnum, Trainer>,
   dataScripted: ScriptedData.Result[];
   mapTable: string[];
   battleItems: Map<string, BattleItems.BattleItem>;
@@ -91,6 +96,8 @@ export const gameData: GameData = {
   moveList: create(MoveListSchema),
   locations: {} as Locations.Locations,
   trainers: new Map(),
+  trainerList: create(TrainerListSchema),
+  trainerMap: new Map(),
   dataScripted: [],
   mapTable: [],
   battleItems: new Map(),
