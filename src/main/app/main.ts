@@ -103,6 +103,10 @@ export const gameData: GameData = {
   universalTutors: [],
   universalAttackTutors: [],
   universalGenderedTutors: [],
+  trainerEnumMap: new Map(),
+  trainerPicMap: new Map(),
+  trainerMusicMap: new Map(),
+  trainerClassMap: new Map()
 };
 
 export function getGameData(window: Electron.BrowserWindow) {
