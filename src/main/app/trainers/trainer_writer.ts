@@ -118,7 +118,9 @@ export function updateTrainer(trainer: Trainer) {
     ? Species_Gender.FEMALE
     : Species_Gender.MALE;
   trainerRef.class = invertMap(gameData.trainerClassMap).get(trainer.tclass);
-  trainerRef.name = trainer.realName;
+  trainerRef.name = trainer.name;
+
+  console.log(trainer)
 
   markTrainersDirty();
 }

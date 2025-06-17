@@ -103,8 +103,7 @@ export function setupEditorBuilder() {
     const activeRem = +($('#trainers-rematch').find(".sel-active").text())
     if (!activeRem || isNaN(activeRem)) return
     const trainer = gameData.trainers[currentTrainerID]
-    const ptrs = [trainer.rem[activeRem - 1].ptr].filter(x => x)
-    bridge.send('remove-trainer', trainer.rem.splice(+activeRem - 1, 1)[0].NAME, ptrs, "")
+    bridge.send('remove-trainer', trainer.rem.splice(+activeRem - 1, 1)[0].NAME)
     refreshEditTrainer(false)
   })
   $('#trainers-add-rem').on('click', function () {
@@ -145,10 +144,9 @@ export function setupEditorBuilder() {
   $('#trainers-remove').on('click', function () {
     if (confirm('This will delete the trainer right away without turning back, proceed?')) {
       const trainer = gameData.trainers[currentTrainerID]
-      const ptrs = [trainer.ptr, trainer.ptrInsane].filter(x => x)
-      bridge.send('remove-trainer', trainer.NAME, ptrs, trainer.rematchM)
+      bridge.send('remove-trainer', trainer.NAME)
       for (const rem of trainer.rem) {
-        bridge.send('remove-trainer', rem.NAME, [rem.ptr], "")
+        bridge.send('remove-trainer', rem.NAME)
       }
       gameData.trainers.splice(currentTrainerID, 1)
       hydrateTrainers()

@@ -114,7 +114,7 @@ export function getTrainers(ROOT_PRJ: string, gameData: GameData) {
   gameData.trainers = new Map();
   for (const trainer of trainers.trainer) {
     const idString = gameData.trainerEnumMap.get(trainer.id)!!;
-    const aceParty = trainer.ace!!.mon.map((it) =>
+    const aceParty = (trainer.ace?.mon || []).map((it) =>
       monToLegacyMon(it, gameData),
     );
     const eliteParty =

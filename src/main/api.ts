@@ -69,11 +69,7 @@ export function setupApi(window: Electron.BrowserWindow) {
   ipcMain.on("add-hell", (_event, tNAME: string, hellParty: TrainerPokemon[]) =>
     addHell(tNAME, hellParty),
   );
-  ipcMain.on(
-    "remove-trainer",
-    (_event, tNAME: string, ptrs: string[], tRematch: string) =>
-      removeTrainer(tNAME),
-  );
+  ipcMain.on("remove-trainer", (_event, tNAME: string) => removeTrainer(tNAME));
 
   const targetChangeMove = { tutor: updateTutors };
   ipcMain.on(
