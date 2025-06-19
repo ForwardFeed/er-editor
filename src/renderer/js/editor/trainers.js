@@ -92,12 +92,28 @@ export function setupEditorBuilder() {
     refreshEditTrainer(false)
   })
   $('#trainers-add-insane').on('click', function () {
-    const baseParty = [{ spc: 1, moves: [], abi: 0, item: -1, nature: 0, evs: [], ivs: [31, 31, 31, 31, 31, 31] }]
+    const baseParty = [{ spc: 1, moves: [0, 0, 0, 0], abi: 0, item: -1, nature: 0, evs: [], ivs: [31, 31, 31, 31, 31, 31] }]
     const trainer = gameData.trainers[currentTrainerID]
     trainer.insane = baseParty
     trainer.ptrInsane = createPtr(trainer.ptr.replace('sParty_', '') + "_Insane")
     teamPtrList.push(trainer.ptrInsane)
     bridge.send('add-insane', trainer.NAME, [convertToTextableTrainerTeam(baseParty[0])])
+    refreshEditTrainer(false)
+  })
+  $('#trainers-rm-hell').on('click', function () {
+    const trainer = gameData.trainers[currentTrainerID]
+    bridge.send('rm-hell', trainer.NAME)
+    trainer.hell = []
+    trainer.ptrHell = ""
+    refreshEditTrainer(false)
+  })
+  $('#trainers-add-hell').on('click', function () {
+    const baseParty = [{ spc: 1, moves: [0, 0, 0, 0], abi: 0, item: -1, nature: 0, evs: [], ivs: [31, 31, 31, 31, 31, 31] }]
+    const trainer = gameData.trainers[currentTrainerID]
+    trainer.hell = baseParty
+    trainer.ptrHell = createPtr(trainer.ptr.replace('sParty_', '') + "_Hell")
+    teamPtrList.push(trainer.ptrHell)
+    bridge.send('add-hell', trainer.NAME, [convertToTextableTrainerTeam(baseParty[0])])
     refreshEditTrainer(false)
   })
   $('#trainers-rm-rem').on('click', function () {

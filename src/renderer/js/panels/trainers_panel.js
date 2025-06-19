@@ -6,8 +6,13 @@ import { setFullTeam } from "./team_builder.js"
 import { setTrainerToReadMode } from "../editor/trainers.js"
 
 export let editedTrainerTeam = undefined, editedTrainerId = undefined
+
+const PARTY_NORMAL = 0
+const PARTY_ELITE = 1
+const PARTY_HELL = 2
+
 const trainerParam = {
-  elite: false
+  state: PARTY_NORMAL
 }
 
 export let currentTrainerID = 0
@@ -32,6 +37,7 @@ export function feedPanelTrainers(trainerID) {
   setBaseTrainer(trainer)
   setRematchesBar(trainer.rem)
   setInsane(trainer)
+  setHell(trainer)
   setPartyPanel(trainer.party)
 
 }
@@ -56,7 +62,7 @@ function setBaseTrainer(trainer) {
   nodeNormal.innerText = "Normal"
   nodeNormal.className = "trainer-match-btn sel-active"
   nodeNormal.onclick = () => {
-    trainerParam.elite = false
+    trainerParam.state = PARTY_NORMAL
     setPartyPanel(party)
     $('#trainers-infobar1').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
     nodeNormal.className = "trainer-match-btn sel-active"
@@ -75,15 +81,37 @@ function setInsane(trainer) {
   nodeElite.innerText = "Elite"
   nodeElite.className = "trainer-match-btn sel-n-active"
   nodeElite.onclick = () => {
-    trainerParam.elite = true
+    trainerParam.state = PARTY_ELITE
     setPartyPanel(insaneTeam)
     $('#trainers-infobar1').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
     nodeElite.className = "trainer-match-btn sel-active"
   }
   $('#trainers-elite').empty().append(nodeElite)
   setDouble(trainer.db)
-  if (trainerParam.elite) {
+  if (trainerParam.state === PARTY_ELITE) {
     nodeElite.onclick()
+  }
+}
+
+function setHell(trainer) {
+  const hellTeam = trainer.hell
+  if (!hellTeam || hellTeam.length < 1) {
+    $('#trainers-hell').empty()
+    return
+  }
+  const nodeHell = e('div')
+  nodeHell.innerText = "Hell"
+  nodeHell.className = "trainer-match-btn sel-n-active"
+  nodeHell.onclick = () => {
+    trainerParam.state = PARTY_HELL
+    setPartyPanel(hellTeam)
+    $('#trainers-infobar1').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
+    nodeHell.className = "trainer-match-btn sel-active"
+  }
+  $('#trainers-hell').empty().append(nodeHell)
+  setDouble(trainer.db)
+  if (trainerParam.state === PARTY_HELL) {
+    nodeHell.onclick()
   }
 }
 
