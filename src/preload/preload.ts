@@ -34,6 +34,7 @@ const api: CustomAPI = {
       "write-proto-data",
       "add-hell",
       "rm-hell",
+      "rename-trainer",
     ];
     if (validChannels.includes(channel)) {
       console.log(channel, ...args);

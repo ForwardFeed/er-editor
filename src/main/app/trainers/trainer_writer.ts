@@ -113,7 +113,7 @@ export function udpateTrainerParty(
 }
 
 export function updateTrainer(trainer: Trainer) {
-  console.log(inspect(trainer, {}))
+  console.log(inspect(trainer, {}));
   const trainerEnum = invertMap(gameData.trainerEnumMap).get(trainer.NAME)!!;
   const trainerRef = gameData.trainerMap.get(trainerEnum)!!;
 
@@ -190,4 +190,12 @@ export function addTrainer(trainer: Trainer) {
   gameData.trainerList.trainer.push(newTrainer);
   gameData.trainerMap.set(newId, newTrainer);
   updateTrainer(trainer);
+}
+
+export function renameTrainerEnum(oldValue: string, newValue: string) {
+  const trainerId = invertMap(gameData.trainerEnumMap).get(oldValue)!!;
+  gameData.trainerEnumMap.set(trainerId, newValue);
+
+  markEnumDirty();
+  markTrainersDirty();
 }

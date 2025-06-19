@@ -291,6 +291,12 @@ export function setTrainerToEditMode() {
     trainer.hasChanged = true
     $('#trainers-save').show()
   }
+  NAME[0].addEventListener("focusout", (event) => {
+    const NAMEVal = NAME.val()
+    if ($('#trainers-infobar-err').show().text() || baseNAME === NAMEVal) return
+    bridge.send('rename-trainer', baseNAME, NAMEVal)
+    baseNAME = NAMEVal
+  })
 
   const name = s($('#trainers-name'), $(e('input#trainers-name')), "text2val")
   name[0].onkeyup = function () {

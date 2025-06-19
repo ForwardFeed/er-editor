@@ -22,6 +22,7 @@ import {
   removeElite,
   removeHell,
   removeTrainer,
+  renameTrainerEnum,
   udpateTrainerParty,
   updateTrainer,
 } from "./app/trainers/trainer_writer.js";
@@ -70,6 +71,9 @@ export function setupApi(window: Electron.BrowserWindow) {
     addHell(tNAME, hellParty),
   );
   ipcMain.on("remove-trainer", (_event, tNAME: string) => removeTrainer(tNAME));
+  ipcMain.on("rename-trainer", (_event, oldName: string, newName: string) =>
+    renameTrainerEnum(oldName, newName),
+  );
 
   const targetChangeMove = { tutor: updateTutors };
   ipcMain.on(
