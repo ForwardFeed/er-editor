@@ -8,7 +8,7 @@ import { Trainer } from "./app/trainers/trainers";
 import { LevelUpMove } from "./app/species/level_up_learnsets";
 import { canRunProto, checkProtoExistence } from "./proto_compiler";
 import {
-  udpateSpeciesType,
+  updateSpeciesType,
   updateAbilities,
   updateBaseStats,
   updateEvos,
@@ -23,7 +23,7 @@ import {
   removeHell,
   removeTrainer,
   renameTrainerEnum,
-  udpateTrainerParty,
+  updateTrainerParty,
   updateTrainer,
 } from "./app/trainers/trainer_writer.js";
 
@@ -55,7 +55,7 @@ export function setupApi(window: Electron.BrowserWindow) {
   ipcMain.on(
     "mod-trainer-party",
     (_event, ptr: string, party: TrainerPokemon[]) =>
-      udpateTrainerParty(ptr, party),
+      updateTrainerParty(ptr, party),
   );
   ipcMain.on("mod-trainer", (_event, trainer: Trainer) =>
     updateTrainer(trainer),
@@ -101,7 +101,7 @@ export function setupApi(window: Electron.BrowserWindow) {
   ipcMain.on(
     "change-spc-type",
     (_event, specie: string, types: [string, string]) => {
-      udpateSpeciesType(specie, types);
+      updateSpeciesType(specie, types);
     },
   );
   ipcMain.on("change-spc-desc", (_event, specie: string, desc: string) => {

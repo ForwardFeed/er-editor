@@ -16,7 +16,7 @@ import { compactify } from "./compactify";
 import * as Configuration from "./configuration";
 import { getTrainerOrder } from "./trainers/trainer_ordering";
 import { create } from "@bufbuild/protobuf";
-import { MoveList, MoveListSchema } from "../gen/MoveList_pb.js";
+import { Move, MoveList, MoveListSchema } from "../gen/MoveList_pb.js";
 import { AbilityList, AbilityListSchema } from "../gen/AbilityList_pb.js";
 import {
   Species as ProtoSpecies,
@@ -51,6 +51,7 @@ import {
 export interface GameData {
   speciesEnumMap: Map<SpeciesEnum, string>;
   moveEnumMap: Map<MoveEnum, string>;
+  moveMap: Map<MoveEnum, Move>;
   abilityEnumMap: Map<AbilityEnum, string>;
   itemEnumMap: Map<ItemEnum, string>;
   trainerEnumMap: Map<TrainerEnum, string>;
@@ -84,6 +85,7 @@ export interface GameData {
 
 export const gameData: GameData = {
   speciesEnumMap: new Map(),
+  moveMap: new Map(),
   moveEnumMap: new Map(),
   abilityEnumMap: new Map(),
   itemEnumMap: new Map(),

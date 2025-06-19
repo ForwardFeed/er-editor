@@ -17,7 +17,7 @@ import {
 } from "../../gen/TrainerList_pb.js";
 import { Trainer } from "./trainers.js";
 import { TrainerEnum } from "../../gen/TrainerEnum_pb.js";
-import { inspect } from "util";
+import { MoveBehavior } from "../../gen/MoveBehavior_pb.js";
 
 function invertMap<K, V>(map: Map<K, V>): Map<V, K> {
   return new Map([...map.entries()].map((it) => [it[1], it[0]]));
@@ -54,7 +54,7 @@ function markMaybeDirty() {
   }
 }
 
-export function udpateTrainerParty(
+export function updateTrainerParty(
   identifier: string,
   party: TrainerPokemon[],
 ) {
@@ -105,7 +105,13 @@ export function udpateTrainerParty(
       ],
       ironPill: !it.ivs[5],
       move: it.moves.map((move) => moveMap.get(move)!!),
-      hiddenPowerType: Type[it.hpType.replace("TYPE_", "").toUpperCase()],
+      hiddenPowerType: it.moves.some(
+        (move) =>
+          gameData.moveMap.get(moveMap.get(move)!!)!!.effect ===
+          MoveBehavior.EFFECT_HIDDEN_POWER,
+      )
+        ? Type[it.hpType.replace("TYPE_", "").toUpperCase()]
+        : Type.NONE,
     }),
   );
 
@@ -113,7 +119,6 @@ export function udpateTrainerParty(
 }
 
 export function updateTrainer(trainer: Trainer) {
-  console.log(inspect(trainer, {}));
   const trainerEnum = invertMap(gameData.trainerEnumMap).get(trainer.NAME)!!;
   const trainerRef = gameData.trainerMap.get(trainerEnum)!!;
 
@@ -142,7 +147,7 @@ export function addElite(id: string, pokemon: TrainerPokemon[]) {
   const trainer = gameData.trainerMap.get(trainerEnum)!!;
   trainer.elite = create(TrainerPartySchema);
 
-  udpateTrainerParty("ELITE|" + id, pokemon);
+  updateTrainerParty("ELITE|" + id, pokemon);
 }
 
 export function removeHell(id: string) {
@@ -159,7 +164,7 @@ export function addHell(id: string, pokemon: TrainerPokemon[]) {
 
   trainer.hell = create(TrainerPartySchema);
 
-  udpateTrainerParty("HELL|" + id, pokemon);
+  updateTrainerParty("HELL|" + id, pokemon);
 }
 
 export function removeTrainer(id: string) {

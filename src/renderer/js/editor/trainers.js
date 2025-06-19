@@ -21,17 +21,18 @@ export function convertToTextableTrainerTeam(/** @type import('../../../main/app
     evs: trainerPkm.evs,
     item: gameData.items[trainerPkm.item]?.NAME,
     nature: "NATURE_" + gameData.natureT[trainerPkm.nature].toUpperCase(),
-    moves: trainerPkm.moves.map(x => gameData.moves[x].NAME)
+    moves: trainerPkm.moves.map(x => gameData.moves[x].NAME.split("|")[0]),
+    hpType: gameData.typeT[trainerPkm.hpType],
   }
 }
 
 function getTrainerPartyPtr(trainer) {
   if (trainer === "Normal") {
-    return "ACE|" + editedTrainerId
+    return "ACE|" + gameData.trainers[editedTrainerId].NAME
   } else if (trainer === "Elite") {
-    return "ELITE|" + editedTrainerId
+    return "ELITE|" + gameData.trainers[editedTrainerId].NAME
   } else if (trainer === "Hell") {
-    return "HELL|" + editedTrainerId
+    return "HELL|" + gameData.trainers[editedTrainerId].NAME
   } else {
     return "ACE|" + gameData.trainers[editedTrainerId].rem[trainer].NAME
   }
