@@ -38,7 +38,6 @@ import {
   TrainerPicSchema,
 } from "./gen/TrainerList_pb.js";
 import { TrainerEnum, TrainerEnumSchema } from "./gen/TrainerEnum_pb.js";
-import { inspect } from "util";
 
 function protocLocation() {
   switch (platform()) {
