@@ -1,6 +1,6 @@
 import { gameData } from "../main";
 import { configuration } from "../configuration";
-import { writeTrainers } from "../../proto_compiler";
+import { writeTrainerEnums, writeTrainers } from "../../proto_compiler";
 import { clone, create } from "@bufbuild/protobuf";
 import { Species_Gender } from "../../gen/SpeciesList_pb.js";
 import { CallQueue } from "../../call_queue.js";
@@ -17,6 +17,7 @@ import {
 } from "../../gen/TrainerList_pb.js";
 import { Trainer } from "./trainers.js";
 import { TrainerEnum } from "../../gen/TrainerEnum_pb.js";
+import { inspect } from "util";
 
 function invertMap<K, V>(map: Map<K, V>): Map<V, K> {
   return new Map([...map.entries()].map((it) => [it[1], it[0]]));
@@ -37,8 +38,12 @@ function markMaybeDirty() {
   if (!TrainerCQ.queue.length) {
     TrainerCQ.feed(() => {
       while (pendingEnums || pendingTrainers) {
-        if (pendingEnums)
-          throw new Error("TODO: Implement updating trainer enum");
+        if (pendingEnums) {
+          const enums = pendingEnums;
+          pendingEnums = undefined;
+          writeTrainerEnums(configuration.project_root, enums);
+          continue;
+        }
         if (!pendingEnums && pendingTrainers) {
           const trainers = pendingTrainers;
           pendingTrainers = undefined;
@@ -108,6 +113,7 @@ export function udpateTrainerParty(
 }
 
 export function updateTrainer(trainer: Trainer) {
+  console.log(inspect(trainer, {}))
   const trainerEnum = invertMap(gameData.trainerEnumMap).get(trainer.NAME)!!;
   const trainerRef = gameData.trainerMap.get(trainerEnum)!!;
 
@@ -119,8 +125,6 @@ export function updateTrainer(trainer: Trainer) {
     : Species_Gender.MALE;
   trainerRef.class = invertMap(gameData.trainerClassMap).get(trainer.tclass);
   trainerRef.name = trainer.name;
-
-  console.log(trainer)
 
   markTrainersDirty();
 }
@@ -138,7 +142,7 @@ export function addElite(id: string, pokemon: TrainerPokemon[]) {
   const trainer = gameData.trainerMap.get(trainerEnum)!!;
   trainer.elite = create(TrainerPartySchema);
 
-  udpateTrainerParty("ELITE|" + id, pokemon)
+  udpateTrainerParty("ELITE|" + id, pokemon);
 }
 
 export function removeHell(id: string) {
@@ -155,7 +159,7 @@ export function addHell(id: string, pokemon: TrainerPokemon[]) {
 
   trainer.hell = create(TrainerPartySchema);
 
-  udpateTrainerParty("HELL|" + id, pokemon)
+  udpateTrainerParty("HELL|" + id, pokemon);
 }
 
 export function removeTrainer(id: string) {
