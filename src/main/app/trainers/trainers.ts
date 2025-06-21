@@ -114,22 +114,16 @@ export function getTrainers(ROOT_PRJ: string, gameData: GameData) {
   gameData.trainers = new Map();
   for (const trainer of trainers.trainer) {
     const idString = gameData.trainerEnumMap.get(trainer.id)!!;
-    const aceParty = (trainer.ace?.mon || []).map((it) =>
-      monToLegacyMon(it, gameData),
-    );
-    const eliteParty =
-      trainer.elite?.mon.map((it) => monToLegacyMon(it, gameData)) || aceParty;
-    const hellParty =
-      trainer.hell?.mon.map((it) => monToLegacyMon(it, gameData)) || eliteParty;
     gameData.trainers.set(idString, {
       name: idString,
       realName: trainer.name,
       NAME: idString,
       tclass: gameData.trainerClassMap.get(trainer.class!!)!!,
       double: trainer.forcedDouble,
-      party: aceParty,
-      insane: eliteParty,
-      hell: hellParty,
+      party: trainer.ace?.mon.map((it) => monToLegacyMon(it, gameData)) || [],
+      insane:
+        trainer.elite?.mon.map((it) => monToLegacyMon(it, gameData)) || [],
+      hell: trainer.hell?.mon.map((it) => monToLegacyMon(it, gameData)) || [],
       rematches: [],
       ptr: "",
       ptrInsane: "",
