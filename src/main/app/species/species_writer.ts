@@ -183,7 +183,7 @@ export function updateBaseStats(specie: string, values: number[]) {
   markSpeciesDirty()
 }
 
-export function udpateSpeciesType(specie, types: [string, string]) {
+export function updateSpeciesType(specie, types: [string, string]) {
   const speciesMap = invertMap(gameData.speciesEnumMap)
   const species = gameData.speciesMap.get(speciesMap.get(specie)!!)!!
   species.type = Type[types[0].slice("TYPE_".length)]

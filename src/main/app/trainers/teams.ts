@@ -12,7 +12,8 @@ export interface TrainerPokemon{
     evs: number[],
     item: string,
     nature: string,
-    moves: string[]
+    moves: string[],
+    hpType: string,
 }
 
 function initTrainerPokemon(): TrainerPokemon{
@@ -23,7 +24,8 @@ function initTrainerPokemon(): TrainerPokemon{
         evs: [],
         item: "",
         nature: "",
-        moves: []
+        moves: [],
+        hpType: "",
     }
 }
 
@@ -74,6 +76,8 @@ const executionMap: {[key: string]: (line: string, context: Context) => void} = 
             context.currentPokemon.ability = regexGrabNum(line.replace(/\s/g, ''), /(?<==)\d+/, 0)
         } else if (line.match('.zeroSpeedIvs')){
             context.currentPokemon.ivs[5] = 0
+        } else if (line.match('.hpType')){
+            context.currentPokemon.hpType = regexGrabStr(line.replace(/\s/g, ''), /(?<==)\w+/)
         } else if (line.match('.ivs')){
             context.currentPokemon.ivs = regexGrabStr(line.replace(/\s/g, ''), /(?<=\{)[^}]+/)
                 .split(',')
@@ -122,7 +126,7 @@ export function parse(lines: string[], fileIterator: number): Result{
                 executionMap[context.execFlag](line, context)
             }
         }
-        
+
     }
     return {
         fileIterator: fileIterator,
