@@ -21,7 +21,9 @@ export function feedPanelTrainers(trainerID) {
   setTrainerToReadMode()
   currentTrainerID = trainerID
   $('#trainers-list').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
-  $('#trainers-list > .btn').eq(trainerID).addClass("sel-active").removeClass("sel-n-active")
+  let selectedNode = $('#trainers-list > .btn').eq(trainerID)
+  if (+selectedNode.data("id") !== +trainerID) { selectedNode = $('#trainers-list > .btn').eq((+trainerID) + 1) }
+  selectedNode.addClass("sel-active").removeClass("sel-n-active")
 
   const trainer = gameData.trainers[trainerID]
   $('#trainers-map').text(gameData.mapsT[trainer.map] || "Unknown")
@@ -357,10 +359,9 @@ export function updateTrainers(searchQuery) {
   const nodeList = $('#trainers-list > .btn')
   let validID
   const matched = queryFilter3(searchQuery, trainers, queryMapTrainers, prefixTree)
-  const trainersLen = trainers.length
-  for (let i = 0; i < trainersLen; i++) {
+  for (let i = 0; i < nodeList.length; i++) {
     const node = nodeList.eq(i)
-    if (!matched || matched.indexOf(i) != -1) {
+    if (!matched || matched.indexOf(node.data("id")) != -1 || node.data("id") === undefined) {
       if (!validID) validID = i
       node.show()
     } else {
