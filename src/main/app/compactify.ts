@@ -117,6 +117,7 @@ export interface CompactTrainers {
   db: boolean;
   party: CompactTrainerPokemon[];
   insane: CompactTrainerPokemon[];
+  hell: CompactTrainerPokemon[];
   rem: CompactTrainerRematch[];
   map: number;
   ptr: string;
@@ -463,6 +464,7 @@ export function compactify(gameData: GameData): CompactGameData {
       db: trainer.double,
       party: trainer.party.map(compactPoke),
       insane: trainer.insane.map(compactPoke),
+      hell: trainer.hell.map(compactPoke),
       rem: trainer.rematches.map((rem) => {
         return {
           db: rem.double,
