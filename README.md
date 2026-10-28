@@ -11,8 +11,14 @@ The public source code of ER is outdated and will not work.
 
 ### Install
 
+
 ```bash
-$ npm install
+npm approve-scripts --all
+npm install
+# If npm run dev doesn't work, with an error "Error: Electron uninstall"
+# This will hang for a while because it's downloading a bunch of stuff behind the scene.
+# No clue why it doesn't launch despite `npm approve-scripts --all`
+node node_modules/electron/install.js 
 ```
 
 ### Development
