@@ -38,6 +38,10 @@ import {
   TrainerPicSchema,
 } from "./gen/TrainerList_pb.js";
 import { TrainerEnum, TrainerEnumSchema } from "./gen/TrainerEnum_pb.js";
+import {
+  BattleSkillList,
+  BattleSkillListSchema,
+} from "./gen/BattleSkillList_pb.js";
 
 function protocLocation() {
   switch (platform()) {
@@ -261,6 +265,10 @@ export function readItems(ROOT_PRJ: string): ItemList {
     );
   }
   return items;
+}
+
+export function readBattleSkills(ROOT_PRJ: string): BattleSkillList {
+  return readTextproto(ROOT_PRJ, BattleSkillListSchema);
 }
 
 export function readTrainers(ROOT_PRJ: string): TrainerList {

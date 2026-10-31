@@ -4,7 +4,7 @@ import { askForFolder } from "./app/configuration";
 import { setLocation, locationCQ } from "./app/locations";
 import { Evolution } from "./app/species/evolutions";
 import { TrainerPokemon } from "./app/trainers/teams";
-import { Trainer } from "./app/trainers/trainers";
+import { PartySkills, Trainer } from "./app/trainers/trainers";
 import { LevelUpMove } from "./app/species/level_up_learnsets";
 import { canRunProto, checkProtoExistence } from "./proto_compiler";
 import {
@@ -23,6 +23,7 @@ import {
   removeHell,
   removeTrainer,
   renameTrainerEnum,
+  setHellSkills,
   updateTrainerParty,
   updateTrainer,
 } from "./app/trainers/trainer_writer.js";
@@ -69,6 +70,10 @@ export function setupApi(window: Electron.BrowserWindow) {
   ipcMain.on("rm-hell", (_event, tNAME: string) => removeHell(tNAME));
   ipcMain.on("add-hell", (_event, tNAME: string, hellParty: TrainerPokemon[]) =>
     addHell(tNAME, hellParty),
+  );
+  // invoke() so the renderer learns whether the skills were accepted
+  ipcMain.handle("set-hell-skills", (_event, tNAME: string, skills: PartySkills) =>
+    setHellSkills(tNAME, skills),
   );
   ipcMain.on("remove-trainer", (_event, tNAME: string) => removeTrainer(tNAME));
   ipcMain.on("rename-trainer", (_event, oldName: string, newName: string) =>

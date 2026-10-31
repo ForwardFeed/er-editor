@@ -1,6 +1,9 @@
 import { Species_Gender } from "../../gen/SpeciesList_pb.js";
+import { JsonObject, toJson } from "@bufbuild/protobuf";
 import {
+  TrainerParty,
   TrainerParty_TrainerMon,
+  TrainerPartySchema,
   Nature,
 } from "../../gen/TrainerList_pb.js";
 import { Type } from "../../gen/Types_pb.js";
@@ -27,6 +30,21 @@ export interface Trainer {
   music: string;
   pic: string;
   rematchM: string;
+  hellSkills?: PartySkills;
+}
+
+/** A party's battle skills in proto JSON form (fields of er.TrainerParty). */
+export interface PartySkills {
+  skill: string[];
+  inlineSkill: JsonObject[];
+}
+
+export function partySkills(party: TrainerParty): PartySkills {
+  const json = toJson(TrainerPartySchema, party) as JsonObject;
+  return {
+    skill: (json.skill as string[] | undefined) || [],
+    inlineSkill: (json.inlineSkill as JsonObject[] | undefined) || [],
+  };
 }
 
 export interface RematchTrainer {
@@ -131,6 +149,7 @@ export function getTrainers(ROOT_PRJ: string, gameData: GameData) {
       music: gameData.trainerMusicMap.get(trainer.music!!)!!,
       pic: gameData.trainerPicMap.get(trainer.pic!!)!!,
       rematchM: "",
+      hellSkills: trainer.hell && partySkills(trainer.hell),
     });
   }
 

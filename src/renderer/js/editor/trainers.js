@@ -104,6 +104,7 @@ export function setupEditorBuilder() {
     const trainer = gameData.trainers[currentTrainerID]
     bridge.send('rm-hell', trainer.NAME)
     trainer.hell = []
+    delete trainer.hellSkills
     trainer.ptrHell = ""
     refreshEditTrainer(false)
   })
@@ -111,6 +112,7 @@ export function setupEditorBuilder() {
     const baseParty = [{ spc: 1, moves: [0, 0, 0, 0], abi: 0, item: -1, nature: 0, evs: [], ivs: [31, 31, 31, 31, 31, 31] }]
     const trainer = gameData.trainers[currentTrainerID]
     trainer.hell = baseParty
+    trainer.hellSkills = { skill: [], inlineSkill: [] }
     trainer.ptrHell = createPtr(trainer.ptr.replace('sParty_', '') + "_Hell")
     teamPtrList.push(trainer.ptrHell)
     bridge.send('add-hell', trainer.NAME, [convertToTextableTrainerTeam(baseParty[0])])

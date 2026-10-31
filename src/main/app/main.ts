@@ -8,6 +8,7 @@ import * as Abilities from "./abilities";
 import * as Sprites from "./sprites";
 import * as Locations from "./locations";
 import * as Trainers from "./trainers/trainers";
+import * as BattleSkills from "./trainers/battle_skills";
 import * as ScriptedData from "./scripted_data";
 import * as BattleItems from "./battle_items/battle_items";
 //import * as Additionnal from './additional_data/additional'
@@ -69,6 +70,7 @@ export interface GameData {
   trainers: Map<string, Trainers.Trainer>;
   trainerList: TrainerList;
   trainerMap: Map<TrainerEnum, Trainer>,
+  battleSkills: BattleSkills.BattleSkillEntry[];
   dataScripted: ScriptedData.Result[];
   mapTable: string[];
   battleItems: Map<string, BattleItems.BattleItem>;
@@ -100,6 +102,7 @@ export const gameData: GameData = {
   trainers: new Map(),
   trainerList: create(TrainerListSchema),
   trainerMap: new Map(),
+  battleSkills: [],
   dataScripted: [],
   mapTable: [],
   battleItems: new Map(),
@@ -154,6 +157,7 @@ function getGameDataData(webContents: Electron.WebContents) {
       Moves.getMoves(ROOT_PRJ, gameData);
       Species.getSpecies(ROOT_PRJ, gameData);
       Abilities.getAbilities(ROOT_PRJ, gameData);
+      BattleSkills.getBattleSkills(ROOT_PRJ, gameData);
       promiseArray.push(Locations.getLocations(ROOT_PRJ, gameData));
       Trainers.getTrainers(ROOT_PRJ, gameData);
       promiseArray.push(ScriptedData.parse(ROOT_PRJ, gameData));

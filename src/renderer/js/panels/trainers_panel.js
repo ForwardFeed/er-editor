@@ -4,12 +4,14 @@ import { gameData } from "../data_version.js"
 import { AisInB, e, JSHAC, capitalizeFirstLetter } from "../utils.js"
 import { setFullTeam } from "./team_builder.js"
 import { setTrainerToReadMode } from "../editor/trainers.js"
+import { renderTrainerSkills, skillCount } from "./trainer_skills.js"
 
 export let editedTrainerTeam = undefined, editedTrainerId = undefined
 
 const PARTY_NORMAL = 0
 const PARTY_ELITE = 1
 const PARTY_HELL = 2
+const PARTY_SKILLS = 3
 
 const trainerParam = {
   state: PARTY_NORMAL
@@ -40,8 +42,13 @@ export function feedPanelTrainers(trainerID) {
   setRematchesBar(trainer.rem)
   setInsane(trainer)
   setHell(trainer)
+  setSkills(trainer)
   setPartyPanel(trainer.party)
-
+  if (trainerParam.state === PARTY_SKILLS) {
+    const nodeSkills = $('#trainers-skills').children()[0]
+    if (nodeSkills) nodeSkills.onclick()
+    else trainerParam.state = PARTY_NORMAL
+  }
 }
 
 export function setTrainerClassName(tclassID) {
@@ -115,6 +122,25 @@ function setHell(trainer) {
   if (trainerParam.state === PARTY_HELL) {
     nodeHell.onclick()
   }
+}
+
+// Skills belong to the hell party, so the button only exists alongside it.
+function setSkills(trainer) {
+  if (!trainer.hell || trainer.hell.length < 1) {
+    $('#trainers-skills').empty()
+    return
+  }
+  const nodeSkills = e('div')
+  const updateCount = () => nodeSkills.innerText = `Skills(${skillCount(trainer)})`
+  updateCount()
+  nodeSkills.className = "trainer-match-btn sel-n-active"
+  nodeSkills.onclick = () => {
+    trainerParam.state = PARTY_SKILLS
+    renderTrainerSkills(trainer, $('#trainers-team')[0], updateCount)
+    $('#trainers-infobar1').find('.sel-active').addClass("sel-n-active").removeClass("sel-active")
+    nodeSkills.className = "trainer-match-btn sel-active"
+  }
+  $('#trainers-skills').empty().append(nodeSkills)
 }
 
 function setRematchesBar(rematches) {

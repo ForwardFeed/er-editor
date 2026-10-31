@@ -4,6 +4,7 @@ import { electronAPI } from "@electron-toolkit/preload";
 export interface CustomAPI {
   send: (channel: string, ...args: any[]) => void;
   receive: (channel: string, ...args: any[]) => void;
+  invoke: (channel: string, ...args: any[]) => Promise<any>;
 }
 
 // Custom APIs for renderer
@@ -73,6 +74,12 @@ const api: CustomAPI = {
     } else {
       console.warn("invalid receive call:" + channel);
     }
+  },
+  invoke: (channel, ...args) => {
+    const validChannels = ["set-hell-skills"];
+    if (!validChannels.includes(channel))
+      return Promise.reject(new Error("invalid invoke call:" + channel));
+    return ipcRenderer.invoke(channel, ...args);
   },
 };
 

@@ -1,0 +1,117 @@
+/* Shared form controls: js/components/controls.js and js/components/proto_form.js */
+.ctl-btn {
+    border: 2px ridge var(--colorB);
+    padding: 0 0.3em;
+    cursor: pointer;
+    white-space: nowrap;
+    height: fit-content;
+}
+.ctl-btn:hover {
+    background-color: var(--selHover);
+}
+.ctl-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4em;
+    margin: 0.15em 0;
+}
+.ctl-row > span.ctl-label {
+    margin: 0;
+}
+.ctl-input, .ctl-select {
+    font: inherit;
+    font-size: 0.8em;
+    color: var(--font-color);
+    background-color: var(--colorB);
+    border: 1px solid var(--selActive);
+    padding: 0.1em 0.3em;
+}
+input.ctl-input[type="text"] {
+    flex-grow: 1;
+    min-width: 6em;
+}
+textarea.ctl-input {
+    width: 100%;
+    min-height: 3.5em;
+    box-sizing: border-box;
+    resize: vertical;
+    user-select: text;
+}
+.ctl-number {
+    width: 3em;
+}
+.ctl-check {
+    display: flex;
+    align-items: center;
+    gap: 0.2em;
+    font-size: 0.8em;
+}
+.ctl-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3em;
+}
+.ctl-chip {
+    display: flex;
+    gap: 0.4em;
+    border: 1px solid var(--selActive);
+    padding: 0 0.3em;
+    font-size: 0.8em;
+}
+.ctl-chip > span {
+    margin: 0;
+}
+.ctl-remove {
+    color: red;
+    cursor: pointer;
+    margin: 0 0.2em;
+}
+.ctl-sortable {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+}
+.ctl-sortable-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.3em;
+    border: 1px dotted var(--selActive);
+    padding: 0.15em 0.3em;
+}
+.ctl-sortable-row > :nth-child(2) {
+    flex-grow: 1;
+    min-width: 0;
+}
+.ctl-handle {
+    cursor: grab;
+    color: var(--selActive);
+}
+
+.pf-message {
+    display: flex;
+    flex-direction: column;
+}
+.pf-oneof, .pf-oneof > .pf-message {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4em;
+}
+.pf-oneof > .pf-message > .ctl-row {
+    margin: 0;
+}
+.pf-repeated {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+}
+/* a repeated message takes its own line under its label */
+.ctl-row > .pf-repeated {
+    flex-basis: 100%;
+}
+.pf-add {
+    align-self: flex-start;
+}

@@ -3,6 +3,10 @@ import { Ability } from "./abilities";
 import { Xtox } from "./parse_utils";
 import { TrainerPokemon } from "./trainers/teams";
 import { PokePokedex } from "./species/pokedex";
+import { PartySkills } from "./trainers/trainers";
+import { BattleSkillEntry } from "./trainers/battle_skills";
+import { FormSchema, describeForm } from "../proto_schema";
+import { InlineSkillSchema } from "../gen/BattleSkillList_pb.js";
 
 export interface CompactedScripted {
   how: number; // indexed from CompactGameData.ScriptedEncoutersHowT
@@ -128,6 +132,7 @@ export interface CompactTrainers {
   pic: number;
   id: number;
   rematchM: string;
+  hellSkills?: PartySkills;
 }
 
 export interface CompactTrainerPokemon {
@@ -181,6 +186,9 @@ export interface CompactGameData {
   tpicT: string[];
   tutors: number[];
   tmhms: number[];
+  // editor for er.InlineSkill, and the predefined skills a party can link
+  skillSchema: FormSchema;
+  battleSkills: BattleSkillEntry[];
 }
 function initCompactGameData(): CompactGameData {
   return {
@@ -209,6 +217,8 @@ function initCompactGameData(): CompactGameData {
     tpicT: [],
     tutors: [],
     tmhms: [],
+    skillSchema: describeForm(InlineSkillSchema),
+    battleSkills: [],
   };
 }
 
@@ -483,6 +493,7 @@ export function compactify(gameData: GameData): CompactGameData {
       pic: tablize(trainer.pic, compacted.tpicT),
       id: gameData.trainerInternalID.get(key) || -1,
       rematchM: trainer.rematchM,
+      hellSkills: trainer.hellSkills,
     });
     trainerT.push(key);
   });
@@ -528,5 +539,6 @@ export function compactify(gameData: GameData): CompactGameData {
   });
   compacted.tutors = gameData.tutors.map((val) => movesT.indexOf(val));
   compacted.tmhms = gameData.tmhm.map((val) => movesT.indexOf(val));
+  compacted.battleSkills = gameData.battleSkills;
   return compacted;
 }

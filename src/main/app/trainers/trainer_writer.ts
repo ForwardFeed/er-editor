@@ -1,7 +1,7 @@
 import { gameData } from "../main";
 import { configuration } from "../configuration";
 import { writeTrainerEnums, writeTrainers } from "../../proto_compiler";
-import { clone, create } from "@bufbuild/protobuf";
+import { clone, create, fromJson } from "@bufbuild/protobuf";
 import { Species_Gender } from "../../gen/SpeciesList_pb.js";
 import { CallQueue } from "../../call_queue.js";
 import { Type } from "../../gen/Types_pb.js";
@@ -15,7 +15,7 @@ import {
   TrainerPartySchema,
   TrainerSchema,
 } from "../../gen/TrainerList_pb.js";
-import { Trainer } from "./trainers.js";
+import { PartySkills, Trainer, partySkills } from "./trainers.js";
 import { TrainerEnum } from "../../gen/TrainerEnum_pb.js";
 import { MoveBehavior } from "../../gen/MoveBehavior_pb.js";
 
@@ -162,6 +162,23 @@ export function addHell(id: string, pokemon: TrainerPokemon[]) {
   trainer.hell = create(TrainerPartySchema);
 
   updateTrainerParty("HELL|" + id, pokemon);
+}
+
+/** Replaces the hell party's skills; throws if the JSON does not match the proto. */
+export function setHellSkills(id: string, skills: PartySkills) {
+  const trainerEnum = invertMap(gameData.trainerEnumMap).get(id)!;
+  const hell = gameData.trainerMap.get(trainerEnum)?.hell;
+  if (!hell) throw new Error(`${id} has no hell party`);
+
+  const parsed = fromJson(TrainerPartySchema, {
+    skill: skills.skill,
+    inlineSkill: skills.inlineSkill,
+  });
+  hell.skill = parsed.skill;
+  hell.inlineSkill = parsed.inlineSkill;
+  gameData.trainers.get(id)!.hellSkills = partySkills(hell);
+
+  markTrainersDirty();
 }
 
 export function removeTrainer(id: string) {

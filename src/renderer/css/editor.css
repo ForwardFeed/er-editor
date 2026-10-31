@@ -148,3 +148,87 @@ input.mod-stat-num{
 .moves-utils-btn{
     margin: auto;
 }
+/* Trainer skills (js/panels/trainer_skills.js) */
+.skills-view {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+    padding: 0.3em;
+    box-sizing: border-box;
+    font-size: 0.8em;
+}
+.skills-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3em;
+}
+.ctl-btn.skills-remove {
+    margin-left: auto;
+    color: red;
+    border: none;
+}
+.skills-columns {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5em;
+}
+.skills-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2em;
+    padding: 0.4em;
+    box-sizing: border-box;
+    border: 1px solid var(--selActive);
+    background-color: var(--colorD);
+}
+.skills-identity {
+    width: 38%;
+}
+.skills-rules {
+    flex-grow: 1;
+    min-width: 0;
+}
+.skills-title {
+    border-bottom: 1px solid var(--selActive);
+    margin-bottom: 0.3em;
+}
+.skills-eye {
+    display: flex;
+    align-items: center;
+}
+.skills-announce, .skills-note, .skills-empty {
+    font-size: 0.8em;
+    user-select: text;
+}
+.skills-note, .skills-empty {
+    opacity: 0.7;
+}
+.skills-textbox {
+    margin-top: 0.3em;
+    padding: 0.3em 0.6em;
+    min-height: 2.6em;
+    background-color: #484848;
+    border: 0.2em solid #d8d8d8;
+    outline: 0.15em solid #303030;
+    color: white;
+    text-shadow: 1px 1px #222;
+    font-size: 0.9em;
+    white-space: pre;
+    overflow: hidden;
+}
+.pf-list-Trigger > .ctl-sortable-row {
+    border-style: solid;
+    padding: 0.4em;
+    background-color: var(--colorA);
+}
+.skills-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+.skills-error {
+    color: red;
+    margin-right: auto;
+}
