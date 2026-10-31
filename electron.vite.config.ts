@@ -21,15 +21,18 @@ export default defineConfig({
         targets: [
           {
             src: path.resolve(__dirname, './src/renderer/icons') + '/[!.]*', //
-            dest: './icons/', 
+            dest: './icons/',
+            rename: { stripBase: true },
           },
           {
             src: path.resolve(__dirname, './src/renderer/font') + '/[!.]*', //
-            dest: './font/', 
+            dest: './font/',
+            rename: { stripBase: true },
           },
           {
             src: path.resolve(__dirname, './src/renderer/css/') + '/[!.]*', //
-            dest: './css/', 
+            dest: './css/',
+            rename: { stripBase: true },
           },
         ]
       })
