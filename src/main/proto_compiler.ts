@@ -11,7 +11,7 @@ import { configuration } from "./app/configuration";
 import { platform } from "os";
 import { SpeciesList, SpeciesListSchema } from "./gen/SpeciesList_pb.js";
 import { create, fromBinary, Message, toBinary } from "@bufbuild/protobuf";
-import { GenMessage } from "@bufbuild/protobuf/codegenv1";
+import { GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { MoveList, MoveListSchema } from "./gen/MoveList_pb.js";
 import { AbilityList, AbilityListSchema } from "./gen/AbilityList_pb.js";
 import {
@@ -21,7 +21,7 @@ import {
   FileDescriptorSetSchema,
 } from "@bufbuild/protobuf/wkt";
 import { MoveEnum, MoveEnumSchema } from "./gen/MoveEnum_pb.js";
-import type { GenEnum } from "@bufbuild/protobuf/codegenv1";
+import type { GenEnum } from "@bufbuild/protobuf/codegenv2";
 import { MoveBehavior, MoveBehaviorSchema } from "./gen/MoveBehavior_pb.js";
 import { AbilityEnum, AbilityEnumSchema } from "./gen/AbilityEnum_pb.js";
 import { SpeciesEnum, SpeciesEnumSchema } from "./gen/SpeciesEnum_pb.js";

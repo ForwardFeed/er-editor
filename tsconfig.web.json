@@ -2,6 +2,7 @@
   "extends": "@electron-toolkit/tsconfig/tsconfig.web.json",
   "include": ["src/renderer/**/*.ts", "src/preload/*.d.ts", "src/renderer/js/jquery.js"],
   "compilerOptions": {
-    "composite": true
+    "composite": true,
+    "moduleResolution": "bundler"
   }
 }

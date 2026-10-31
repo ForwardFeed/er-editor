@@ -1,0 +1,4 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": ["er-config/", "src/renderer/vendor/", "src/main/gen/"]
+}
