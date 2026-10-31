@@ -21,9 +21,9 @@ import {
   MoveTarget,
   Move as ProtoMove,
   SplitFlag,
-  Status,
   TutorType,
 } from "../../gen/MoveList_pb.js";
+import { Status } from "../../gen/ScriptConditions_pb.js";
 import { MoveEnum } from "../../gen/MoveEnum_pb.js";
 import { create, getOption } from "@bufbuild/protobuf";
 import { Type } from "../../gen/Types_pb.js";
@@ -399,22 +399,23 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
     if (flag.includes("_")) flag = Xtox("FLAG_", flag);
     return legacyMove.flags.includes(flag);
   }
+  const effect: MoveBehavior =
+    MoveBehavior[
+      "EFFECT_" +
+        legacyMove.effect
+          .replace(" ", "_")
+          .replace(" ", "_")
+          .replace(" ", "_")
+          .replace(" ", "_")
+          .toUpperCase()
+    ];
   const move = create(MoveSchema, {
     id: MoveEnum[legacyMove.NAME],
     name: legacyMove.name,
     shortName: legacyMove.shortName,
     description: legacyMove.longDesc,
     shortDescription: legacyMove.desc,
-    effect:
-      MoveBehavior[
-        "EFFECT_" +
-          legacyMove.effect
-            .replace(" ", "_")
-            .replace(" ", "_")
-            .replace(" ", "_")
-            .replace(" ", "_")
-            .toUpperCase()
-      ],
+    moveEffect: { case: "effect", value: effect },
     split: MoveSplit[legacyMove.split],
     type: Type[legacyMove.types[0].toUpperCase()],
     type2:
@@ -471,7 +472,7 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
     splitModifier: legacyMove.splitModifier,
   });
 
-  if (!move.effect && legacyMove.effect !== "Hit")
+  if (!effect && legacyMove.effect !== "Hit")
     console.log(legacyMove.effect);
 
   switch (move.id) {
@@ -548,14 +549,14 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
   }
 
   if (move.name === "Overheat") {
-    console.log(MoveBehaviorSchema.value[move.effect].name, move.effect);
+    console.log(MoveBehaviorSchema.value[effect].name, effect);
   }
 
   let noSheerForce =
     !hasFlag("FLAG_SHEER_FORCE_BOOST") &&
     legacyMove.split !== "STATUS" &&
     legacyMove.chance > 0 &&
-    !sheerForceBannedEffects[MoveBehaviorSchema.value[move.effect].name];
+    !sheerForceBannedEffects[MoveBehaviorSchema.value[effect].name];
 
   if (
     noSheerForce &&
@@ -570,7 +571,7 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
   }
 
   if (move.noKingsRock && move.effectChance) {
-    if (flinchEffects[MoveBehaviorSchema.value[move.effect].name]) {
+    if (flinchEffects[MoveBehaviorSchema.value[effect].name]) {
       move.noKingsRock = false;
     } else if (
       move.argument?.argument.case === "effect" &&
@@ -584,7 +585,7 @@ export function convertLegacyMove(legacyMove: Move): ProtoMove {
 
   if (
     move.noKingsRock &&
-    kingsRockBanned[MoveBehaviorSchema.value[move.effect].name]
+    kingsRockBanned[MoveBehaviorSchema.value[effect].name]
   )
     move.noKingsRock = false;
 
@@ -598,13 +599,18 @@ function protoMoveToLegacyMove(
   updatedMoveMapping: Map<MoveEnum, string>,
   updatedMoveEffectMapping: Map<MoveBehavior, string>,
 ): [string, Move] {
+  // Moves with a custom_behavior config have no MoveBehavior enum value.
+  const effect =
+    move.moveEffect.case === "effect" ? move.moveEffect.value : undefined;
   const legacyMove: Move = {
     NAME: updatedMoveMapping.get(move.id) || "MOVE_NONE",
     name: move.name,
     shortName: move.shortName,
     effect: Xtox(
       "EFFECT_",
-      updatedMoveEffectMapping.get(move.effect) || "EFFECT_HIT",
+      move.moveEffect.case === "customBehavior"
+        ? "EFFECT_CUSTOM"
+        : updatedMoveEffectMapping.get(effect!) || "EFFECT_HIT",
     ),
     power: move.power,
     types: (move.type2
@@ -626,7 +632,7 @@ function protoMoveToLegacyMove(
     descPtr: "PTRSHORT" + move.id,
     longDesc: move.description,
     longDescPtr: "PTRLONG" + move.id,
-    usesHpType: move.effect === MoveBehavior.EFFECT_HIDDEN_POWER,
+    usesHpType: effect === MoveBehavior.EFFECT_HIDDEN_POWER,
   };
 
   for (const field of MoveSchema.fields) {

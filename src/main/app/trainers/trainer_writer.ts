@@ -10,7 +10,7 @@ import {
   TrainerList,
   TrainerListSchema,
   TrainerParty,
-  TrainerParty_TrainerMon_Nature,
+  Nature,
   TrainerParty_TrainerMonSchema,
   TrainerPartySchema,
   TrainerSchema,
@@ -90,10 +90,7 @@ export function updateTrainerParty(
     create(TrainerParty_TrainerMonSchema, {
       species: speciesMap.get(it.specie),
       item: itemMap.get(it.item),
-      nature:
-        TrainerParty_TrainerMon_Nature[
-          it.nature.replace("NATURE_", "").toUpperCase()
-        ],
+      nature: Nature[it.nature.replace("NATURE_", "").toUpperCase()],
       hpEv: it.evs[0],
       atkEv: it.evs[1],
       defEv: it.evs[2],
@@ -107,7 +104,7 @@ export function updateTrainerParty(
       move: it.moves.map((move) => moveMap.get(move)!!),
       hiddenPowerType: it.moves.some(
         (move) =>
-          gameData.moveMap.get(moveMap.get(move)!!)!!.effect ===
+          gameData.moveMap.get(moveMap.get(move)!!)!!.moveEffect.value ===
           MoveBehavior.EFFECT_HIDDEN_POWER,
       )
         ? Type[it.hpType.replace("TYPE_", "").toUpperCase()]

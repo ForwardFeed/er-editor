@@ -1,7 +1,7 @@
 import { Species_Gender } from "../../gen/SpeciesList_pb.js";
 import {
   TrainerParty_TrainerMon,
-  TrainerParty_TrainerMon_Nature,
+  Nature,
 } from "../../gen/TrainerList_pb.js";
 import { Type } from "../../gen/Types_pb.js";
 import { readTrainers } from "../../proto_compiler.js";
@@ -100,7 +100,7 @@ function monToLegacyMon(
     ivs: [31, 31, 31, 31, 31, mon.ironPill ? 0 : 31],
     evs: [mon.hpEv, mon.atkEv, mon.defEv, mon.spatkEv, mon.spdefEv, mon.speEv],
     item: gameData.itemEnumMap.get(mon.item)!!,
-    nature: "NATURE_" + TrainerParty_TrainerMon_Nature[mon.nature],
+    nature: "NATURE_" + Nature[mon.nature],
     moves: mon.move.map((it) => gameData.moveEnumMap.get(it)!!),
     hpType: mon.hiddenPowerType ? "TYPE_" + Type[mon.hiddenPowerType] : "",
   };
