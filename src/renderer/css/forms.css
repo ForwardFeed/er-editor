@@ -89,29 +89,51 @@ textarea.ctl-input {
     color: var(--selActive);
 }
 
+/* Simple controls flow on one line; members holding messages take a line of their own */
 .pf-message {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 0.8em;
 }
-.pf-oneof, .pf-oneof > .pf-message {
+.pf-message > .pf-block {
+    flex-basis: 100%;
+}
+.pf-oneof, .pf-optional {
     display: flex;
-    flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.4em;
 }
-.pf-oneof > .pf-message > .ctl-row {
-    margin: 0;
+.pf-oneof > .pf-message, .pf-optional > .pf-message {
+    flex: 1 1 auto;
+}
+.pf-optional {
+    border-left: 2px solid var(--selActive);
+    padding-left: 0.3em;
 }
 .pf-repeated {
     display: flex;
     flex-direction: column;
     gap: 0.3em;
-}
-/* a repeated message takes its own line under its label */
-.ctl-row > .pf-repeated {
     flex-basis: 100%;
 }
 .pf-add {
     align-self: flex-start;
+}
+/* a oneof or optional message stays beside its label and wraps inside itself */
+.ctl-row > .pf-oneof, .ctl-row > .pf-optional {
+    flex: 1 1 0;
+    min-width: 0;
+}
+.ctl-row.pf-block {
+    align-items: flex-start;
+}
+.pf-optional {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+}
+.pf-optional > .pf-message {
+    flex: 1 1 0;
+    min-width: 0;
 }

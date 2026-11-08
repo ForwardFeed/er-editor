@@ -8,34 +8,86 @@ import { button, labelled, searchSelect } from "../components/controls.js"
 
 const INLINE_SKILL = "er.InlineSkill"
 
+const S = INLINE_SKILL
+const turns = { min: 1, max: 255 }
+const percent = { min: 0, max: 99 }
 const hints = {
-  "er.InlineSkill.announceString": { label: "Announce", multiline: true },
-  "er.InlineSkill.extraAbility": { label: "Extra abilities (max 3)", maxItems: 3, addLabel: "+ ability" },
-  "er.InlineSkill.on": { label: "", numbered: true, addLabel: "+ rule" },
-  "er.InlineSkill.Trigger.kind": { label: "When" },
-  "er.InlineSkill.Trigger.entry": { label: "Pokémon enters" },
-  "er.InlineSkill.Trigger.endTurn": { label: "End of turn" },
-  "er.InlineSkill.Trigger.effect": { label: "Do", addLabel: "+ effect" },
-  "er.InlineSkill.Entry.when": { label: "" },
-  "er.InlineSkill.Effect.kind": { label: "" },
-  "er.InlineSkill.Effect.statChange": { label: "Change stats" },
-  "er.InlineSkill.Effect.terrain": { label: "Set terrain" },
-  "er.InlineSkill.Effect.weather": { label: "Set weather" },
-  "er.InlineSkill.Effect.hazard": { label: "Set hazard" },
-  "er.InlineSkill.Effect.useMove": { label: "Use move" },
-  "er.InlineSkill.StatChange.stat": { label: "", addLabel: "+ stat" },
-  "er.InlineSkill.StatChange.amount": { label: "by", min: -6, max: 6 },
-  "er.InlineSkill.SetTerrain.terrain": { label: "" },
-  "er.InlineSkill.SetTerrain.duration": { label: "" },
-  "er.InlineSkill.SetTerrain.turns": { min: 1, max: 255 },
-  "er.InlineSkill.SetWeather.weather": { label: "" },
-  "er.InlineSkill.SetWeather.duration": { label: "" },
-  "er.InlineSkill.SetWeather.turns": { min: 1, max: 255 },
-  "er.InlineSkill.SetHazard.hazard": { label: "", addLabel: "+ hazard" },
-  "er.InlineSkill.SetHazard.layers": { min: 1, max: 3 },
-  "er.InlineSkill.SetHazard.permanent": { label: "Re-apply" },
-  "er.InlineSkill.UseMove.move": { label: "" },
-  "er.InlineSkill.UseMove.power": { min: 0, max: 255 },
+  [`${S}.announceString`]: { label: "Announce", multiline: true },
+  [`${S}.extraAbility`]: { label: "Extra abilities (max 3)", maxItems: 3, addLabel: "+ ability" },
+  [`${S}.extraItem`]: { label: "Extra held items (max 2)", maxItems: 2, addLabel: "+ item" },
+  [`${S}.on`]: { label: "", numbered: true, addLabel: "+ rule" },
+  [`${S}.ExtraItem.item`]: { label: "" },
+  [`${S}.ExtraItem.strength`]: { label: "Strength", min: 0, max: 255 },
+
+  // a rule: "when <event> [on whose side, conditions] do <effects>"
+  [S + ".Trigger"]: { order: ["kind", "side", "once", "chance", "hpBelow", "effect"] },
+  [`${S}.Trigger.kind`]: { label: "When", required: true },
+  [`${S}.Trigger.entry`]: { label: "Pokémon enters" },
+  [`${S}.Trigger.endTurn`]: { label: "End of turn" },
+  [`${S}.Trigger.battleStart`]: { label: "Battle starts" },
+  [`${S}.Trigger.hit`]: { label: "Hit by a move" },
+  [`${S}.Trigger.faint`]: { label: "Faints" },
+  [`${S}.Trigger.statChange`]: { label: "Stat changes" },
+  [`${S}.Trigger.switchOut`]: { label: "Switches out" },
+  [`${S}.Trigger.side`]: { label: "Whose" },
+  [`${S}.Trigger.once`]: { label: "" },
+  [`${S}.Trigger.chance`]: { label: "Chance %", ...percent },
+  [`${S}.Trigger.hpBelow`]: { label: "HP below %", ...percent },
+  [`${S}.Trigger.effect`]: { label: "Do", addLabel: "+ effect" },
+  [`${S}.Entry.when`]: { label: "" },
+  [`${S}.Entry.slots`]: { label: "", addLabel: "+ party slots" },
+  [`${S}.EndTurn.every`]: { label: "Every N turns", min: 0, max: 255 },
+  [`${S}.EndTurn.onField`]: { label: "Count turns on field" },
+  [`${S}.Hit.move`]: { label: "", addLabel: "+ move filter" },
+  [`${S}.Hit.effectiveness`]: { addLabel: "+ effectiveness" },
+  [`${S}.MoveFilter.type`]: { addLabel: "+ type" },
+  [`${S}.MoveFilter.split`]: { addLabel: "+ split" },
+  [`${S}.MoveFilter.flag`]: { addLabel: "+ flag" },
+  [`${S}.StatChanged.stat`]: { label: "", addLabel: "+ stat" },
+  [`${S}.StatChanged.direction`]: { label: "" },
+  [`${S}.PartySlots.first`]: { min: 0, max: 6 },
+  [`${S}.PartySlots.last`]: { min: 0, max: 6 },
+
+  [`${S}.Effect.kind`]: { label: "", required: true },
+  [`${S}.Effect.statChange`]: { label: "Change stats" },
+  [`${S}.Effect.terrain`]: { label: "Set terrain" },
+  [`${S}.Effect.weather`]: { label: "Set weather" },
+  [`${S}.Effect.sideCondition`]: { label: "Set side condition" },
+  [`${S}.Effect.useMove`]: { label: "Use move" },
+  [`${S}.Effect.field`]: { label: "Set field status" },
+  [`${S}.Effect.status`]: { label: "Apply status" },
+  [`${S}.Target.slots`]: { label: "", addLabel: "+ party slots" },
+  [`${S}.StatChange.stat`]: { label: "", addLabel: "+ stat" },
+  [`${S}.StatChange.amount`]: { label: "by", min: -6, max: 6 },
+  [`${S}.StatChange.target`]: { label: "", addLabel: "+ target" },
+  [`${S}.SetTerrain.terrain`]: { label: "" },
+  [`${S}.SetTerrain.duration`]: { label: "" },
+  [`${S}.SetTerrain.turns`]: turns,
+  [`${S}.SetWeather.weather`]: { label: "" },
+  [`${S}.SetWeather.duration`]: { label: "" },
+  [`${S}.SetWeather.turns`]: turns,
+  [`${S}.SetSideCondition.type`]: { label: "", addLabel: "+ condition" },
+  [`${S}.SetSideCondition.who`]: { label: "Side of" },
+  [`${S}.SetSideCondition.layers`]: { label: "Layers (hazards)", min: 0, max: 3 },
+  [`${S}.SetSideCondition.duration`]: { label: "" },
+  [`${S}.SetSideCondition.turns`]: turns,
+  [`${S}.SetFieldStatus.type`]: { label: "", addLabel: "+ field status" },
+  [`${S}.SetFieldStatus.duration`]: { label: "" },
+  [`${S}.SetFieldStatus.turns`]: turns,
+  [`${S}.ApplyStatus.status`]: { label: "" },
+  [`${S}.ApplyStatus.target`]: { label: "", addLabel: "+ target" },
+  [`${S}.UseMove.move`]: { label: "" },
+  [`${S}.UseMove.power`]: { min: 0, max: 255 },
+}
+
+// Values the proto marks as "not allowed" or that do nothing
+const hiddenValues = {
+  [`${S}.Hit.Effectiveness`]: ["EFFECTIVENESS_UNSET"],
+  [`${S}.MoveFilter.Flag`]: ["FLAG_UNSET"],
+  [`${S}.SetSideCondition.ConditionType`]: ["NONE"],
+  [`${S}.SetFieldStatus.FieldType`]: ["NONE"],
+  [`${S}.ApplyStatus.Status`]: ["NONE"],
+  "er.ItemEnum": ["ITEM_NONE"],
 }
 
 const statLabels = {
@@ -43,7 +95,16 @@ const statLabels = {
   STAT_SPDEF: "SpD", STAT_ACC: "Acc", STAT_EVASION: "Eva", STAT_HIGHEST_ATTACKING: "Best attack",
   STAT_HIGHEST_DEFENDING: "Best defense", STAT_HIGHEST_TOTAL: "Best stat",
 }
-const whenLabels = { EVERY: "every Pokémon", LEAD: "lead only" }
+const enumLabelTables = {
+  "er.Stat": statLabels,
+  [`${S}.Entry.When`]: { EVERY: "every Pokémon", LEAD: "lead only", LAST: "last Pokémon" },
+  [`${S}.Side`]: { TRAINER: "trainer's Pokémon", PLAYER: "player's Pokémon", BOTH: "any Pokémon" },
+  [`${S}.Once`]: {
+    ALWAYS: "every time", PER_SWITCH_IN: "once per switch-in", PER_POKEMON: "once per Pokémon",
+    PER_BATTLE: "once per battle",
+  },
+  [`${S}.Target.Scope`]: { MON: "Pokémon", FIELD: "its side of the field", PARTY: "whole party" },
+}
 
 const EYE_ICON = `<svg viewBox="0 0 16 10" width="1.3em" height="0.8em">
   <path d="M1 5 Q8 -3 15 5 Q8 13 1 5Z" fill="none" stroke="currentColor" stroke-width="1.5"/>
@@ -54,16 +115,19 @@ const view = { trainer: undefined, container: undefined, onCountChange: undefine
 
 function getForm() {
   if (!form) {
-    const abilityName = new Map(gameData.abilities.map((it) => [it.NAME, it.name]))
-    const moveName = new Map(gameData.moves.map((it) => [it.NAME, it.name]))
+    const names = (list) => new Map(list.map((it) => [it.NAME, it.name]))
+    const tables = {
+      ...enumLabelTables,
+      "er.AbilityEnum": names(gameData.abilities),
+      "er.MoveEnum": names(gameData.moves),
+      "er.ItemEnum": names(gameData.items),
+    }
+    const enumLabels = Object.fromEntries(Object.entries(tables).map(([type, table]) =>
+      [type, (value) => (table instanceof Map ? table.get(value) : table[value])]))
     form = new ProtoForm(gameData.skillSchema, {
       hints,
-      enumLabels: {
-        "er.Stat": (value) => statLabels[value],
-        "er.InlineSkill.Entry.When": (value) => whenLabels[value],
-        "er.AbilityEnum": (value) => abilityName.get(value),
-        "er.MoveEnum": (value) => moveName.get(value),
-      },
+      enumLabels,
+      hiddenValues,
       onChange: changed,
     })
   }
@@ -188,6 +252,8 @@ function renderSkillColumn(entry) {
       e("div", "skills-preview"),
       labelled(form.label(INLINE_SKILL, "extraAbility")),
       form.renderField(INLINE_SKILL, "extraAbility", skill),
+      labelled(form.label(INLINE_SKILL, "extraItem")),
+      form.renderField(INLINE_SKILL, "extraItem", skill),
     )
   } else {
     const skills = view.trainer.hellSkills.skill

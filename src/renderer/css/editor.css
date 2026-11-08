@@ -184,7 +184,7 @@ input.mod-stat-num{
     background-color: var(--colorD);
 }
 .skills-identity {
-    width: 38%;
+    flex: 0 0 34%;
 }
 .skills-rules {
     flex-grow: 1;
