@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag to release (e.g. v0.8.0). Created at the current SHA if missing.'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (with er-config submodule)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (protobuf codegen + typecheck + bundle)
+        run: npm run build
+
+      # NSIS installer needs wine on Linux; the release only ships the
+      # unpacked app as a zip, so --dir is all we need.
+      - name: Package Windows app (unpacked)
+        run: npx electron-builder --win --dir
+
+      - name: Bundle protoc and zip
+        run: |
+          cp protoc.exe dist/win-unpacked/
+          cd dist/win-unpacked
+          zip -qr ../er-editor.zip .
+
+      - name: Compute release name
+        id: rel
+        env:
+          TAG: ${{ inputs.tag_name || github.ref_name }}
+        run: echo "name=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
+          name: ${{ steps.rel.outputs.name }}
+          files: dist/er-editor.zip
+          generate_release_notes: true
